@@ -2167,44 +2167,59 @@ function department(){
       </div>
     </div>
 
-    <!-- Compact Stat Cards (Reduced padding, horizontal layout) -->
-    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 6px 0 10px;">
+    <!-- Compact Stat Cards (Fixed icon sizing and horizontal layout) -->
+    <div class="stat-cards-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 6px 0 10px;">
       <!-- Card 1: Themes -->
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 8px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:40px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 10px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
           06
         </div>
-        <div>
-          <div style="font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px">
-            No. of Themes ${ICONS['Design Journey']}
+        <div style="flex:1; min-width:0">
+          <div style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.2">
+            No. of Themes
           </div>
-          <div style="font-size:12.5px; color:var(--muted); margin-top:1px">Active specialization domains</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+            Active specialization domains
+          </div>
+        </div>
+        <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
+          ${ICONS['Design Journey'].replace('<svg', '<svg style="width:18px;height:18px;color:var(--brand);flex-shrink:0"')}
         </div>
       </div>
 
       <!-- Card 2: Faculty Mentors -->
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 8px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:40px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 10px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
           ${String(facultyList.length).padStart(2,'0')}
         </div>
-        <div>
-          <div style="font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px">
-            No. of Faculty Mentors ${ICONS['Faculty Review']}
+        <div style="flex:1; min-width:0">
+          <div style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.2">
+            No. of Faculty Mentors
           </div>
-          <div style="font-size:12.5px; color:var(--muted); margin-top:1px">CS AI faculty guide directory</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+            CS AI faculty guide directory
+          </div>
+        </div>
+        <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
+          ${ICONS['Faculty Review'].replace('<svg', '<svg style="width:18px;height:18px;color:var(--brand);flex-shrink:0"')}
         </div>
       </div>
 
       <!-- Card 3: Teams -->
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 8px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:40px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 10px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
           ${String(all.length).padStart(2,'0')}
         </div>
-        <div>
-          <div style="font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px">
-            No. of Teams ${ICONS.users}
+        <div style="flex:1; min-width:0">
+          <div style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.2">
+            No. of Teams
           </div>
-          <div style="font-size:12.5px; color:var(--muted); margin-top:1px">Enrolled student project teams</div>
+          <div style="font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
+            Enrolled student project teams
+          </div>
+        </div>
+        <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
+          ${ICONS.users.replace('<svg', '<svg style="width:18px;height:18px;color:var(--brand);flex-shrink:0"')}
         </div>
       </div>
     </div>

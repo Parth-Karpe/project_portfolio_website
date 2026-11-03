@@ -2433,3 +2433,15 @@ tbody tr:hover {
   background: var(--brand-subtle);
   font-weight: 600;
 }
+
+
+/* Stat Cards Icon Sizing Fix */
+.stat-cards-grid svg,
+.stat-icon-wrapper svg {
+  width: 18px !important;
+  height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+}
