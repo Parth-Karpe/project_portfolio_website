@@ -2518,3 +2518,18 @@ tbody tr:hover {
 .portfolio-content .req-card strong {
   color: #000000 !important;
 }
+
+/* Theme Cards Styling */
+.theme-card-item {
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.theme-card-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand);
+  box-shadow: var(--shadow-md);
+}

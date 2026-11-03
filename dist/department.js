@@ -924,7 +924,9 @@ function seedTeams(){
 }
 function ensureDepartment(){
   if(['Faculty Review','Discussion'].includes(page))page='Department';
-  if(!state.department){state.department={name:'CS AI',hod:'CS AI HOD (demo)',facultyAdmin:'CS AI Faculty Admin (demo)'}}
+  if(!state.department){state.department={name:'CS AI',hod:'CS AI HOD',facultyAdmin:'CS AI Faculty Admin'}}
+  if(state.department?.hod) state.department.hod = state.department.hod.replace(/\s*\(demo\)/gi, '');
+  if(state.department?.facultyAdmin) state.department.facultyAdmin = state.department.facultyAdmin.replace(/\s*\(demo\)/gi, '');
   const seeds=seedTeams();
   if(!state.teams||state.teams.length<33||state.excelVersion!==3){
     state.teams=seeds;
@@ -990,6 +992,24 @@ function ensureDepartment(){
     }
   }
 
+  const t03=state.teams?.find(t=>t.id==='A-03'||t.id==='03');
+  if(t03){
+    t03.title = 'Smart Campus Lab & Resource Optimizer';
+    t03.faculty = 'Mr.Amit Kachavimath';
+    if(typeof STATIC_TEAMS !== 'undefined' && STATIC_TEAMS['03']){
+      t03.title = STATIC_TEAMS['03'].title || t03.title;
+      t03.faculty = STATIC_TEAMS['03'].faculty || t03.faculty;
+      t03.members = STATIC_TEAMS['03'].members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t03.id]) state.workspaces[t03.id] = newTeamWorkspace(t03);
+    state.workspaces[t03.id].guide = t03.faculty;
+    state.workspaces[t03.id].members = t03.members;
+    if(state.activeTeamId === t03.id && state.forms && state.forms[1]){
+      state.forms[1].title = t03.title;
+    }
+  }
+
   [state,...Object.values(state.workspaces||{})].forEach(w=>{
     w.media=w.media||[];w.messages=w.messages||[];w.mentorMessages=w.mentorMessages||[];w.reviews=w.reviews||{};w.questions=w.questions||[];w.answers=w.answers||{};w.activities=w.activities||[];
     w.forms=w.forms||{};
@@ -998,7 +1018,7 @@ function ensureDepartment(){
 }
 ensureDepartment();
 function activeTeam(){return state.teams.find(t=>t.id===state.activeTeamId)}
-function syncTeam(){const team=activeTeam();if(!team)return;team.members=state.members.map(m=>({name:m.name,usn:m.usn}));team.title=state.forms[1].title;team.faculty=state.guide;const w={};workspaceKeys.forEach(k=>{if(state[k]!==undefined)w[k]=clone(state[k])});state.workspaces[team.id]=w}
+function syncTeam(){const team=activeTeam();if(!team)return;team.members=state.members.map(m=>({name:m.name,usn:m.usn}));team.title=state.forms[1]?.title||team.title;team.faculty=state.guide;const w={};workspaceKeys.forEach(k=>{if(state[k]!==undefined)w[k]=clone(state[k])});state.workspaces[team.id]=w}
 const saveLocalState=save;
 save=function(){ensureDepartment();syncTeam();return saveLocalState()};
 function facultyNames(){return [...new Set([...state.teams.map(t=>t.faculty),...state.facultyDirectory.map(f=>f.name)])].sort()}
@@ -1804,15 +1824,15 @@ function openTeamPortfolio(id){
   go('Team Portfolio');
 }
 
-let activeThemeTab = 1;
+let selectedTheme = null;
 
 const THEME_INFO = {
-  1: { name: 'Data Storage and Retrieval Systems', count: 4 },
-  2: { name: 'Data Processing and Analytics Systems', count: 4 },
-  3: { name: 'System Software and Development Tools', count: 5 },
-  4: { name: 'Networked Systems and Tools', count: 6 },
-  5: { name: 'Algorithmic and Optimization Systems', count: 4 },
-  6: { name: 'Concurrent and Transactional Systems', count: 10 }
+  1: { name: 'Data Storage and Retrieval Systems', count: 4, desc: 'Specialized systems for indexing, caching, storage engines, and persistent query retrieval.' },
+  2: { name: 'Data Processing and Analytics Systems', count: 4, desc: 'Real-time telemetry, log processing, data profiling, streaming, and metric transformation pipelines.' },
+  3: { name: 'System Software and Development Tools', count: 5, desc: 'System utilities, runtime profilers, execution monitors, memory diagnostic tools, and compiler tooling.' },
+  4: { name: 'Networked Systems and Tools', count: 6, desc: 'Network topologies, protocol routers, distributed coordination, remote procedure utilities, and communication.' },
+  5: { name: 'Algorithmic and Optimization Systems', count: 4, desc: 'Constraint satisfaction engines, resource allocation algorithms, routing heuristics, and combinatorial solvers.' },
+  6: { name: 'Concurrent and Transactional Systems', count: 10, desc: 'Transaction atomicity, concurrent lock managers, mutual exclusion models, distributed ledgers, and consensus.' }
 };
 
 function getThemeTabTitle(tab){
@@ -1827,62 +1847,53 @@ function getThemeTabCount(tab){
   return state.teams.filter(t => t.theme_no === Number(tab) || (t.topic||'').startsWith(`Theme ${tab}:`)).length;
 }
 
-function selectThemeTab(tab){
-  activeThemeTab = tab;
-  const tbody = document.getElementById('hod-project-rows');
-  if(tbody) tbody.innerHTML = hodProjectRows();
-  
-  document.querySelectorAll('.theme-tab-btn').forEach(btn => {
-    const btnTab = btn.getAttribute('data-theme');
-    const isAct = (btnTab === 'all' && tab === 'all') || (Number(btnTab) === Number(tab));
-    btn.classList.toggle('active', isAct);
-  });
-  
-  const bannerTitle = document.getElementById('active-theme-text');
-  const bannerCount = document.getElementById('active-theme-count');
-  if(bannerTitle && bannerCount){
-    bannerTitle.textContent = getThemeTabTitle(tab);
-    bannerCount.textContent = getThemeTabCount(tab) + ' Projects';
-  }
+function openThemePage(themeNo){
+  selectedTheme = themeNo;
+  render();
+  window.scrollTo(0, 0);
 }
 
-function hodProjectRows(){
-  let list = state.teams || [];
-  
-  // Filter by active theme tab first
-  if(activeThemeTab !== 'all'){
-    list = list.filter(t => t.theme_no === Number(activeThemeTab) || (t.topic||'').startsWith(`Theme ${activeThemeTab}:`));
+function backToThemes(){
+  selectedTheme = null;
+  render();
+  window.scrollTo(0, 0);
+}
+
+function formatTeamMembers(members){
+  if(!members || !members.length) return '';
+  const names = members.map(m => m.name || m);
+  const rows = [];
+  for(let i = 0; i < names.length; i += 2){
+    rows.push(names.slice(i, i + 2).join(', '));
   }
-  
-  // Preserve exact sequence as in Excel sheet
+  return `<div style="font-size:13px; color:#000000; line-height:1.55">
+    ${rows.map(r => `<div>${esc(r)}</div>`).join('')}
+  </div>`;
+}
+
+function hodProjectRowsForTheme(tab){
+  let list = state.teams || [];
+  if(tab !== 'all'){
+    list = list.filter(t => t.theme_no === Number(tab) || (t.topic||'').startsWith(`Theme ${tab}:`));
+  }
   list = list.slice().sort((a,b) => (a.excel_order || 0) - (b.excel_order || 0));
 
   if(!list.length){
-    return '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted);font-size:13.5px">No projects found in this theme.</td></tr>';
+    return '<tr><td colspan="4" style="text-align:center;padding:24px;color:#000000;font-size:13.5px">No projects found in this theme.</td></tr>';
   }
 
   return list.map(t=>`
     <tr>
-      <td>
-        <strong style="color:var(--ink);font-size:14.5px;display:block;line-height:1.35">${esc(t.title)}</strong>
+      <td style="padding: 12px 16px;">
+        <strong style="color:#000000;font-size:14px;display:block;line-height:1.35">${esc(t.title)}</strong>
       </td>
-      <td>
-        <strong style="font-size:14px;color:var(--ink);display:block">${esc(t.faculty)}</strong>
-        <span style="font-size:12.5px;color:var(--muted)">Faculty Guide</span>
+      <td style="padding: 12px 16px;">
+        <strong style="font-size:13.5px;color:#000000;display:block">${esc(t.faculty)}</strong>
       </td>
-      <td>
-        <div style="display:flex;flex-direction:column;gap:3px">
-          ${(t.members||[]).map((m,i)=>`
-            <div style="font-size:13.5px;color:var(--ink);font-weight:500;line-height:1.3">
-              ${esc(m.name)}
-            </div>
-          `).join('')}
-        </div>
+      <td style="padding: 12px 16px;">
+        ${formatTeamMembers(t.members)}
       </td>
-      <td style="text-align:center">
-        <span class="req-tag" style="font-weight:700;font-size:13px;padding:3px 8px">Team ${esc(t.id)}</span>
-      </td>
-      <td style="text-align:center">
+      <td style="text-align:center; padding: 12px 16px;">
         <button class="btn" style="padding:6px 14px;font-size:12.5px;white-space:nowrap;font-weight:600" onclick="openTeamPortfolio('${esc(t.id)}')">
           Project Portfolio →
         </button>
@@ -1916,38 +1927,84 @@ function downloadHODProjectCSVTemplate(){
 }
 
 function department(){
-  const all = state.teams;
+  const all = state.teams || [];
   const facultyList = facultyNames();
 
+  if(selectedTheme !== null){
+    const themeNo = selectedTheme;
+    const isAll = themeNo === 'all';
+    const info = THEME_INFO[themeNo] || {};
+    const title = isAll ? 'All Themes : Complete CS AI Project Directory' : `Theme ${themeNo} : ${info.name || ''}`;
+    const count = getThemeTabCount(themeNo);
+
+    return `
+      <div style="margin-bottom: 14px;">
+        <button class="btn secondary" style="padding:7px 15px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px; margin-bottom:12px; cursor:pointer" onclick="backToThemes()">
+          ← Back to Themes
+        </button>
+
+        <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 18px 22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:var(--shadow-xs)">
+          <div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px">
+              <span class="tag" style="background:var(--brand-subtle); color:var(--brand); font-weight:800; font-size:12px; padding:4px 10px; border-radius:6px">
+                ${isAll ? 'All Themes' : `Theme ${themeNo}`}
+              </span>
+              <h1 style="font-size:20px; font-weight:800; color:#000000; margin:0">
+                ${esc(title)}
+              </h1>
+            </div>
+            ${!isAll && info.desc ? `
+              <p style="font-size:13px; color:#333333; margin:4px 0 0; line-height:1.5">
+                ${esc(info.desc)}
+              </p>
+            ` : ''}
+          </div>
+          <span class="tag" style="background:var(--surface); color:#000000; border:1px solid var(--line); font-weight:700; font-size:13px; padding:5px 14px; border-radius:8px">
+            ${count} Projects
+          </span>
+        </div>
+      </div>
+
+      <section class="card" style="padding: 12px 18px; margin-bottom: 8px; border-radius: 12px;">
+        <div class="tablewrap" style="max-height: calc(100vh - 220px); overflow-y: auto;">
+          <table class="roster compact-roster" id="hod-projects-table" style="width:100%">
+            <thead style="position: sticky; top: 0; z-index: 10; background:var(--surface)">
+              <tr>
+                <th style="padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Project Title</th>
+                <th style="width:220px; padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Name of faculty member</th>
+                <th style="width:300px; padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Team Members</th>
+                <th style="width:160px; text-align:center; padding: 12px 16px; font-size: 13px; color:#000000">Project Portfolio</th>
+              </tr>
+            </thead>
+            <tbody id="hod-project-rows">
+              ${hodProjectRowsForTheme(themeNo)}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
   return `
-    <!-- Compact Heading -->
-    <div class="heading" style="margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div class="heading" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div>
-        <h1 style="font-size:22px; font-weight:800; color:var(--ink); margin:0; line-height:1.2">
+        <h1 style="font-size:22px; font-weight:800; color:#000000; margin:0; line-height:1.2">
           HOD Academic Dashboard
         </h1>
-        <p style="font-size:13px; color:var(--muted); margin:2px 0 0">
-          Department of Computer Science &amp; AI · Academic Year 2026–27
-        </p>
       </div>
       <div style="display:flex; gap:8px">
         <button class="btn secondary" style="padding:6px 14px; font-size:12.5px; margin:0" onclick="downloadHODProjectCSVTemplate()">↓ Download CSV Template</button>
       </div>
     </div>
 
-    <!-- Compact Stat Cards (Fixed icon sizing and horizontal layout) -->
-    <div class="stat-cards-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 6px 0 10px;">
-      <!-- Card 1: Themes -->
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 10px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+    <div class="stat-cards-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 6px 0 16px;">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 18px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
         <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
           06
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.2">
+          <div style="font-size:14px; font-weight:700; color:#000000; line-height:1.2">
             No. of Themes
-          </div>
-          <div style="font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
-            Active specialization domains
           </div>
         </div>
         <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
@@ -1955,17 +2012,13 @@ function department(){
         </div>
       </div>
 
-      <!-- Card 2: Faculty Mentors -->
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 10px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 18px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
         <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
           ${String(facultyList.length).padStart(2,'0')}
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.2">
+          <div style="font-size:14px; font-weight:700; color:#000000; line-height:1.2">
             No. of Faculty Mentors
-          </div>
-          <div style="font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
-            CS AI faculty guide directory
           </div>
         </div>
         <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
@@ -1973,17 +2026,13 @@ function department(){
         </div>
       </div>
 
-      <!-- Card 3: Teams -->
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 10px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 18px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
         <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
           ${String(all.length).padStart(2,'0')}
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.2">
+          <div style="font-size:14px; font-weight:700; color:#000000; line-height:1.2">
             No. of Teams
-          </div>
-          <div style="font-size:12px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">
-            Enrolled student project teams
           </div>
         </div>
         <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
@@ -1992,61 +2041,46 @@ function department(){
       </div>
     </div>
 
-    <!-- Project List in Tabular Form with Theme Tabs -->
-    <section class="card" style="padding: 12px 18px; margin-bottom: 8px; border-radius: 12px;">
-      <!-- Theme Tabs: Theme 1 to Theme 6 + All Themes -->
-      <div class="tabs theme-tabs-bar" style="display:flex; flex-wrap:wrap; gap:6px; margin: 0 0 8px;">
-        <button class="tab-btn theme-tab-btn ${activeThemeTab===1?'active':''}" data-theme="1" onclick="selectThemeTab(1)">
-          Theme 1 (4)
-        </button>
-        <button class="tab-btn theme-tab-btn ${activeThemeTab===2?'active':''}" data-theme="2" onclick="selectThemeTab(2)">
-          Theme 2 (4)
-        </button>
-        <button class="tab-btn theme-tab-btn ${activeThemeTab===3?'active':''}" data-theme="3" onclick="selectThemeTab(3)">
-          Theme 3 (5)
-        </button>
-        <button class="tab-btn theme-tab-btn ${activeThemeTab===4?'active':''}" data-theme="4" onclick="selectThemeTab(4)">
-          Theme 4 (6)
-        </button>
-        <button class="tab-btn theme-tab-btn ${activeThemeTab===5?'active':''}" data-theme="5" onclick="selectThemeTab(5)">
-          Theme 5 (4)
-        </button>
-        <button class="tab-btn theme-tab-btn ${activeThemeTab===6?'active':''}" data-theme="6" onclick="selectThemeTab(6)">
-          Theme 6 (10)
-        </button>
-        <button class="tab-btn theme-tab-btn ${activeThemeTab==='all'?'active':''}" data-theme="all" onclick="selectThemeTab('all')">
-          All Themes (33)
+    <section class="card" style="padding: 20px 22px; margin-bottom: 8px; border-radius: 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <h2 style="font-size:17px; font-weight:800; color:#000000; margin:0">
+          Project Themes
+        </h2>
+        <button class="textbtn" style="font-size:13px; font-weight:700; color:var(--brand); cursor:pointer" onclick="openThemePage('all')">
+          View All Projects (${all.length}) →
         </button>
       </div>
 
-      <!-- Active Theme Summary Banner -->
-      <div id="active-theme-banner" style="display:flex; align-items:center; justify-content:space-between; padding: 6px 14px; background:var(--brand-subtle); border: 1px solid var(--brand-light); border-radius: 8px; margin-bottom: 8px;">
-        <div>
-          <span id="active-theme-text" style="font-size:14px; font-weight:700; color:var(--brand); display:block; line-height:1.25">
-            ${getThemeTabTitle(activeThemeTab)}
-          </span>
-          <span style="font-size:12px; color:var(--muted)">Sequence preserves exact university roster order from Excel</span>
-        </div>
-        <span id="active-theme-count" class="tag" style="background:#ffffff; color:var(--brand); border-color:var(--brand); font-weight:700; font-size:13px; padding:3px 10px">
-          ${getThemeTabCount(activeThemeTab)} Projects
-        </span>
-      </div>
-
-      <div class="tablewrap" style="max-height: calc(100vh - 290px); overflow-y: auto;">
-        <table class="roster compact-roster" id="hod-projects-table">
-          <thead style="position: sticky; top: 0; z-index: 10;">
-            <tr>
-              <th style="padding: 10px 14px; font-size: 13px;">Project Title</th>
-              <th style="width:170px; padding: 10px 14px; font-size: 13px;">Guide</th>
-              <th style="width:230px; padding: 10px 14px; font-size: 13px;">Team Members</th>
-              <th style="width:105px; text-align:center; padding: 10px 14px; font-size: 13px;">Team No.</th>
-              <th style="width:160px; text-align:center; padding: 10px 14px; font-size: 13px;">Project Portfolio</th>
-            </tr>
-          </thead>
-          <tbody id="hod-project-rows">
-            ${hodProjectRows()}
-          </tbody>
-        </table>
+      <div class="theme-cards-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;">
+        ${[1, 2, 3, 4, 5, 6].map(no => {
+          const info = THEME_INFO[no];
+          const count = getThemeTabCount(no);
+          return `
+            <article class="theme-card-item" onclick="openThemePage(${no})" style="cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; transition:all 0.2s ease; box-shadow:var(--shadow-xs); display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+                  <span class="tag" style="background:var(--brand-subtle); color:var(--brand); font-weight:800; font-size:12px; padding:3px 9px; border-radius:6px">
+                    Theme ${no}
+                  </span>
+                  <span style="font-size:12.5px; font-weight:700; color:#000000">
+                    ${count} Projects
+                  </span>
+                </div>
+                <h3 style="font-size:15.5px; font-weight:800; color:#000000; margin:0 0 6px; line-height:1.35">
+                  Theme ${no} : ${esc(info.name)}
+                </h3>
+                <p style="font-size:12.5px; color:#444444; margin:0; line-height:1.55">
+                  ${esc(info.desc || '')}
+                </p>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:flex-end; padding-top:10px; border-top:1px solid var(--line);">
+                <span style="color:var(--brand); font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:4px">
+                  View Projects &amp; Details →
+                </span>
+              </div>
+            </article>
+          `;
+        }).join('')}
       </div>
     </section>
   `;
