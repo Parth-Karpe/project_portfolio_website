@@ -2,42 +2,943 @@
 const workspaceKeys=['members','guide','forms','repo','stage','unlocked','status1','status2','feedback','score','reviews','questions','answers','activities','messages','mentorMessages','media','questionStage','questionSnapshot','vivaSubmissions'];
 const clone=x=>JSON.parse(JSON.stringify(x));
 function newTeamWorkspace(team){const w=initial();Object.assign(w,{media:[],messages:[],mentorMessages:[],reviews:{},vivaRecords:[]});w.members=team.members.map((m,i)=>({...m,role:i===0?'Team Lead':'Team Member',github:'https://github.com',skills:'Add skills',contribution:'Add individual responsibilities'}));w.guide=team.faculty;w.forms[1]={title:team.title,problem:'',users:'',research:'',objectives:'',solution:'',success:'',evidence:''};w.forms[2]={functional:'',nonfunctional:'',architecture:'',implementation:'',testing:'',results:'',reflection:'',evidence:''};w.activities=[{text:'CS AI team workspace created',time:new Date().toLocaleString()}];const result={};workspaceKeys.forEach(k=>{if(w[k]!==undefined)result[k]=w[k]});return result}
-function seedTeams(){return [
-  // Theme 1: Intelligent Systems & Optimization (3 teams)
-  {id:'01',faculty:'Amit K',topic:'Intelligent Systems & Optimization',title:'Multi-Agent Warehouse Routing & Logistics System',members:[{name:'Kunal Sharma',usn:'01FE23BCS011'},{name:'Meera Joshi',usn:'01FE23BCS012'},{name:'Rahul Verma',usn:'01FE23BCS013'},{name:'Ananya Sen',usn:'01FE23BCS014'}],sample:true},
-  {id:'02',faculty:'Amit K',topic:'Intelligent Systems & Optimization',title:'Dynamic Traffic Flow Optimization with Reinforcement Learning',members:[{name:'Rohan Kulkarni',usn:'01FE23BCS021'},{name:'Pooja Hegde',usn:'01FE23BCS022'},{name:'Aditya Deshmukh',usn:'01FE23BCS023'},{name:'Neha Patil',usn:'01FE23BCS024'}],sample:true},
-  {id:'03',faculty:'Amit K',topic:'Intelligent Systems & Optimization',title:state.forms?.[1]?.title||'Adaptive Academic Timetable Optimization',members:state.members.map(m=>({name:m.name,usn:m.usn})),sample:false},
-
-  // Theme 2: Computer Vision & Healthcare (3 teams)
-  {id:'04',faculty:'Dr. Priya Rao',topic:'Computer Vision & Healthcare',title:'Real-Time Surgical Instrument Segmentation in Laparoscopy',members:[{name:'Vikram Rao',usn:'01FE23BCS041'},{name:'Shruti Pai',usn:'01FE23BCS042'},{name:'Gaurav Bhat',usn:'01FE23BCS043'},{name:'Divya Kamath',usn:'01FE23BCS044'}],sample:true},
-  {id:'05',faculty:'Dr. Priya Rao',topic:'Computer Vision & Healthcare',title:'Diabetic Retinopathy Screening with Vision Transformers',members:[{name:'Siddharth Shenoy',usn:'01FE23BCS051'},{name:'Kavita Nair',usn:'01FE23BCS052'},{name:'Abhay Nayak',usn:'01FE23BCS053'},{name:'Priyanka Prabhu',usn:'01FE23BCS054'}],sample:true},
-  {id:'07',faculty:'Dr. Priya Rao',topic:'Computer Vision & Healthcare',title:'Plant Disease Detection with Explainable AI',members:[{name:'Aarav Patil',usn:'DEMO-CSAI-201'},{name:'Diya Shetty',usn:'DEMO-CSAI-202'},{name:'Ishaan Naik',usn:'DEMO-CSAI-203'},{name:'Kavya Joshi',usn:'DEMO-CSAI-204'}],sample:true},
-
-  // Theme 3: Natural Language Processing (3 teams)
-  {id:'08',faculty:'Dr. Sneha Kulkarni',topic:'Natural Language Processing',title:'Low-Resource Indic Neural Machine Translation Engine',members:[{name:'Chirag Mehta',usn:'01FE23BCS081'},{name:'Snehal Kadam',usn:'01FE23BCS082'},{name:'Varun Shinde',usn:'01FE23BCS083'},{name:'Mansi Gokhale',usn:'01FE23BCS084'}],sample:true},
-  {id:'10',faculty:'Dr. Sneha Kulkarni',topic:'Natural Language Processing',title:'Legal Contract Clause Extraction & Automated Summarization',members:[{name:'Harsh Vardhan',usn:'01FE23BCS105'},{name:'Isha Roy',usn:'01FE23BCS106'},{name:'Naveen Reddy',usn:'01FE23BCS107'},{name:'Deepa Menon',usn:'01FE23BCS108'}],sample:true},
-  {id:'12',faculty:'Dr. Sneha Kulkarni',topic:'Natural Language Processing',title:'Multilingual Campus Helpdesk Assistant',members:[{name:'Neel Desai',usn:'DEMO-CSAI-301'},{name:'Riya Bhat',usn:'DEMO-CSAI-302'},{name:'Aditya Hegde',usn:'DEMO-CSAI-303'},{name:'Tanvi Rao',usn:'DEMO-CSAI-304'}],sample:true},
-
-  // Theme 4: Responsible AI & Security (3 teams)
-  {id:'14',faculty:'Dr. Priya Rao',topic:'Responsible AI & Security',title:'Adversarial Robustness Benchmark for Autonomous Driving',members:[{name:'Arjun Saxena',usn:'01FE23BCS141'},{name:'Rhea Dsouza',usn:'01FE23BCS142'},{name:'Karan Malhotra',usn:'01FE23BCS143'},{name:'Bhavna Iyer',usn:'01FE23BCS144'}],sample:true},
-  {id:'16',faculty:'Dr. Sneha Kulkarni',topic:'Responsible AI & Security',title:'Privacy-Preserving Federated Learning for Multi-Hospital Scans',members:[{name:'Mohit Agrawal',usn:'01FE23BCS161'},{name:'Alisha Khan',usn:'01FE23BCS162'},{name:'Pranav Gupta',usn:'01FE23BCS163'},{name:'Simran Kaur',usn:'01FE23BCS164'}],sample:true},
-  {id:'18',faculty:'Dr. Priya Rao',topic:'Responsible AI & Security',title:'Bias Audit Toolkit for Student Recommendation Systems',members:[{name:'Om Kulkarni',usn:'DEMO-CSAI-401'},{name:'Anvi Kamat',usn:'DEMO-CSAI-402'},{name:'Yash More',usn:'DEMO-CSAI-403'},{name:'Sara Patil',usn:'DEMO-CSAI-404'}],sample:true}
-];}
+function seedTeams(){
+  return [
+  {
+    "id": "A-01",
+    "faculty": "Ms.Jyothi Patil",
+    "topic": "Theme 1: Data Storage and Retrieval Systems",
+    "theme_no": 1,
+    "theme_name": "Data Storage and Retrieval Systems",
+    "title": "Mini RDBMS Engine with Query Processing & Transaction Support",
+    "members": [
+      {
+        "name": "Bhoomi B",
+        "usn": "01FE24BCI044"
+      },
+      {
+        "name": "Sneha S",
+        "usn": "01FE24BCI061"
+      },
+      {
+        "name": "Soumya P",
+        "usn": "01FE24BCI005"
+      },
+      {
+        "name": "Shubham M",
+        "usn": "01FE24BCI083"
+      }
+    ],
+    "sample": true,
+    "excel_order": 1
+  },
+  {
+    "id": "B-04",
+    "faculty": "Ms.Umadevi F M",
+    "topic": "Theme 1: Data Storage and Retrieval Systems",
+    "theme_no": 1,
+    "theme_name": "Data Storage and Retrieval Systems",
+    "title": "Multi-Process Search Engine with Persistent Index",
+    "members": [
+      {
+        "name": "Aditya Gavimath",
+        "usn": "01FE24BCI120"
+      },
+      {
+        "name": "Arun Hadimani",
+        "usn": "01FE24BCI106"
+      },
+      {
+        "name": "Kartik Hegde",
+        "usn": "01FE24BCI107"
+      },
+      {
+        "name": "Prajwal B",
+        "usn": "01FE25BCI701"
+      }
+    ],
+    "sample": true,
+    "excel_order": 2
+  },
+  {
+    "id": "B-05",
+    "faculty": "Ms.Shrushti Gani",
+    "topic": "Theme 1: Data Storage and Retrieval Systems",
+    "theme_no": 1,
+    "theme_name": "Data Storage and Retrieval Systems",
+    "title": "Persistent Key-Value Storage Engine",
+    "members": [
+      {
+        "name": "Keerthana K",
+        "usn": "01FE24BCI118"
+      },
+      {
+        "name": "Sukanya",
+        "usn": "01FE24BCI108"
+      },
+      {
+        "name": "Pooja",
+        "usn": "01FE24BCI105"
+      },
+      {
+        "name": "Sakshi",
+        "usn": "01FE24BCI109"
+      }
+    ],
+    "sample": true,
+    "excel_order": 3
+  },
+  {
+    "id": "A-17",
+    "faculty": "Ms.Pooja P Shettar",
+    "topic": "Theme 1: Data Storage and Retrieval Systems",
+    "theme_no": 1,
+    "theme_name": "Data Storage and Retrieval Systems",
+    "title": "Distributed File Metadata & Access Management Engine",
+    "members": [
+      {
+        "name": "Rohan Baddur",
+        "usn": "01FE24BCI047"
+      },
+      {
+        "name": "Adarsh Benawadi",
+        "usn": "01FE24BCI063"
+      },
+      {
+        "name": "Sandesh Tonni",
+        "usn": "01FE24BCI048"
+      }
+    ],
+    "sample": true,
+    "excel_order": 4
+  },
+  {
+    "id": "A-08",
+    "faculty": "Ms.Sneha Varur",
+    "topic": "Theme 2: Data Processing and Analytics Systems",
+    "theme_no": 2,
+    "theme_name": "Data Processing and Analytics Systems",
+    "title": "Large-Scale Dataset Profiling & Data Quality Engine",
+    "members": [
+      {
+        "name": "Anupriya S",
+        "usn": "01FE24BCI046"
+      },
+      {
+        "name": "Pavitra J",
+        "usn": "01FE24BCI049"
+      },
+      {
+        "name": "Anushree A",
+        "usn": "01FE24BCI050"
+      },
+      {
+        "name": "Sahana A",
+        "usn": "01FE24BCI030"
+      }
+    ],
+    "sample": true,
+    "excel_order": 5
+  },
+  {
+    "id": "A-09",
+    "faculty": "Ms.Sneha Varur",
+    "topic": "Theme 2: Data Processing and Analytics Systems",
+    "theme_no": 2,
+    "theme_name": "Data Processing and Analytics Systems",
+    "title": "Multi-Source Data Integration & Entity Resolution Engine",
+    "members": [
+      {
+        "name": "Varsha K",
+        "usn": "01FE24BCI082"
+      },
+      {
+        "name": "Gayathri Davara",
+        "usn": "01FE24BCI068"
+      },
+      {
+        "name": "Krupa Akki",
+        "usn": "01FE24BCI057"
+      },
+      {
+        "name": "Srushti Shetti",
+        "usn": "01FE24BCI002"
+      }
+    ],
+    "sample": true,
+    "excel_order": 6
+  },
+  {
+    "id": "A-13",
+    "faculty": "Ms.Umadevi F M",
+    "topic": "Theme 2: Data Processing and Analytics Systems",
+    "theme_no": 2,
+    "theme_name": "Data Processing and Analytics Systems",
+    "title": "Distributed Event Processing & Notification Engine",
+    "members": [
+      {
+        "name": "Avinash B Z",
+        "usn": "01FE24BCI045"
+      },
+      {
+        "name": "Sagar B U",
+        "usn": "01FE24BCI054"
+      },
+      {
+        "name": "Ramesh S K",
+        "usn": "01FE24BCI039"
+      },
+      {
+        "name": "ABHINANDAN",
+        "usn": "01FE24BCI052"
+      }
+    ],
+    "sample": true,
+    "excel_order": 7
+  },
+  {
+    "id": "B-10",
+    "faculty": "Ms.Umadevi F M",
+    "topic": "Theme 2: Data Processing and Analytics Systems",
+    "theme_no": 2,
+    "theme_name": "Data Processing and Analytics Systems",
+    "title": "Large-Scale Log Processing & Analytics Engine",
+    "members": [
+      {
+        "name": "Ananya Bhat",
+        "usn": "01FE24BCI117"
+      },
+      {
+        "name": "Priya Kshirsagar",
+        "usn": "01FE24BCI110"
+      },
+      {
+        "name": "Gurusiddeshwar N",
+        "usn": "01FE25BCI710"
+      },
+      {
+        "name": "Amit K",
+        "usn": "01FE24BCI090"
+      }
+    ],
+    "sample": true,
+    "excel_order": 8
+  },
+  {
+    "id": "A-10",
+    "faculty": "Mr.Dheerajkumar",
+    "topic": "Theme 3: System Software and Development Tools",
+    "theme_no": 3,
+    "theme_name": "System Software and Development Tools",
+    "title": "Dependency-Aware Parallel Build System",
+    "members": [
+      {
+        "name": "Prathamesh Eedigi",
+        "usn": "01FE24BCI006"
+      },
+      {
+        "name": "Sunayana Kamat",
+        "usn": "01FE24BCI073"
+      },
+      {
+        "name": "Jaideep",
+        "usn": "01FE24BCI084"
+      },
+      {
+        "name": "Nilaksha",
+        "usn": "01FE24BCI087"
+      }
+    ],
+    "sample": true,
+    "excel_order": 9
+  },
+  {
+    "id": "A-02",
+    "faculty": "Ms.N D Kulenavar",
+    "topic": "Theme 3: System Software and Development Tools",
+    "theme_no": 3,
+    "theme_name": "System Software and Development Tools",
+    "title": "C Language Compiler & Code Generation Engine",
+    "members": [
+      {
+        "name": "Vaishnavi K",
+        "usn": "01FE24BCI051"
+      },
+      {
+        "name": "Shreenidhi D",
+        "usn": "01FE24BCI042"
+      },
+      {
+        "name": "Suhas K",
+        "usn": "01FE24BCI019"
+      },
+      {
+        "name": "Sanket  Y U",
+        "usn": "01FE24BCI037"
+      }
+    ],
+    "sample": true,
+    "excel_order": 10
+  },
+  {
+    "id": "A-14",
+    "faculty": "Ms.Arundati Aralimatti",
+    "topic": "Theme 3: System Software and Development Tools",
+    "theme_no": 3,
+    "theme_name": "System Software and Development Tools",
+    "title": "Mini Kernel with Process, Memory & File Management",
+    "members": [
+      {
+        "name": "BHAVANA",
+        "usn": "01FE24BCI036"
+      },
+      {
+        "name": "ZAKIYA",
+        "usn": "01FE24BCI038"
+      },
+      {
+        "name": "PRADEEP",
+        "usn": "01FE24BCI040"
+      },
+      {
+        "name": "VIKITA R",
+        "usn": "01FE24BCI055"
+      }
+    ],
+    "sample": true,
+    "excel_order": 11
+  },
+  {
+    "id": "B-01",
+    "faculty": "Mr.Dheerajkumar",
+    "topic": "Theme 3: System Software and Development Tools",
+    "theme_no": 3,
+    "theme_name": "System Software and Development Tools",
+    "title": "Incremental Build & Dependency Resolution Tool",
+    "members": [
+      {
+        "name": "Sankalp Patil",
+        "usn": "01FE24BCI095"
+      },
+      {
+        "name": "Sai Jarkiholi",
+        "usn": "01FE24BCI014"
+      },
+      {
+        "name": "Pranav Naik",
+        "usn": "01FE24BCI100"
+      },
+      {
+        "name": "Abdul Khadar I",
+        "usn": "01FE24BCI102"
+      }
+    ],
+    "sample": true,
+    "excel_order": 12
+  },
+  {
+    "id": "B-07",
+    "faculty": "Ms.N D Kulenavar",
+    "topic": "Theme 3: System Software and Development Tools",
+    "theme_no": 3,
+    "theme_name": "System Software and Development Tools",
+    "title": "Java Compiler & Bytecode Generation Engine",
+    "members": [
+      {
+        "name": "Chaitanya",
+        "usn": "01FE24BCI098"
+      },
+      {
+        "name": "Soumya",
+        "usn": "01FE24BCI121"
+      },
+      {
+        "name": "Chaitra",
+        "usn": "01FE25BCI706"
+      },
+      {
+        "name": "Shridevi",
+        "usn": "01FE24BCI103"
+      }
+    ],
+    "sample": true,
+    "excel_order": 13
+  },
+  {
+    "id": "A-05",
+    "faculty": "Ms.Sadaf Anjum Savanu",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "Distributed Peer Search & File Sharing Engine",
+    "members": [
+      {
+        "name": "Mudit J Nayak",
+        "usn": "01FE24BCI076"
+      },
+      {
+        "name": "Anusha Hebasur",
+        "usn": "01FE24BCI009"
+      },
+      {
+        "name": "Kartik NHM",
+        "usn": "01FE24BCI072"
+      },
+      {
+        "name": "Aditya Patil",
+        "usn": "01FE24BCI059"
+      }
+    ],
+    "sample": true,
+    "excel_order": 14
+  },
+  {
+    "id": "A-07",
+    "faculty": "Ms.Pooja P Shettar",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "Network Traffic Monitoring & Protocol Analysis Tool",
+    "members": [
+      {
+        "name": "Chhavi Mishra",
+        "usn": "01FE24BCI066"
+      },
+      {
+        "name": "Hrishikesh Patil",
+        "usn": "01FE24BCI043"
+      },
+      {
+        "name": "Vaibhav P",
+        "usn": "01FE24BCI074"
+      },
+      {
+        "name": "M Janaki",
+        "usn": "01FE24BCI067"
+      }
+    ],
+    "sample": true,
+    "excel_order": 15
+  },
+  {
+    "id": "B-11",
+    "faculty": "Mr.Pavankumar Saunshi",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "DNS Resolver & Caching Server",
+    "members": [
+      {
+        "name": "Vageesh Mathad",
+        "usn": "01FE24BCI008"
+      },
+      {
+        "name": "Mehak sayed Yusuf",
+        "usn": "01FE24BCI012"
+      },
+      {
+        "name": "Joel Biju",
+        "usn": "01FE24BCI021"
+      }
+    ],
+    "sample": true,
+    "excel_order": 16
+  },
+  {
+    "id": "B-12",
+    "faculty": "Ms.Sadaf Anjum Savanur",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "HTTP Proxy Server with Caching",
+    "members": [
+      {
+        "name": "Adarsh MR",
+        "usn": "01FE24BCI011"
+      },
+      {
+        "name": "Krish Janagekar",
+        "usn": "01FE24BCI097"
+      },
+      {
+        "name": "Vivek Raikar",
+        "usn": "01FE25BCI704"
+      },
+      {
+        "name": "Akash",
+        "usn": "01FE24BCI123"
+      }
+    ],
+    "sample": true,
+    "excel_order": 17
+  },
+  {
+    "id": "B-13",
+    "faculty": "Ms.Pooja P Shettar",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "Resilient Multi-Peer File Distribution & Recovery Engine",
+    "members": [
+      {
+        "name": "Vineet",
+        "usn": "01FE24BCI093"
+      },
+      {
+        "name": "Manasa",
+        "usn": "01FE24BCI113"
+      },
+      {
+        "name": "Mahadev P",
+        "usn": "01FE24BCI116"
+      },
+      {
+        "name": "Arihant A N",
+        "usn": "01FE24BCI092"
+      }
+    ],
+    "sample": true,
+    "excel_order": 18
+  },
+  {
+    "id": "B-14",
+    "faculty": "Mr.Amit Kachavimath",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "Adaptive Video Streaming & Buffer Management Engine",
+    "members": [
+      {
+        "name": "Renuka",
+        "usn": "01FE24BCI119"
+      },
+      {
+        "name": "Divya",
+        "usn": "01FE24BCI094"
+      },
+      {
+        "name": "B Bhagyashree",
+        "usn": "01FE24BCI104"
+      },
+      {
+        "name": "Akshay Bhat",
+        "usn": "01FE24BCI024"
+      }
+    ],
+    "sample": true,
+    "excel_order": 19
+  },
+  {
+    "id": "A-06",
+    "faculty": "Mr.Mallikarjun Akki",
+    "topic": "Theme 5: Algorithmic and Optimization Systems",
+    "theme_no": 5,
+    "theme_name": "Algorithmic and Optimization Systems",
+    "title": "Constraint-Based Academic Timetable Scheduling Engine",
+    "members": [
+      {
+        "name": "Srujana patil",
+        "usn": "01FE24BCI020"
+      },
+      {
+        "name": "Yash Raj",
+        "usn": "01FE24BCI064"
+      },
+      {
+        "name": "Yashwanth Reddy",
+        "usn": "01FE24BCI010"
+      },
+      {
+        "name": "Abhinav Raj",
+        "usn": "01FE24BCI058"
+      }
+    ],
+    "sample": true,
+    "excel_order": 20
+  },
+  {
+    "id": "A-04",
+    "faculty": "Mr.Maheshgouda Patil",
+    "topic": "Theme 5: Algorithmic and Optimization Systems",
+    "theme_no": 5,
+    "theme_name": "Algorithmic and Optimization Systems",
+    "title": "Resource Packing & Allocation Optimization Engine",
+    "members": [
+      {
+        "name": "Sumanth Patil",
+        "usn": "01FE24BCI085"
+      },
+      {
+        "name": "Neil Mascarenhas",
+        "usn": "01FE24BCI070"
+      },
+      {
+        "name": "Dasari Joshua",
+        "usn": "01FE24BCI078"
+      },
+      {
+        "name": "Akash Dani",
+        "usn": "01FE24BCI081"
+      }
+    ],
+    "sample": true,
+    "excel_order": 21
+  },
+  {
+    "id": "B-03",
+    "faculty": "Mr.Mallikarjun Akki",
+    "topic": "Theme 5: Algorithmic and Optimization Systems",
+    "theme_no": 5,
+    "theme_name": "Algorithmic and Optimization Systems",
+    "title": "Route Planning & Network Optimization Engine",
+    "members": [
+      {
+        "name": "Ankush",
+        "usn": "01FE24BCI096"
+      },
+      {
+        "name": "Shrikar",
+        "usn": "01FE24BCI013"
+      },
+      {
+        "name": "P Sai sri ram",
+        "usn": "01FE24BCI033"
+      },
+      {
+        "name": "Shreya u",
+        "usn": "01FE24BCI032"
+      }
+    ],
+    "sample": true,
+    "excel_order": 22
+  },
+  {
+    "id": "B-06",
+    "faculty": "Mr.Pavankumar Saunshi",
+    "topic": "Theme 5: Algorithmic and Optimization Systems",
+    "theme_no": 5,
+    "theme_name": "Algorithmic and Optimization Systems",
+    "title": "Dynamic Task Assignment & Scheduling Engine",
+    "members": [
+      {
+        "name": "Alsaba A",
+        "usn": "01FE25BCI705"
+      },
+      {
+        "name": "Rakshita K",
+        "usn": "01FE25BCI708"
+      },
+      {
+        "name": "Omkar M",
+        "usn": "01FE25BCI703"
+      },
+      {
+        "name": "Harsh H",
+        "usn": "01FE25BCI707"
+      }
+    ],
+    "sample": true,
+    "excel_order": 23
+  },
+  {
+    "id": "A-03",
+    "faculty": "Mr.Amit Kachavimath",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Smart Campus Lab & Resource Optimizer",
+    "members": [
+      {
+        "name": "Vedant Khot",
+        "usn": "01FE24BCI028"
+      },
+      {
+        "name": "Nupur Bagave",
+        "usn": "01FE24BCI029"
+      },
+      {
+        "name": "Parth Karpe",
+        "usn": "01FE24BCI062"
+      },
+      {
+        "name": "Sachi Aratti",
+        "usn": "01FE24BCI003"
+      }
+    ],
+    "sample": false,
+    "excel_order": 24
+  },
+  {
+    "id": "A-11",
+    "faculty": "Ms.Pooja P Shettar",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Distributed Job Queue & Task Processing Engine",
+    "members": [
+      {
+        "name": "Adarsh W",
+        "usn": "01FE24BCI071"
+      },
+      {
+        "name": "Mansi D",
+        "usn": "01FE24BCI115"
+      },
+      {
+        "name": "Shravya A",
+        "usn": "01FE24BCI001"
+      },
+      {
+        "name": "Tanamayee K",
+        "usn": "01FE24BCI007"
+      }
+    ],
+    "sample": true,
+    "excel_order": 25
+  },
+  {
+    "id": "A-12",
+    "faculty": "Ms.Sneha Varur",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Concurrent Booking & Resource Allocation Engine",
+    "members": [
+      {
+        "name": "Akshata Patil",
+        "usn": "01FE24BCI088"
+      },
+      {
+        "name": "Srujana B",
+        "usn": "01FE24BCI041"
+      },
+      {
+        "name": "Mythri Gaded",
+        "usn": "01FE24BCI031"
+      },
+      {
+        "name": "Vandana A M",
+        "usn": "01FE24BCI075"
+      }
+    ],
+    "sample": true,
+    "excel_order": 26
+  },
+  {
+    "id": "A-15",
+    "faculty": "Ms.Soumya Patil",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Concurrent Service Request & Dispatch Engine",
+    "members": [
+      {
+        "name": "Monika M B",
+        "usn": "01FE24BCI035"
+      },
+      {
+        "name": "Akshatha M",
+        "usn": "01FE24BCI080"
+      },
+      {
+        "name": "Kalavva  MANVI",
+        "usn": "01FE24BCI056"
+      },
+      {
+        "name": "Abhishek N",
+        "usn": "01FE23BCI112"
+      }
+    ],
+    "sample": true,
+    "excel_order": 27
+  },
+  {
+    "id": "A-16",
+    "faculty": "Ms.N D Kulenavar",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Multi-User Resource Reservation & Scheduling Engine",
+    "members": [
+      {
+        "name": "Vishal p k",
+        "usn": "01FE24BCI060"
+      },
+      {
+        "name": "Vinayak s k",
+        "usn": "01FE24BCI086"
+      },
+      {
+        "name": "Manoj b kamath",
+        "usn": "01FE24BCI077"
+      },
+      {
+        "name": "Sushilendra E",
+        "usn": "01FE24BCI053"
+      }
+    ],
+    "sample": true,
+    "excel_order": 28
+  },
+  {
+    "id": "A-18",
+    "faculty": "Ms.Umadevi F M",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Concurrent Helpdesk Ticketing & Service Dispatch System",
+    "members": [
+      {
+        "name": "Shifa",
+        "usn": "01FE24BCI004"
+      },
+      {
+        "name": "Bhakti",
+        "usn": "01FE24BCU079"
+      },
+      {
+        "name": "Chinmayee",
+        "usn": "NONE"
+      },
+      {
+        "name": "Vinay",
+        "usn": "NONE"
+      }
+    ],
+    "sample": true,
+    "excel_order": 29
+  },
+  {
+    "id": "B-02",
+    "faculty": "Ms.Sneha Varur",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Transaction-Safe Multi-User Booking & Waitlist Engine",
+    "members": [
+      {
+        "name": "Abhinandan Patil",
+        "usn": "01FE24BCI034"
+      },
+      {
+        "name": "Preetam N G",
+        "usn": "01FE24BCI018"
+      },
+      {
+        "name": "Chanabasappa Metgud",
+        "usn": "01FE24BCI027"
+      },
+      {
+        "name": "Sai Aaryan Muktineni",
+        "usn": "01FE24BCI025"
+      }
+    ],
+    "sample": true,
+    "excel_order": 30
+  },
+  {
+    "id": "B-08",
+    "faculty": "Ms.Soumya Patil",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Concurrent Service Request & Dispatch Engine",
+    "members": [
+      {
+        "name": "Chirag Salecha",
+        "usn": "01FE24BCI089"
+      },
+      {
+        "name": "Achyuth RH",
+        "usn": "01FE24BCI091"
+      },
+      {
+        "name": "Abhijit RH",
+        "usn": "01FE25BCI709"
+      },
+      {
+        "name": "Sagar PM",
+        "usn": "01FE25BCI712"
+      }
+    ],
+    "sample": true,
+    "excel_order": 31
+  },
+  {
+    "id": "B-09",
+    "faculty": "Ms.N D Kulenavar",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Multi-User Resource Reservation & Scheduling Engine",
+    "members": [
+      {
+        "name": "Jayapal Mukre",
+        "usn": "01FE24BCI022"
+      },
+      {
+        "name": "Amogh Loni",
+        "usn": "01FE24BCI017"
+      },
+      {
+        "name": "Sammed Patil",
+        "usn": "01FE24BCI102"
+      },
+      {
+        "name": "Humera",
+        "usn": "01FE24BCI114"
+      }
+    ],
+    "sample": true,
+    "excel_order": 32
+  },
+  {
+    "id": "B-15",
+    "faculty": "Ms. Soumya Patil",
+    "topic": "Theme 6: Concurrent and Transactional Systems",
+    "theme_no": 6,
+    "theme_name": "Concurrent and Transactional Systems",
+    "title": "Concurrent Service Request and Dispatch Engine",
+    "members": [
+      {
+        "name": "Rohit",
+        "usn": "01FE23BCI084"
+      },
+      {
+        "name": "Suryakant",
+        "usn": "01FE23BCI046"
+      },
+      {
+        "name": "Saif Ali",
+        "usn": "01FE23BCI008"
+      },
+      {
+        "name": "Pranav T",
+        "usn": "01FE23BCI004"
+      }
+    ],
+    "sample": true,
+    "excel_order": 33
+  }
+];
+}
 function ensureDepartment(){
+  if(['Faculty Review','Discussion'].includes(page))page='Department';
   if(!state.department){state.department={name:'CS AI',hod:'CS AI HOD (demo)',facultyAdmin:'CS AI Faculty Admin (demo)'}}
   const seeds=seedTeams();
-  if(!state.teams||state.teams.length<12){
-    state.members[3].name='Sachi Aarati';state.members.forEach(m=>delete m.share);state.guide='Amit K';
-    if(!state.teams)state.teams=seeds;
-    else seeds.forEach(s=>{if(!state.teams.some(t=>t.id===s.id))state.teams.push(s)});
-    state.activeTeamId=state.activeTeamId||'03';state.workspaces=state.workspaces||{};state.facultyAccount=state.facultyAccount||'Amit K';
+  if(!state.teams||state.teams.length<33||state.excelVersion!==3){
+    state.teams=seeds;
+    state.excelVersion=3;
+    state.activeTeamId=state.teams.some(t=>t.id===state.activeTeamId)?state.activeTeamId:'A-03';
+    state.workspaces=state.workspaces||{};
+    state.facultyAccount=state.facultyAccount||'Mr.Amit Kachavimath';
     state.teams.forEach(t=>{
       t.department='CS AI';t.hod=state.department.hod;t.facultyAdmin=state.department.facultyAdmin;
-      if(t.id!=='03'&&!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
+      if(!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
     });
   }
-  state.version=3;state.members.forEach(m=>delete m.share);
-  state.teams.forEach(t=>{t.members.forEach(m=>delete m.share);if(t.members.every(m=>m.usn.startsWith('DEMO-')||m.usn.startsWith('01FE')))t.sample=t.id!=='03'});
+  state.version=3;
+  if(state.members) state.members.forEach(m=>delete m.share);
   state.facultyDirectory=state.facultyDirectory||[];
   [state,...Object.values(state.workspaces||{})].forEach(w=>{w.media=w.media||[];w.messages=w.messages||[];w.mentorMessages=w.mentorMessages||[];w.reviews=w.reviews||{};w.questions=w.questions||[];w.answers=w.answers||{};w.activities=w.activities||[]});
 }
@@ -49,7 +950,7 @@ save=function(){ensureDepartment();syncTeam();return saveLocalState()};
 function facultyNames(){return [...new Set([...state.teams.map(t=>t.faculty),...state.facultyDirectory.map(f=>f.name)])].sort()}
 function visibleTeams(){return state.role==='Faculty'?state.teams.filter(t=>t.faculty===state.facultyAccount):state.role==='Team Lead'?state.teams.filter(t=>t.id===state.activeTeamId):state.teams}
 function switchTeam(id){const next=state.teams.find(t=>t.id===id);if(!next||state.role==='Faculty'&&next.faculty!==state.facultyAccount)return toast('This team is not assigned to the selected faculty account.');save();const w=state.workspaces[id]||newTeamWorkspace(next);workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.activeTeamId=id;state.guide=next.faculty;state.members=state.members.map((m,i)=>({...m,name:next.members[i].name,usn:next.members[i].usn}));state.forms[1].title=next.title;selectedSection='';modal=null;save();render();window.scrollTo(0,0)}
-rolePages['Faculty Admin']=['Overview','Department','Team Portfolio','Design Journey','Faculty Review','Discussion'];
+rolePages['Faculty Admin']=['Overview','Department','Team Portfolio','Design Journey'];
 iconFor['Faculty Admin']='♙';
 currentIdentity=function(){if(state.role==='Faculty Admin')return state.department.facultyAdmin;if(state.role==='Faculty')return state.facultyAccount;if(state.role==='HOD')return state.department.hod;if(state.role==='Admin')return 'CS AI Administrator';return state.members[0].name};
 const changeRole=switchRole;
@@ -59,9 +960,10 @@ const actualDecide=decide;
 decide=function(approve){if(state.role!=='Faculty'||activeTeam()?.faculty!==state.facultyAccount)return toast('Only the assigned faculty guide can review this team.');actualDecide(approve)};
 const decideSend=sendDiscussion;
 sendDiscussion=function(){if(state.role==='Faculty'&&activeTeam()?.faculty!==state.facultyAccount)return;decideSend()};
-function accountStrip(){const available=state.role==='Faculty'?visibleTeams():state.teams;return `<div class="account-strip"><div><span class="tag">CS AI</span> <span class="mini">HOD: <strong>${esc(state.department.hod)}</strong> &nbsp;·&nbsp; Faculty Admin: <strong>${esc(state.department.facultyAdmin)}</strong></span></div><div class="account-controls">${state.role==='Faculty'?`<label for="faculty-account">Demo faculty account</label><select id="faculty-account" onchange="selectFaculty(this.value)">${facultyNames().map(n=>`<option ${n===state.facultyAccount?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}<label for="team-account">${state.role==='Team Lead'?'Demo team account':'Active team'}</label><select id="team-account" onchange="switchTeam(this.value)">${available.map(t=>`<option value="${esc(t.id)}" ${t.id===state.activeTeamId?'selected':''}>Team ${esc(t.id)} · ${esc(t.members[0].name)}</option>`).join('')}</select></div></div>`}
+function accountStrip(){
+  if(state.role==='HOD'||page==='Department') return '';const available=state.role==='Faculty'?visibleTeams():state.teams;return `<div class="account-strip"><div><span class="tag">CS AI</span> <span class="mini">HOD: <strong>${esc(state.department.hod)}</strong> &nbsp;·&nbsp; Faculty Admin: <strong>${esc(state.department.facultyAdmin)}</strong></span></div><div class="account-controls">${state.role==='Faculty'?`<label for="faculty-account">Demo faculty account</label><select id="faculty-account" onchange="selectFaculty(this.value)">${facultyNames().map(n=>`<option ${n===state.facultyAccount?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}<label for="team-account">${state.role==='Team Lead'?'Demo team account':'Active team'}</label><select id="team-account" onchange="switchTeam(this.value)">${available.map(t=>`<option value="${esc(t.id)}" ${t.id===state.activeTeamId?'selected':''}>Team ${esc(t.id)} · ${esc(t.members[0].name)}</option>`).join('')}</select></div></div>`}
 const renderWorkspace=render;
-render=function(){ensureDepartment();if(page==='Faculty Admin')page='Overview';renderWorkspace();const main=$('.main');if(state.role==='Faculty'&&!visibleTeams().length){main.innerHTML=accountStrip()+heading('No teams assigned','This faculty account has no team allocation. Ask Admin or Faculty Admin to allocate a guide.');return}let html=main.innerHTML;if(['Design Journey','Faculty Review','Discussion'].includes(page)||page==='Overview'&&['Team Lead','Faculty'].includes(state.role))html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));main.innerHTML=html;main.insertAdjacentHTML('afterbegin',accountStrip());const f=$('#stageform');if(f){f.onsubmit=e=>{e.preventDefault();saveStage(true)};f.oninput=()=>{if(editableStage()){for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}if(['Design Journey','Evidence Library','Faculty Review'].includes(page))hydrateMedia()};
+render=function(){ensureDepartment();if(page==='Faculty Admin')page='Overview';renderWorkspace();const main=$('.main');if(state.role==='Faculty'&&!visibleTeams().length){main.innerHTML=accountStrip()+heading('No teams assigned','This faculty account has no team allocation. Ask Admin or Faculty Admin to allocate a guide.');return}let html=main.innerHTML;if(['Design Journey'].includes(page)||page==='Overview'&&['Team Lead','Faculty'].includes(state.role))html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));main.innerHTML=html;if(state.role!=='HOD'&&page!=='Department') main.insertAdjacentHTML('afterbegin',accountStrip());const f=$('#stageform');if(f){f.onsubmit=e=>{e.preventDefault();saveStage(true)};f.oninput=()=>{if(editableStage()){for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}if(['Design Journey','Evidence Library'].includes(page))hydrateMedia()};
 const teamOverview=overview;
 overview=function(){if(state.role==='Faculty Admin')return facultyAdminPanel();return teamOverview()};
 function getDomainKnowledge(t){
@@ -603,48 +1505,86 @@ function openTeamPortfolio(id){
   go('Team Portfolio');
 }
 
-function hodProjectRows(filter){
-  const term=(filter||'').toLowerCase();
-  const filtered=state.teams.filter(t=>
-    (t.topic||'').toLowerCase().includes(term)||
-    (t.title||'').toLowerCase().includes(term)||
-    (t.id||'').toLowerCase().includes(term)||
-    (t.faculty||'').toLowerCase().includes(term)||
-    t.members.some(m=>(m.name+' '+m.usn).toLowerCase().includes(term))
-  );
+let activeThemeTab = 1;
 
-  if(!filtered.length){
-    return '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">No matching projects found.</td></tr>';
+const THEME_INFO = {
+  1: { name: 'Data Storage and Retrieval Systems', count: 4 },
+  2: { name: 'Data Processing and Analytics Systems', count: 4 },
+  3: { name: 'System Software and Development Tools', count: 5 },
+  4: { name: 'Networked Systems and Tools', count: 6 },
+  5: { name: 'Algorithmic and Optimization Systems', count: 4 },
+  6: { name: 'Concurrent and Transactional Systems', count: 10 }
+};
+
+function getThemeTabTitle(tab){
+  if(tab === 'all') return 'All Themes · Complete CS AI Project Directory (33 Projects)';
+  const info = THEME_INFO[tab];
+  return info ? `Theme ${tab}: ${info.name}` : `Theme ${tab}`;
+}
+
+function getThemeTabCount(tab){
+  if(!state.teams) return 0;
+  if(tab === 'all') return state.teams.length;
+  return state.teams.filter(t => t.theme_no === Number(tab) || (t.topic||'').startsWith(`Theme ${tab}:`)).length;
+}
+
+function selectThemeTab(tab){
+  activeThemeTab = tab;
+  const tbody = document.getElementById('hod-project-rows');
+  if(tbody) tbody.innerHTML = hodProjectRows();
+  
+  document.querySelectorAll('.theme-tab-btn').forEach(btn => {
+    const btnTab = btn.getAttribute('data-theme');
+    const isAct = (btnTab === 'all' && tab === 'all') || (Number(btnTab) === Number(tab));
+    btn.classList.toggle('active', isAct);
+  });
+  
+  const bannerTitle = document.getElementById('active-theme-text');
+  const bannerCount = document.getElementById('active-theme-count');
+  if(bannerTitle && bannerCount){
+    bannerTitle.textContent = getThemeTabTitle(tab);
+    bannerCount.textContent = getThemeTabCount(tab) + ' Projects';
+  }
+}
+
+function hodProjectRows(){
+  let list = state.teams || [];
+  
+  // Filter by active theme tab first
+  if(activeThemeTab !== 'all'){
+    list = list.filter(t => t.theme_no === Number(activeThemeTab) || (t.topic||'').startsWith(`Theme ${activeThemeTab}:`));
+  }
+  
+  // Preserve exact sequence as in Excel sheet
+  list = list.slice().sort((a,b) => (a.excel_order || 0) - (b.excel_order || 0));
+
+  if(!list.length){
+    return '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted);font-size:13.5px">No projects found in this theme.</td></tr>';
   }
 
-  return filtered.map(t=>`
+  return list.map(t=>`
     <tr>
       <td>
-        <span class="portfolio-theme-pill" style="font-size:11px;padding:3px 9px;color:var(--brand);background:var(--brand-subtle);border-color:var(--brand-light)">
-          ${esc(t.topic)}
-        </span>
+        <strong style="color:var(--ink);font-size:14.5px;display:block;line-height:1.35">${esc(t.title)}</strong>
       </td>
       <td>
-        <strong style="color:var(--ink);font-size:13.5px;display:block;line-height:1.4">${esc(t.title)}</strong>
-      </td>
-      <td>
-        <span class="req-tag">Team ${esc(t.id)}</span>
+        <strong style="font-size:14px;color:var(--ink);display:block">${esc(t.faculty)}</strong>
+        <span style="font-size:12.5px;color:var(--muted)">Faculty Guide</span>
       </td>
       <td>
         <div style="display:flex;flex-direction:column;gap:3px">
-          ${t.members.map((m,i)=>`
-            <div style="font-size:12px;color:var(--ink);line-height:1.35">
-              <strong>${esc(m.name)}</strong> <small style="color:var(--muted)">(${esc(m.usn)})</small>
+          ${(t.members||[]).map((m,i)=>`
+            <div style="font-size:13.5px;color:var(--ink);font-weight:500;line-height:1.3">
+              ${esc(m.name)}
             </div>
           `).join('')}
         </div>
       </td>
-      <td>
-        <strong style="font-size:13px;color:var(--ink)">${esc(t.faculty)}</strong>
-        <span class="mini" style="display:block">Faculty Guide</span>
+      <td style="text-align:center">
+        <span class="req-tag" style="font-weight:700;font-size:13px;padding:3px 8px">Team ${esc(t.id)}</span>
       </td>
       <td style="text-align:center">
-        <button class="btn" style="padding:7px 14px;font-size:12px;white-space:nowrap" onclick="openTeamPortfolio('${esc(t.id)}')">
+        <button class="btn" style="padding:6px 14px;font-size:12.5px;white-space:nowrap;font-weight:600" onclick="openTeamPortfolio('${esc(t.id)}')">
           Project Portfolio →
         </button>
       </td>
@@ -652,181 +1592,152 @@ function hodProjectRows(filter){
   `).join('');
 }
 
-function filterHODProjects(q){
-  const tbody=document.getElementById('hod-project-rows');
-  if(tbody)tbody.innerHTML=hodProjectRows(q);
-}
-
 function downloadHODProjectCSVTemplate(){
-  const headers=['Theme','Project Title','Team No','Member 1 Name','Member 1 USN','Member 2 Name','Member 2 USN','Member 3 Name','Member 3 USN','Member 4 Name','Member 4 USN','Guide Name'];
-  const rows=state.teams.map(t=>[
-    t.topic,
-    t.title,
-    t.id,
-    t.members[0]?.name||'',t.members[0]?.usn||'',
-    t.members[1]?.name||'',t.members[1]?.usn||'',
-    t.members[2]?.name||'',t.members[2]?.usn||'',
-    t.members[3]?.name||'',t.members[3]?.usn||'',
-    t.faculty
+  const headers=['Theme','Project Title','Team No','Member 1 Name','Member 2 Name','Member 3 Name','Member 4 Name','Guide Name'];
+  const rows=(state.teams||[]).map(t=>[
+    t.topic||'',
+    t.title||'',
+    t.id||'',
+    t.members?.[0]?.name||'',
+    t.members?.[1]?.name||'',
+    t.members?.[2]?.name||'',
+    t.members?.[3]?.name||'',
+    t.faculty||''
   ]);
   const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
-  const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download='CS-AI-Project-List.csv';a.click();
+  a.href=url;
+  a.download='CS-AI-Project-List.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-async function importHODProjectCSV(input){
-  const file=input.files?.[0];
-  if(!file)return;
-  try{
-    const text=await file.text();
-    const lines=text.split(/\r?\n/).filter(line=>line.trim());
-    if(lines.length<2)return toast('CSV file is empty or missing headers.');
-    
-    const parseCSVRow=(r)=>{
-      let inQuote=false,cur='',res=[];
-      for(let i=0;i<r.length;i++){
-        const c=r[i];
-        if(c==='"'){inQuote=!inQuote;}
-        else if(c===','&&!inQuote){res.push(cur.trim());cur='';}
-        else{cur+=c;}
-      }
-      res.push(cur.trim());
-      return res.map(v=>v.replace(/^"|"$/g,'').trim());
-    };
-
-    const headers=parseCSVRow(lines[0]).map(normalHeader);
-    const themeIdx=headers.findIndex(h=>/theme|topic/i.test(h));
-    const titleIdx=headers.findIndex(h=>/title|project/i.test(h));
-    const teamIdx=headers.findIndex(h=>/team/i.test(h));
-    const guideIdx=headers.findIndex(h=>/guide|faculty/i.test(h));
-    
-    let count=0;
-    for(let i=1;i<lines.length;i++){
-      const cols=parseCSVRow(lines[i]);
-      if(cols.length<4||!cols.some(Boolean))continue;
-      
-      const topic=(themeIdx>=0?cols[themeIdx]:cols[0])||'Specialization Theme';
-      const title=(titleIdx>=0?cols[titleIdx]:cols[1])||'Project Title';
-      let id=(teamIdx>=0?cols[teamIdx]:cols[2])||String(i).padStart(2,'0');
-      id=id.replace(/^team[\s-]*/i,'').trim();
-      if(/^\d+$/.test(id))id=id.padStart(2,'0');
-      const faculty=(guideIdx>=0?cols[guideIdx]:cols[11])||'Amit K';
-      
-      const m1Name=cols[3]||'Member 1',m1Usn=cols[4]||'USN1';
-      const m2Name=cols[5]||'Member 2',m2Usn=cols[6]||'USN2';
-      const m3Name=cols[7]||'Member 3',m3Usn=cols[8]||'USN3';
-      const m4Name=cols[9]||'Member 4',m4Usn=cols[10]||'USN4';
-      
-      const members=[
-        {name:m1Name,usn:m1Usn.toUpperCase()},
-        {name:m2Name,usn:m2Usn.toUpperCase()},
-        {name:m3Name,usn:m3Usn.toUpperCase()},
-        {name:m4Name,usn:m4Usn.toUpperCase()}
-      ];
-      
-      let existing=state.teams.find(t=>t.id.toLowerCase()===id.toLowerCase());
-      if(existing){
-        existing.topic=topic;
-        existing.title=title;
-        existing.faculty=faculty;
-        existing.members=members;
-      }else{
-        const newTeam={
-          id,
-          department:'CS AI',
-          hod:state.department?.hod||'CS AI HOD',
-          facultyAdmin:state.department?.facultyAdmin||'CS AI Faculty Admin',
-          faculty,
-          topic,
-          title,
-          members,
-          sample:false
-        };
-        state.teams.push(newTeam);
-        state.workspaces[id]=newTeamWorkspace(newTeam);
-      }
-      count++;
-    }
-    save();
-    render();
-    toast(`✓ Successfully imported ${count} projects into the HOD Project List.`);
-  }catch(err){
-    toast('Error reading CSV: '+err.message);
-  }finally{
-    input.value='';
-  }
-}
-
 function department(){
-  const all=state.teams;
-  const uniqueThemes=[...new Set(all.map(t=>t.topic))].filter(Boolean);
-  const facultyList=facultyNames();
+  const all = state.teams;
+  const facultyList = facultyNames();
 
-  return heading('HOD Academic Dashboard','Department of Computer Science & AI · Academic Year 2026–27')+`
-    <!-- Top 3 Stat Cards: No. of teams, No. of faculty mentors, No. of themes -->
-    <div class="stats" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
-      <div class="stat">
-        <div class="stat-top">No. of Teams ${ICONS.users}</div>
-        <strong style="color:var(--brand)">${String(all.length).padStart(2,'0')}</strong>
-        <small>Enrolled student project teams</small>
+  return `
+    <!-- Compact Heading -->
+    <div class="heading" style="margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h1 style="font-size:22px; font-weight:800; color:var(--ink); margin:0; line-height:1.2">
+          HOD Academic Dashboard
+        </h1>
+        <p style="font-size:13px; color:var(--muted); margin:2px 0 0">
+          Department of Computer Science &amp; AI · Academic Year 2026–27
+        </p>
       </div>
-      <div class="stat">
-        <div class="stat-top">No. of Faculty Mentors ${ICONS['Faculty Review']}</div>
-        <strong style="color:var(--brand)">${String(facultyList.length).padStart(2,'0')}</strong>
-        <small>CS AI faculty guide directory</small>
-      </div>
-      <div class="stat">
-        <div class="stat-top">No. of Themes ${ICONS['Design Journey']}</div>
-        <strong style="color:var(--brand)">${String(uniqueThemes.length).padStart(2,'0')}</strong>
-        <small>Active specialization &amp; research domains</small>
+      <div style="display:flex; gap:8px">
+        <button class="btn secondary" style="padding:6px 14px; font-size:12.5px; margin:0" onclick="downloadHODProjectCSVTemplate()">↓ Download CSV Template</button>
       </div>
     </div>
 
-    <!-- DEMO_CASES -->
-
-    <!-- Project List in Tabular Form with CSV Input -->
-    <section class="card">
-      <div class="card-head" style="flex-wrap:wrap;gap:14px">
+    <!-- Compact Stat Cards (Reduced padding, horizontal layout) -->
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 6px 0 10px;">
+      <!-- Card 1: Themes -->
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 8px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:40px; line-height:1">
+          06
+        </div>
         <div>
-          <h2>Department Project List</h2>
-          <p>Grouped by Specialization Themes (3 Project Titles per Theme) · Direct Portfolio Redirection</p>
-        </div>
-        <div class="actions" style="margin:0">
-          <label class="btn" for="hod-csv-input" style="cursor:pointer">
-            📥 Import Project List (CSV)
-          </label>
-          <input id="hod-csv-input" type="file" accept=".csv" style="display:none" onchange="importHODProjectCSV(this)">
-          <button class="btn secondary" onclick="downloadHODProjectCSVTemplate()">↓ Download CSV Template</button>
+          <div style="font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px">
+            No. of Themes ${ICONS['Design Journey']}
+          </div>
+          <div style="font-size:12.5px; color:var(--muted); margin-top:1px">Active specialization domains</div>
         </div>
       </div>
 
-      <div style="margin: 14px 0 16px;">
-        <label for="hod-project-search" style="margin:0 0 6px">Search Projects</label>
-        <input id="hod-project-search" placeholder="Search by Theme, Project Title, Team No., Guide, or Student USN..." oninput="filterHODProjects(this.value)">
+      <!-- Card 2: Faculty Mentors -->
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 8px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:40px; line-height:1">
+          ${String(facultyList.length).padStart(2,'0')}
+        </div>
+        <div>
+          <div style="font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px">
+            No. of Faculty Mentors ${ICONS['Faculty Review']}
+          </div>
+          <div style="font-size:12.5px; color:var(--muted); margin-top:1px">CS AI faculty guide directory</div>
+        </div>
       </div>
 
-      <div class="tablewrap">
-        <table class="roster" id="hod-projects-table">
-          <thead>
+      <!-- Card 3: Teams -->
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 8px 16px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:40px; line-height:1">
+          ${String(all.length).padStart(2,'0')}
+        </div>
+        <div>
+          <div style="font-size:14px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:6px">
+            No. of Teams ${ICONS.users}
+          </div>
+          <div style="font-size:12.5px; color:var(--muted); margin-top:1px">Enrolled student project teams</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project List in Tabular Form with Theme Tabs -->
+    <section class="card" style="padding: 12px 18px; margin-bottom: 8px; border-radius: 12px;">
+      <!-- Theme Tabs: Theme 1 to Theme 6 + All Themes -->
+      <div class="tabs theme-tabs-bar" style="display:flex; flex-wrap:wrap; gap:6px; margin: 0 0 8px;">
+        <button class="tab-btn theme-tab-btn ${activeThemeTab===1?'active':''}" data-theme="1" onclick="selectThemeTab(1)">
+          Theme 1 (4)
+        </button>
+        <button class="tab-btn theme-tab-btn ${activeThemeTab===2?'active':''}" data-theme="2" onclick="selectThemeTab(2)">
+          Theme 2 (4)
+        </button>
+        <button class="tab-btn theme-tab-btn ${activeThemeTab===3?'active':''}" data-theme="3" onclick="selectThemeTab(3)">
+          Theme 3 (5)
+        </button>
+        <button class="tab-btn theme-tab-btn ${activeThemeTab===4?'active':''}" data-theme="4" onclick="selectThemeTab(4)">
+          Theme 4 (6)
+        </button>
+        <button class="tab-btn theme-tab-btn ${activeThemeTab===5?'active':''}" data-theme="5" onclick="selectThemeTab(5)">
+          Theme 5 (4)
+        </button>
+        <button class="tab-btn theme-tab-btn ${activeThemeTab===6?'active':''}" data-theme="6" onclick="selectThemeTab(6)">
+          Theme 6 (10)
+        </button>
+        <button class="tab-btn theme-tab-btn ${activeThemeTab==='all'?'active':''}" data-theme="all" onclick="selectThemeTab('all')">
+          All Themes (33)
+        </button>
+      </div>
+
+      <!-- Active Theme Summary Banner -->
+      <div id="active-theme-banner" style="display:flex; align-items:center; justify-content:space-between; padding: 6px 14px; background:var(--brand-subtle); border: 1px solid var(--brand-light); border-radius: 8px; margin-bottom: 8px;">
+        <div>
+          <span id="active-theme-text" style="font-size:14px; font-weight:700; color:var(--brand); display:block; line-height:1.25">
+            ${getThemeTabTitle(activeThemeTab)}
+          </span>
+          <span style="font-size:12px; color:var(--muted)">Sequence preserves exact university roster order from Excel</span>
+        </div>
+        <span id="active-theme-count" class="tag" style="background:#ffffff; color:var(--brand); border-color:var(--brand); font-weight:700; font-size:13px; padding:3px 10px">
+          ${getThemeTabCount(activeThemeTab)} Projects
+        </span>
+      </div>
+
+      <div class="tablewrap" style="max-height: calc(100vh - 290px); overflow-y: auto;">
+        <table class="roster compact-roster" id="hod-projects-table">
+          <thead style="position: sticky; top: 0; z-index: 10;">
             <tr>
-              <th style="width:190px">Theme</th>
-              <th>Project Title</th>
-              <th style="width:90px">Team No.</th>
-              <th>Team Members (Four)</th>
-              <th style="width:160px">Guide Name</th>
-              <th style="width:160px;text-align:center">Project Portfolio</th>
+              <th style="padding: 10px 14px; font-size: 13px;">Project Title</th>
+              <th style="width:170px; padding: 10px 14px; font-size: 13px;">Guide</th>
+              <th style="width:230px; padding: 10px 14px; font-size: 13px;">Team Members</th>
+              <th style="width:105px; text-align:center; padding: 10px 14px; font-size: 13px;">Team No.</th>
+              <th style="width:160px; text-align:center; padding: 10px 14px; font-size: 13px;">Project Portfolio</th>
             </tr>
           </thead>
           <tbody id="hod-project-rows">
-            ${hodProjectRows('')}
+            ${hodProjectRows()}
           </tbody>
         </table>
       </div>
     </section>
   `;
 }
+
 function openRosterTeam(id){openTeamPortfolio(id)}
 function saveTeamDetails(){if(!isAdmin())return;const topic=$('#team-topic')?.value?.trim()||activeTeam().topic;state.repo=$('#repo')?.value?.trim()||state.repo;activeTeam().topic=topic;save();toast('Project details saved.');}
 function teamStatus(t){return t.id===state.activeTeamId?state:state.workspaces[t.id]||{status1:'Draft',status2:'Locked'}}
