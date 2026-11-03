@@ -1422,13 +1422,13 @@ portfolio=function(){
         title = isSmartCampus ? (staticTeam?.title || t.title) : (t.title || 'Project Portfolio'),
         guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide'),
         repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
-        themeNo = t.theme_no || window.lastViewedTheme || 1;
+        themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
   return `
 <div class="portfolio-container">
-  <!-- Back Button to Respective Theme Page -->
-  <div style="margin-bottom: 14px;">
-    <button class="btn secondary" style="padding:7px 16px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects()">
+  <!-- Sticky Back Button Bar to Respective Theme Page -->
+  <div class="portfolio-sticky-bar" style="position: sticky; top: 72px; z-index: 100; background: var(--bg); padding: 10px 0; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid var(--line);">
+    <button class="btn secondary" style="padding:8px 18px; font-size:13.5px; font-weight:700; display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:var(--surface); border:1.5px solid var(--line); border-radius:8px; box-shadow:var(--shadow-sm);" onclick="backToThemeProjects(${esc(themeNo)})">
       ← Back to Theme ${esc(themeNo)}
     </button>
   </div>
@@ -1471,13 +1471,13 @@ portfolio=function(){
 
       <!-- Stage Switcher Tabs (Stage 0, Stage 1) -->
       <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
-        <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||0)===0?'active':''}" data-tab="0" onclick="scrollToPortfolioTopic('stage-0')">
-          <span class="tab-badge">Stage 0</span>
-          <span>Problem Statement &amp; Need Identification</span>
+        <button type="button" class="portfolio-stage-tab" data-tab="0" onclick="scrollToPortfolioTopic('stage-0')" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
+          <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 0</span>
+          <span style="color:#ffffff;">Problem Statement &amp; Need Identification</span>
         </button>
-        <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||0)===1?'active':''}" data-tab="1" onclick="scrollToPortfolioTopic('stage-1')">
-          <span class="tab-badge">Stage 1</span>
-          <span>Requirement Analysis &amp; System Design</span>
+        <button type="button" class="portfolio-stage-tab" data-tab="1" onclick="scrollToPortfolioTopic('stage-1')" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
+          <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 1</span>
+          <span style="color:#ffffff;">Requirement Analysis &amp; System Design</span>
         </button>
       </div>
 
@@ -1846,18 +1846,25 @@ portfolio=function(){
 `;};
 
 function openTeamPortfolio(id){
-  window.lastViewedTheme = selectedTheme;
+  const next = state.teams.find(t => t.id === id);
+  window.lastViewedTheme = (selectedTheme !== null && selectedTheme !== undefined) ? selectedTheme : (next?.theme_no || 1);
   switchTeam(id);
   go('Team Portfolio');
   window.scrollTo(0, 0);
 }
 
-function backToThemeProjects(){
+function backToThemeProjects(themeNum){
   const t = activeTeam() || state.teams[0];
-  selectedTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
-  go('Department');
+  const target = (themeNum !== undefined && themeNum !== null)
+    ? themeNum
+    : ((window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t?.theme_no || 1));
+  selectedTheme = target;
+  window.lastViewedTheme = target;
+  page = 'Department';
+  render();
   window.scrollTo(0, 0);
 }
+window.backToThemeProjects = backToThemeProjects;
 
 
 let selectedTheme = null;
@@ -2015,8 +2022,11 @@ function department(){
     <div class="heading" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div>
         <h1 style="font-size:22px; font-weight:800; color:#000000; margin:0; line-height:1.2">
-          HOD Academic Dashboard
+          Dr. Narayan D.G. -&gt; HOD Mini-Project Dashboard
         </h1>
+        <div style="font-size:14px; font-weight:600; color:var(--muted); margin-top:4px">
+          Department of CSE(AI)
+        </div>
       </div>
       
     </div>

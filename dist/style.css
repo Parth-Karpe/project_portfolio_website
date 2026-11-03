@@ -2531,3 +2531,28 @@ tbody tr:hover {
   border-color: var(--brand);
   box-shadow: var(--shadow-md);
 }
+
+
+/* Full-width layout when main navigation sidebar is hidden */
+.shell.shell-no-sidebar {
+  display: block;
+}
+.shell.shell-no-sidebar .sidebar {
+  display: none !important;
+}
+.shell.shell-no-sidebar .main {
+  max-width: 1540px;
+  margin: 0 auto;
+  width: 100%;
+}
+.portfolio-sticky-bar {
+  position: sticky;
+  top: 72px;
+  z-index: 100;
+  background: var(--bg);
+  padding: 10px 0;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
