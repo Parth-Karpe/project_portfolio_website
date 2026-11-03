@@ -1,4 +1,4 @@
-# ProjectGate AI — CS AI department demonstration
+# ProjectGate AI — CS (AI) department demonstration
 
 AI-Powered Interactive Mini-Project Portfolio & Mentoring System
 
@@ -16,7 +16,7 @@ Open the HOD panel, then Department. Three case cards open the corresponding rev
 | 2 | 07 — Plant Disease Detection with Explainable AI | Stage 1 submitted and returned for revision. Faculty comments appear beside problem, objectives and success-criteria fields and in HOD review. Stage 2 stays locked. |
 | 3 | 12 — Multilingual Campus Helpdesk Assistant | Stage 1 approved by its guide. Stage 2 unlocked, partly drafted and not submitted. |
 
-Team 18 is an extra dummy team with Stage 1 draft and Stage 2 locked. All teams have exactly four members and belong to CS AI under one department HOD and Faculty Admin.
+Team 18 is an extra dummy team with Stage 1 draft and Stage 2 locked. All teams have exactly four members and belong to CS (AI) under one department HOD and Faculty Admin.
 
 Prepared reviews, results, questions and answers are clearly labeled demo material. They are not evidence of a real academic assessment or a live AI run. Cases are seeded once; later faculty decisions and submissions persist rather than resetting on reload.
 
@@ -26,8 +26,8 @@ Parth Karpe (Team Lead), Nupur Bagave, Vedant Khot and Sachi Aarati. Amit K is t
 
 ## Panels
 
-- Admin imports the complete Excel roster, sets the CS AI HOD/Faculty Admin, manages guide allocations and exports CSV.
-- HOD sees the whole CS AI department, team portfolios, stage progress, faculty comments, viva questions/responses and local discussions. Read-only academic oversight.
+- Admin imports the complete Excel roster, sets the CS (AI) HOD/Faculty Admin, manages guide allocations and exports CSV.
+- HOD sees the whole CS (AI) department, team portfolios, stage progress, faculty comments, viva questions/responses and local discussions. Read-only academic oversight.
 - Faculty Admin coordinates faculty and team-guide allocations under the HOD.
 - Faculty selects a demo faculty identity and can access only its assigned teams. It reviews submitted stages, adds section-specific comments, approves or requests revision. Approving Stage 1 unlocks Stage 2 for that team only.
 - Team Lead manages one shared workspace per team. Use Demo team account to demonstrate another team's perspective. No individual member login exists.
@@ -38,7 +38,7 @@ Panel/account selectors simulate access for the presentation. They are not produ
 
 In Admin Panel, download CS-AI-Roster-Template.xlsx, edit/add rows and choose it using Excel / CSV file. Read & validate, inspect the preview, then Import validated teams.
 
-One row per team contains Department, HOD, Faculty Admin, Team ID, Faculty Name, Topic, Project Title, and Member 1–4 Name/USN pairs. Member 1 is Team Lead. The template includes four sample teams. Keep headers. All records must belong to CS AI; blank department/ownership cells use current settings. Numeric team IDs are normalized to two digits.
+One row per team contains Department, HOD, Faculty Admin, Team ID, Faculty Name, Topic, Project Title, and Member 1–4 Name/USN pairs. Member 1 is Team Lead. The template includes four sample teams. Keep headers. All records must belong to CS (AI); blank department/ownership cells use current settings. Numeric team IDs are normalized to two digits.
 
 Supports .xlsx, .xls and .csv, up to 10 MB and 2,000 teams. Reads sheets with recognized team headers; other sheets are reported as skipped. This supports the documented roster schema rather than arbitrary university workbook layouts. Macros/formulas are not executed. Invalid records, duplicate USNs or Team IDs, missing members, mixed departments and conflicting HOD/Faculty Admin names block the entire import. No partial write occurs.
 

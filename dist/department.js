@@ -1,4 +1,4 @@
-/* One CS AI department; local roster import and isolated per-team workspaces. */
+/* One CS (AI) department; local roster import and isolated per-team workspaces. */
 const workspaceKeys=['members','guide','forms','repo','stage','unlocked','status0','status1','status2','status3','feedback','score','reviews','questions','answers','activities','messages','mentorMessages','media','questionStage','questionSnapshot','vivaSubmissions'];
 const clone=x=>JSON.parse(JSON.stringify(x));
 function newTeamWorkspace(team){const w=initial();Object.assign(w,{media:[],messages:[],mentorMessages:[],reviews:{},vivaRecords:[]});w.members=team.members.map((m,i)=>({...m,role:i===0?'Team Lead':'Team Member',github:'https://github.com',skills:'Add skills',contribution:'Add individual responsibilities'}));w.guide=team.faculty;w.forms[1]={title:team.title,problem:'',users:'',research:'',objectives:'',solution:'',success:'',evidence:''};w.forms[2]={functional:'',nonfunctional:'',architecture:'',implementation:'',testing:'',results:'',reflection:'',evidence:''};w.activities=[{text:'CS AI team workspace created',time:new Date().toLocaleString()}];const result={};workspaceKeys.forEach(k=>{if(w[k]!==undefined)result[k]=w[k]});return result}
@@ -1006,7 +1006,7 @@ function visibleTeams(){return state.role==='Faculty'?state.teams.filter(t=>t.fa
 function switchTeam(id){const next=state.teams.find(t=>t.id===id);if(!next||state.role==='Faculty'&&next.faculty!==state.facultyAccount)return toast('This team is not assigned to the selected faculty account.');save();const w=state.workspaces[id]||newTeamWorkspace(next);workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.activeTeamId=id;state.guide=next.faculty;state.members=state.members.map((m,i)=>({...m,name:next.members[i].name,usn:next.members[i].usn}));state.forms[1].title=next.title;selectedSection='';modal=null;save();render();window.scrollTo(0,0)}
 rolePages['Faculty Admin']=['Overview','Department','Team Portfolio','Design Journey'];
 iconFor['Faculty Admin']='♙';
-currentIdentity=function(){if(state.role==='Faculty Admin')return state.department.facultyAdmin;if(state.role==='Faculty')return state.facultyAccount;if(state.role==='HOD')return state.department.hod;if(state.role==='Admin')return 'CS AI Administrator';return state.members[0].name};
+currentIdentity=function(){if(state.role==='Faculty Admin')return state.department.facultyAdmin;if(state.role==='Faculty')return state.facultyAccount;if(state.role==='HOD')return state.department.hod;if(state.role==='Admin')return 'CS (AI) Administrator';return state.members[0].name};
 const changeRole=switchRole;
 switchRole=function(role){changeRole(role);if(role==='Faculty'){if(!facultyNames().includes(state.facultyAccount))state.facultyAccount=facultyNames()[0];const t=state.teams.find(t=>t.faculty===state.facultyAccount);if(t&&t.id!==state.activeTeamId)switchTeam(t.id)}save();render()};
 function selectFaculty(name){if(state.role!=='Faculty'||!facultyNames().includes(name))return;state.facultyAccount=name;const t=state.teams.find(t=>t.faculty===name);if(t)switchTeam(t.id);else{page='Overview';save();render()}}
@@ -1256,19 +1256,159 @@ function getDomainKnowledge(t){
   };
 }
 
+function parseTableRows(text, type, defaultList){
+  if(!text||!text.trim())return defaultList||[];
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length)return defaultList||[];
+  return lines.map((line,idx)=>{
+    if(line.includes('|')){
+      const parts=line.split('|').map(p=>p.trim());
+      if(type==='FR'){
+        const idMatch=parts[0].match(/(?:FR|REQ)?[-_ ]?([0-9]{1,2})/i);
+        const id=idMatch?`FR-${idMatch[1].padStart(2,'0')}`:(parts[0]||`FR-${String(idx+1).padStart(2,'0')}`);
+        return {id,desc:parts[1]||parts[0],prio:parts[2]||(idx<7?'Mandatory':'Challenge'),source:parts[3]||'Gate 0 S0 Need'};
+      }else if(type==='NFR'){
+        const idMatch=parts[0].match(/(?:NFR)?[-_ ]?([0-9]{1,2})/i);
+        const id=idMatch?`NFR-${idMatch[1].padStart(2,'0')}`:(parts[0]||`NFR-${String(idx+1).padStart(2,'0')}`);
+        return {id,desc:parts[1]||parts[0],cat:parts[2]||(idx<2?'Performance':idx===3?'Usability':idx===5?'Security':'Reliability'),target:parts[3]||'Verified in benchmark'};
+      }else if(type==='COURSES'){
+        return {sl:parts[0]||String(idx+1),course:parts[1]||parts[0],concepts:parts[2]||'Core concepts applied in design',role:parts[3]||(idx<3?'Dominant':'Supporting')};
+      }else if(type==='ENGINES'){
+        return {id:parts[0]||`E${idx+1}`,engine:parts[0]||`E${idx+1}`,desc:parts[1]||parts[0]};
+      }
+    }
+    const colonIdx=line.indexOf(':');
+    if(colonIdx>0&&colonIdx<35){
+      const lead=line.substring(0,colonIdx).trim(),desc=line.substring(colonIdx+1).trim();
+      if(type==='FR'){
+        const idMatch=lead.match(/(?:FR|REQ)?[-_ ]?([0-9]{1,2})/i);
+        const num=idMatch?idMatch[1].padStart(2,'0'):String(idx+1).padStart(2,'0');
+        const prio=/challenge/i.test(lead)||/challenge/i.test(desc)||idx>=7?'Challenge':'Mandatory';
+        const defMatch=(defaultList||[]).find(d=>d.id===`FR-${num}`||d.id===num);
+        return {id:`FR-${num}`,desc,prio:defMatch?.prio||prio,source:defMatch?.source||'Automated Profiling & Discovery'};
+      }else if(type==='NFR'){
+        const idMatch=lead.match(/(?:NFR)?[-_ ]?([0-9]{1,2})/i);
+        const num=idMatch?idMatch[1].padStart(2,'0'):String(idx+1).padStart(2,'0');
+        let cat='Reliability';
+        if(/latency|speed|performance|time/i.test(lead)||/latency|speed|performance/i.test(desc))cat='Performance';
+        else if(/security|privacy|leakage|auth/i.test(lead)||/security|privacy/i.test(desc))cat='Security';
+        else if(/usability|ui|ux|score/i.test(lead)||/usability|understandable/i.test(desc))cat='Usability';
+        else if(/memory|resource|bound/i.test(lead))cat='Resource Bound';
+        const defMatch=(defaultList||[]).find(d=>d.id===`NFR-${num}`||d.id===num);
+        return {id:`NFR-${num}`,desc,cat:defMatch?.cat||cat,target:defMatch?.target||'Verified under defined test benchmarks'};
+      }else if(type==='COURSES'){
+        const role=/dominant/i.test(lead)||/dominant/i.test(desc)||idx<3?'Dominant':'Supporting';
+        return {sl:String(idx+1),course:lead.replace(/^[•\-\*]\s*/,''),concepts:desc,role};
+      }else if(type==='ENGINES'){
+        return {id:lead.replace(/^[•\-\*]\s*/,''),engine:lead.replace(/^[•\-\*]\s*/,''),desc};
+      }
+    }
+    const cleanLine=line.replace(/^[•\-\*0-9.]+\s*/,'');
+    if(type==='FR'){
+      const defMatch=(defaultList||[])[idx];
+      return {id:defMatch?.id||`FR-${String(idx+1).padStart(2,'0')}`,desc:cleanLine||defMatch?.desc||line,prio:defMatch?.prio||(idx<7?'Mandatory':'Challenge'),source:defMatch?.source||'Identified Need (from S0)'};
+    }else if(type==='NFR'){
+      const defMatch=(defaultList||[])[idx];
+      return {id:defMatch?.id||`NFR-${String(idx+1).padStart(2,'0')}`,desc:cleanLine||defMatch?.desc||line,cat:defMatch?.cat||(idx<2?'Performance':idx===3?'Usability':'Reliability'),target:defMatch?.target||'Defined benchmark threshold'};
+    }else if(type==='COURSES'){
+      const defMatch=(defaultList||[])[idx];
+      return {sl:String(idx+1),course:defMatch?.course||cleanLine,concepts:defMatch?.concepts||cleanLine,role:defMatch?.role||(idx<3?'Dominant':'Supporting')};
+    }else if(type==='ENGINES'){
+      const defMatch=(defaultList||[])[idx];
+      return {id:defMatch?.id||`E${idx+1}`,engine:defMatch?.engine||defMatch?.name||cleanLine,desc:defMatch?.desc||cleanLine};
+    }
+    return {id:String(idx+1),desc:line};
+  });
+}
+
+function renderRequirementsTable(text, defaultList, type){
+  let rows=[];
+  if(text&&text.trim()){
+    rows=parseTableRows(text,type,defaultList);
+  }
+  if(!rows.length&&defaultList&&defaultList.length){
+    rows=defaultList;
+  }
+  if(type==='FR'){
+    return `<div class="tablewrap" style="margin-top:8px">
+      <table class="test-suite-table">
+        <thead>
+          <tr>
+            <th style="width:75px">FR ID</th>
+            <th>Requirement Description</th>
+            <th style="width:130px">Priority</th>
+            <th style="width:200px">Source Need (from S0)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(fr=>`
+            <tr>
+              <td><span class="req-tag">${esc(fr.id)}</span></td>
+              <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
+              <td><span class="tag ${fr.prio==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.prio)}</span></td>
+              <td style="font-size:11.5px;color:var(--muted)">${esc(fr.source||'Automated Profiling')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }else{
+    return `<div class="tablewrap" style="margin-top:8px">
+      <table class="test-suite-table">
+        <thead>
+          <tr>
+            <th style="width:85px">NFR ID</th>
+            <th>Requirement Description</th>
+            <th style="width:160px">Category</th>
+            <th style="width:240px">Measurable Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(nfr=>`
+            <tr>
+              <td><span class="req-tag">${esc(nfr.id)}</span></td>
+              <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
+              <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||'Reliability')}</span></td>
+              <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'Defined benchmark threshold')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+}
+
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
+        staticTeam=(typeof window!=='undefined'&&window.STATIC_TEAMS_DATA&&window.STATIC_TEAMS_DATA[t.id])||null,
+        st0=staticTeam?.stage0||{},
+        st1=staticTeam?.stage1||{},
         f0=state.forms?.[0]||{},
         f1=state.forms?.[1]||{},
         f2=state.forms?.[2]||{},
         f3=state.forms?.[3]||{},
-        topic=t.topic||'Specialization Theme',
-        title=f0.title||f1.title||t.title||'Project Portfolio',
-        guide=state.guide||t.faculty||'Faculty Guide',
-        repoUrl=safe(state.repo||t.repo||'https://github.com'),
+        topic=staticTeam?.theme||t.topic||'Specialization Theme',
+        title=f0.title||f1.title||staticTeam?.title||t.title||'Project Portfolio',
+        guide=state.guide||staticTeam?.guide||t.faculty||'Faculty Guide',
+        repoUrl=safe(f2.repo||state.repo||staticTeam?.repo||t.repo||'https://github.com'),
         dk=getDomainKnowledge(t);
 
-  return heading('Project Portfolio', 'Comprehensive One-Page Technical Showcase · CS AI AY 2026–27')+`
+  const coursesRows = parseTableRows(f0.courses, 'COURSES', st0.coursesTable || dk.courseIntegration);
+  const pipelineRows = st0.pipelineTable || dk.pipelineTable || [
+    {input:'Upload structured dataset',assessment:'Profile → detect issues → analyze statistical patterns',userAction:'Select issues → apply supported corrections → revalidate',output:'Quality score and report'}
+  ];
+  const enginesRows = parseTableRows(f0.engines, 'ENGINES', st0.enginesTable || dk.conceptualEngines);
+  const scopeInRows = st0.scopeInTable || dk.scopeTableIn || (dk.scopeIn||[]).map((s,i)=>({num:String(i+1),item:s}));
+  const scopeOutRows = st0.scopeOutTable || dk.scopeTableOut || (dk.scopeOut||[]).map((s,i)=>({num:String(i+1),item:s,reason:'Beyond student 3-credit academic scope'}));
+  const feasibilityRows = st0.feasibilityTable || dk.feasibilityTable || [
+    {aspect:'Feasibility within 3-credit scope',assessment:dk.feasibilityNotes||'Operates within standard 15-week academic semester constraints.'},
+    {aspect:'Required computing / resources',assessment:'Local CPU & RAM execution; zero cloud cost.'},
+    {aspect:'Prerequisite knowledge',assessment:'Core foundation courses in CS (AI) curriculum.'},
+    {aspect:'Major constraints / limitations',assessment:'Data immutability & bounded memory limits.'}
+  ];
+  const userStoryRows = st0.userStoryTable || dk.userStoryTable || (dk.ucList||[]).map((u,i)=>({id:String(i+1).padStart(2,'0'),actor:dk.ucActor||'User',desc:u,mainFlow:'Input → Process → Output',exceptionFlow:'Validation error triggered'}));
+
+  return heading('Project Portfolio', 'Comprehensive One-Page Technical Showcase · CS (AI) AY 2026–27')+`
 <div class="portfolio-container">
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
@@ -1285,7 +1425,7 @@ portfolio=function(){
 
     <!-- Team Members Details (No inputs/textboxes) -->
     <div class="portfolio-members-grid">
-      ${t.members.map((m,i)=>`
+      ${(staticTeam?.members||t.members).map((m,i)=>`
         <article class="portfolio-member-card">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
             ${avatar(m)}
@@ -1322,105 +1462,189 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>${ICONS['Evidence Library']} Problem Statement</h3>
-          <p class="portfolio-prose">${esc(f0.problem || f1.problem || dk.problem)}</p>
+          <p class="portfolio-prose">${esc(f0.problem || st0.problem || f1.problem || dk.problem)}</p>
           <div class="req-grid" style="margin-top:4px">
             <div class="req-card">
               <span class="req-tag">Target Users</span>
               <strong>Key Stakeholders</strong>
-              <p>${esc(f0.users || f1.users || dk.targetUsers)}</p>
+              <p>${esc(f0.users || st0.targetUsers || f1.users || dk.targetUsers)}</p>
             </div>
             <div class="req-card">
               <span class="req-tag">Baseline Friction</span>
               <strong>Industry &amp; Academic Pain Points</strong>
-              <p>${esc(f0.baseline || dk.baselineFriction)}</p>
+              <p>${esc(f0.baseline || st0.baselineFriction || dk.baselineFriction)}</p>
             </div>
           </div>
-          ${f0.courses ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Foundation Course Integration &amp; Academic Role</h4>
-              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:9px;padding:12px 16px">
-                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f0.courses)}</p>
+
+          <!-- Word Table 2: Foundation Course Integration Table -->
+          ${coursesRows && coursesRows.length ? `
+            <div style="margin-top:18px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.1: Foundation Course Integration &amp; Academic Role (Gate 0 Table 2)</h4>
+              <div class="tablewrap">
+                <table class="test-suite-table">
+                  <thead>
+                    <tr>
+                      <th style="width:65px">Sl. No.</th>
+                      <th style="width:230px">Foundation Course</th>
+                      <th>Broad Concepts / Areas Expected to Be Applied</th>
+                      <th style="width:130px">Role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${coursesRows.map(c=>`
+                      <tr>
+                        <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
+                        <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
+                        <td style="color:var(--ink-secondary);font-size:12px">${esc(c.concepts)}</td>
+                        <td><span class="tag ${String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
               </div>
             </div>
-          ` : dk.courseIntegration ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Foundation Course Integration &amp; Academic Role</h4>
-              <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr))">
-                ${dk.courseIntegration.map(c=>`
-                  <div class="req-card">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                      <strong style="color:var(--ink);font-size:12.5px">${esc(c.course)}</strong>
-                      <span class="tag ${c.role==='Dominant'?'':'gray'}" style="font-size:10px;padding:1px 6px">${esc(c.role)}</span>
-                    </div>
-                    <p style="margin:0;font-size:12px;color:var(--ink-secondary)">${esc(c.concepts)}</p>
-                  </div>
-                `).join('')}
+          ` : ''}
+
+          <!-- Word Table 3: Conceptual Pipeline Flow Table -->
+          ${pipelineRows && pipelineRows.length ? `
+            <div style="margin-top:18px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.2: Conceptual Pipeline Flow (Gate 0 Table 3)</h4>
+              <div class="tablewrap">
+                <table class="test-suite-table">
+                  <thead>
+                    <tr>
+                      <th>Input</th>
+                      <th>Assessment</th>
+                      <th>User Action</th>
+                      <th>Output</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${pipelineRows.map(p=>`
+                      <tr>
+                        <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
+                        <td style="color:var(--ink-secondary);font-size:12px">${esc(p.assessment)}</td>
+                        <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
+                        <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
               </div>
             </div>
-          `:''}
-          ${f0.engines ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Conceptual System Workflow Engines</h4>
-              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:9px;padding:12px 16px">
-                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f0.engines)}</p>
+          ` : ''}
+
+          <!-- Word Table 4: Conceptual Workflow Engines Table -->
+          ${enginesRows && enginesRows.length ? `
+            <div style="margin-top:18px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.3: Conceptual Workflow Engines (Gate 0 Table 4)</h4>
+              <div class="tablewrap">
+                <table class="test-suite-table">
+                  <thead>
+                    <tr>
+                      <th style="width:250px">Engine</th>
+                      <th>Conceptual Responsibility</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${enginesRows.map(e=>`
+                      <tr>
+                        <td style="font-weight:700;color:var(--ink)"><span class="req-tag" style="margin-right:6px">${esc(e.id||'')}</span>${esc(e.name||e.engine)}</td>
+                        <td style="color:var(--ink-secondary);font-size:12px">${esc(e.desc)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
               </div>
             </div>
-          ` : dk.conceptualEngines ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Conceptual System Workflow Engines</h4>
-              <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(260px, 1fr))">
-                ${dk.conceptualEngines.map(e=>`
-                  <div class="req-card">
-                    <span class="req-tag">${esc(e.id)}</span>
-                    <strong style="color:var(--ink);font-size:12.5px;display:block;margin:3px 0">${esc(e.name)}</strong>
-                    <p style="margin:0;font-size:12px;color:var(--ink-secondary)">${esc(e.desc)}</p>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `:''}
-          ${f0.scope ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Broad Project Scope &amp; Boundaries</h4>
-              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:9px;padding:12px 16px">
-                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f0.scope)}</p>
-              </div>
-            </div>
-          ` : dk.scopeIn ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Broad Project Scope &amp; Boundaries</h4>
-              <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(320px, 1fr))">
-                <div class="req-card" style="border-left:3px solid var(--brand)">
-                  <span class="req-tag" style="color:var(--brand);background:var(--brand-subtle)">Broadly In-Scope</span>
-                  <ul style="margin:6px 0 0 16px;padding:0;font-size:12px;color:var(--ink-secondary);line-height:1.5">
-                    ${dk.scopeIn.map(s=>`<li>${esc(s)}</li>`).join('')}
-                  </ul>
+          ` : ''}
+
+          <!-- Word Tables 5 & 6: Broad Project Scope & Boundaries Tables -->
+          ${(scopeInRows.length || scopeOutRows.length) ? `
+            <div style="margin-top:18px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.4: Broad Project Scope (In-Scope &amp; Out-of-Scope Boundaries - Gate 0 Tables 5 &amp; 6)</h4>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:14px">
+                <div class="tablewrap">
+                  <table class="test-suite-table">
+                    <thead>
+                      <tr>
+                        <th style="width:40px">#</th>
+                        <th>Broad In-Scope Item (Gate 0 Table 5)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${scopeInRows.map(s=>`
+                        <tr>
+                          <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
+                          <td style="color:var(--ink);font-size:12px">${esc(s.item)}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
                 </div>
-                <div class="req-card" style="border-left:3px solid var(--muted)">
-                  <span class="req-tag" style="color:var(--muted);background:var(--bg-subtle)">Out-of-Scope (3-Credit Bound)</span>
-                  <ul style="margin:6px 0 0 16px;padding:0;font-size:12px;color:var(--ink-secondary);line-height:1.5">
-                    ${dk.scopeOut.map(s=>`<li>${esc(s)}</li>`).join('')}
-                  </ul>
+                <div class="tablewrap">
+                  <table class="test-suite-table">
+                    <thead>
+                      <tr>
+                        <th style="width:40px">#</th>
+                        <th>Out-of-Scope Item</th>
+                        <th>Reason / Boundary in Source (Gate 0 Table 6)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${scopeOutRows.map(s=>`
+                        <tr>
+                          <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
+                          <td style="color:var(--ink);font-size:12px">${esc(s.item)}</td>
+                          <td style="color:var(--muted);font-size:11.5px">${esc(s.reason)}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              ${dk.feasibilityNotes?`<p class="mini" style="margin-top:8px;color:var(--muted)"><b>Feasibility &amp; Hardware Constraints:</b> ${esc(dk.feasibilityNotes)}</p>`:''}
             </div>
-          `:''}
+          ` : ''}
+
+          <!-- Word Table 7: Feasibility Assessment Table -->
+          ${feasibilityRows && feasibilityRows.length ? `
+            <div style="margin-top:18px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.5: Feasibility &amp; Hardware Assessment (3-Credit Scope - Gate 0 Table 7)</h4>
+              <div class="tablewrap">
+                <table class="test-suite-table">
+                  <thead>
+                    <tr>
+                      <th style="width:230px">Aspect</th>
+                      <th>Assessment from Source / Baseline</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${feasibilityRows.map(f=>`
+                      <tr>
+                        <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
+                        <td style="color:var(--ink-secondary);font-size:12px">${esc(f.assessment)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-objectives">
           <h3>${ICONS.check} Objectives</h3>
-          <p class="portfolio-prose">${esc(f0.objectives || f1.objectives || dk.objectives)}</p>
+          <p class="portfolio-prose">${esc(f0.objectives || st0.objectives || f1.objectives || dk.objectives)}</p>
           <div class="req-grid" style="margin-top:4px">
             <div class="req-card">
               <span class="req-tag">Measurable Target 1</span>
               <strong>Validation Accuracy &amp; Integrity</strong>
-              <p>${esc(f1.success || dk.success1)}</p>
+              <p>${esc(f1.success || st0.success1 || dk.success1)}</p>
             </div>
             <div class="req-card">
               <span class="req-tag">Measurable Target 2</span>
               <strong>Operational Performance</strong>
-              <p>${esc(dk.success2)}</p>
+              <p>${esc(st0.success2 || dk.success2)}</p>
             </div>
           </div>
         </article>
@@ -1434,9 +1658,10 @@ portfolio=function(){
                 return `<img data-media="${customImg0.id}" alt="${esc(customImg0.caption)}" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
                 <p class="diagram-caption">${esc(customImg0.caption||('Figure 0.1: Contextual Use Case Diagram for '+t.title))}</p>`;
               }
-              if(dk.useCaseImg){
-                return `<img src="${dk.useCaseImg}" alt="Use Case Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
-                <p class="diagram-caption">Figure 0.1: Formal Use Case Diagram for ${esc(t.title)} (Gate 0 / Gate 1 Source Document).</p>`;
+              const imgSrc = st0.useCaseImage || dk.useCaseImg;
+              if(imgSrc){
+                return `<img src="${imgSrc}" alt="Use Case Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
+                <p class="diagram-caption">${esc(st0.useCaseCaption || ('Figure 0.1: Formal Use Case Diagram for '+t.title+' (Gate 0 / Gate 1 Source Document).'))}</p>`;
               }
               return `<svg viewBox="0 0 740 320" xmlns="http://www.w3.org/2000/svg">
                 <rect x="220" y="20" width="340" height="280" rx="14" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 4"/>
@@ -1473,20 +1698,37 @@ portfolio=function(){
               <p class="diagram-caption">Figure 0.1: Contextual Use Case Diagram for ${esc(t.title)}.</p>`;
             })()}
           </div>
-          ${dk.ucList ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Primary Actors &amp; Use Cases</h4>
-              <p class="mini" style="margin-bottom:8px"><b>Primary Actor:</b> ${esc(dk.ucActor||'User (Data Analyst / End User)')}</p>
-              <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(260px, 1fr))">
-                ${dk.ucList.map((uc, i)=>`
-                  <div class="req-card" style="padding:10px 14px">
-                    <span class="req-tag">UC-0${i+1}</span>
-                    <strong style="display:block;font-size:12px;color:var(--ink);margin-top:2px">${esc(uc)}</strong>
-                  </div>
-                `).join('')}
+
+          <!-- Word Table 4 (from Gate 1 Doc): Primary Actors & User Stories Table -->
+          ${userStoryRows && userStoryRows.length ? `
+            <div style="margin-top:18px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.6: User Stories &amp; Use Case Specifications (Gate 1 Table 4)</h4>
+              <div class="tablewrap">
+                <table class="test-suite-table">
+                  <thead>
+                    <tr>
+                      <th style="width:50px">ID</th>
+                      <th style="width:75px">Actor</th>
+                      <th style="width:260px">Description / User Story</th>
+                      <th>Main Flow</th>
+                      <th>Exception Flow</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${userStoryRows.map(u=>`
+                      <tr>
+                        <td><span class="req-tag">${esc(u.id)}</span></td>
+                        <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
+                        <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
+                        <td style="font-size:11.5px;color:var(--ink-secondary)">${esc(u.mainFlow)}</td>
+                        <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
               </div>
             </div>
-          `:''}
+          ` : ''}
         </article>
       </section>
 
@@ -1497,87 +1739,23 @@ portfolio=function(){
           <h2>Requirement Engineering</h2>
         </div>
 
+        <!-- Word Table 2: Functional Requirements Table -->
         <article class="portfolio-subblock" id="sec-fr">
           <h3>${ICONS['Design Journey']} Functional Requirements</h3>
-          ${f1.functional ? `
-            <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:6px">
-              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.65;font-size:13px">${esc(f1.functional)}</p>
-            </div>
-          ` : dk.frList ? `
-            <div class="tablewrap" style="margin-top:6px">
-              <table class="test-suite-table">
-                <thead>
-                  <tr>
-                    <th style="width:75px">FR ID</th>
-                    <th>Requirement Description</th>
-                    <th style="width:110px">Priority</th>
-                    <th style="width:170px">Source Need (Gate 0)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${dk.frList.map(fr=>`
-                    <tr>
-                      <td><span class="req-tag">${esc(fr.id)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink)">${esc(fr.desc)}</td>
-                      <td><span class="tag ${fr.prio==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.prio)}</span></td>
-                      <td style="font-size:11.5px;color:var(--muted)">${esc(fr.source)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : `
-            <div class="req-grid">
-              <div class="req-card"><span class="req-tag">FR-01</span><strong>Ingestion &amp; Parsing</strong><p>${esc(dk.fr1)}</p></div>
-              <div class="req-card"><span class="req-tag">FR-02</span><strong>Core Algorithmic Engine</strong><p>${esc(dk.fr2)}</p></div>
-              <div class="req-card"><span class="req-tag">FR-03</span><strong>Interactive Verification</strong><p>${esc(dk.fr3)}</p></div>
-              <div class="req-card"><span class="req-tag">FR-04</span><strong>Multi-Format Reporting</strong><p>${esc(dk.fr4)}</p></div>
-            </div>
-          `}
+          <p class="mini" style="margin:2px 0 10px;color:var(--muted)">Table 1.1: Functional Requirements (Gate 1 Table 2) — Structured specifications with priorities and source needs.</p>
+          ${renderRequirementsTable(f1.functional, st1.frTable || dk.frList, 'FR')}
         </article>
 
+        <!-- Word Table 3: Non-Functional Requirements Table -->
         <article class="portfolio-subblock" id="sec-nfr">
           <h3>${ICONS.lock} Non-Functional Requirements</h3>
-          ${f1.nonfunctional ? `
-            <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:6px">
-              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.65;font-size:13px">${esc(f1.nonfunctional)}</p>
-            </div>
-          ` : dk.nfrList ? `
-            <div class="tablewrap" style="margin-top:6px">
-              <table class="test-suite-table">
-                <thead>
-                  <tr>
-                    <th style="width:85px">NFR ID</th>
-                    <th>Requirement Description</th>
-                    <th style="width:160px">Category</th>
-                    <th style="width:230px">Measurable Target</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${dk.nfrList.map(nfr=>`
-                    <tr>
-                      <td><span class="req-tag">${esc(nfr.id)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink)">${esc(nfr.desc)}</td>
-                      <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat)}</span></td>
-                      <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : `
-            <div class="req-grid">
-              <div class="req-card"><span class="req-tag">NFR-01 · Latency</span><strong>Performance Target</strong><p>${esc(dk.nfr1)}</p></div>
-              <div class="req-card"><span class="req-tag">NFR-02 · Integrity</span><strong>Accuracy &amp; Resilience</strong><p>${esc(dk.nfr2)}</p></div>
-              <div class="req-card"><span class="req-tag">NFR-03 · Privacy</span><strong>Security &amp; Boundaries</strong><p>${esc(dk.nfr3)}</p></div>
-              <div class="req-card"><span class="req-tag">NFR-04 · Usability</span><strong>Operational Efficiency</strong><p>${esc(dk.nfr4)}</p></div>
-            </div>
-          `}
+          <p class="mini" style="margin:2px 0 10px;color:var(--muted)">Table 1.2: Non-Functional Requirements (Gate 1 Table 3) — Measurable quality, performance, reliability, and security targets.</p>
+          ${renderRequirementsTable(f1.nonfunctional, st1.nfrTable || dk.nfrList, 'NFR')}
         </article>
 
         <article class="portfolio-subblock" id="sec-arch">
           <h3>${ICONS['Admin Panel']} Architecture</h3>
-          <p class="portfolio-prose">${esc(f1.architecture || f2.architecture || dk.archDesc)}</p>
+          <p class="portfolio-prose">${esc(f1.architecture || st1.archDesc || f2.architecture || dk.archDesc)}</p>
           <div class="diagram-frame">
             ${(()=>{
               const customImg1=getStageImage(1);
@@ -1585,9 +1763,10 @@ portfolio=function(){
                 return `<img data-media="${customImg1.id}" alt="${esc(customImg1.caption)}" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
                 <p class="diagram-caption">${esc(customImg1.caption||('Figure 1.1: System Architecture & Workflow Pipeline for '+t.title))}</p>`;
               }
-              if(dk.archImg){
-                return `<img src="${dk.archImg}" alt="Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
-                <p class="diagram-caption">Figure 1.1: 6-Phase Pipeline Architecture &amp; Dual Data Store for ${esc(t.title)} (Gate 0 / Gate 1 Source Document).</p>`;
+              const archSrc = st1.archImage || dk.archImg;
+              if(archSrc){
+                return `<img src="${archSrc}" alt="Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
+                <p class="diagram-caption">${esc(st1.archCaption || ('Figure 1.1: Architecture & Workflow Pipeline for '+t.title+' (Gate 1 Source Document).'))}</p>`;
               }
               return `<svg viewBox="0 0 740 190" xmlns="http://www.w3.org/2000/svg">
                 <g transform="translate(15, 15)">
@@ -1637,6 +1816,11 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-workflow">
           <h3>${ICONS['Faculty Admin']} System Workflow</h3>
+          ${f1.workflow ? `
+            <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.6;font-size:12.5px">${esc(f1.workflow)}</p>
+            </div>
+          ` : ''}
           <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:10px">
             ${dk.workflow.map((w,i)=>`
               <div class="req-card" style="text-align:left">
@@ -1650,6 +1834,18 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-techstack">
           <h3>${ICONS.Discussion} Tech Stack</h3>
+          ${f1.techstack ? `
+            <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 6px;font-weight:700">Specified Technology Stack &amp; Justification</h4>
+              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.6;font-size:12.5px">${esc(f1.techstack)}</p>
+            </div>
+          ` : ''}
+          ${f1.constraints ? `
+            <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 6px;font-weight:700">Design &amp; Operational Constraints</h4>
+              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.6;font-size:12.5px">${esc(f1.constraints)}</p>
+            </div>
+          ` : ''}
           <div class="techstack-container">
             <div class="techstack-group">
               <span class="techstack-group-title">Frontend &amp; UI Architecture</span>
@@ -1702,7 +1898,15 @@ portfolio=function(){
             }
             return '';
           })()}
-          <div class="req-grid" style="margin-top:4px">
+          ${f2.modules ? `
+            <div style="margin-top:14px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Core Modules &amp; Algorithmic Components</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f2.modules)}</p>
+              </div>
+            </div>
+          ` : ''}
+          <div class="req-grid" style="margin-top:12px">
             <div class="req-card">
               <span class="req-tag">System Condition 1</span>
               <strong>${esc(dk.hard1Name)}</strong>
@@ -1714,12 +1918,20 @@ portfolio=function(){
               <p>${esc(dk.hard2Desc)}</p>
             </div>
           </div>
-          <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          ${f2.challenges ? `
+            <div style="margin-top:14px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Technical Challenges &amp; Mitigation Strategies</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f2.challenges)}</p>
+              </div>
+            </div>
+          ` : ''}
+          <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:14px">
             <div>
               <strong style="color:var(--ink);font-size:14px">Implementation Repository &amp; Commit History</strong>
               <p style="margin:2px 0 0;font-size:12px;color:var(--muted)">Source code, module implementations, and validation tests.</p>
             </div>
-            <a class="btn" href="${repoUrl}" target="_blank" rel="noopener">Explore Code on GitHub ↗</a>
+            <a class="btn" href="${safe(f2.repo || repoUrl)}" target="_blank" rel="noopener">Explore Code on GitHub ↗</a>
           </div>
         </article>
       </section>
@@ -1745,7 +1957,16 @@ portfolio=function(){
             return '';
           })()}
 
-          <div class="tablewrap" style="margin-top:8px">
+          ${f3.test_results ? `
+            <div style="margin-top:14px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Observed Test Execution Results &amp; Verification Logs</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f3.test_results)}</p>
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="tablewrap" style="margin-top:14px">
             <table class="test-suite-table">
               <thead>
                 <tr>
@@ -1775,8 +1996,17 @@ portfolio=function(){
             </table>
           </div>
 
+          ${f3.metrics ? `
+            <div style="margin-top:16px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Performance &amp; Accuracy Metrics</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f3.metrics)}</p>
+              </div>
+            </div>
+          ` : ''}
+
           <div style="margin-top:16px">
-            <h4 style="font-size:14px;font-weight:700;color:var(--ink);margin:0 0 10px">Measured Evaluation Metrics</h4>
+            <h4 style="font-size:14px;font-weight:700;color:var(--ink);margin:0 0 10px">Measured Evaluation Benchmarks</h4>
             <div class="req-grid" style="grid-template-columns:repeat(4,1fr);gap:12px">
               <div class="req-card" style="text-align:center"><span class="req-tag" style="margin:0 auto">${esc(dk.metric1Lbl)}</span><strong style="font-size:18px;color:var(--brand)">${esc(dk.metric1Val)}</strong><p>Primary Quality Benchmark</p></div>
               <div class="req-card" style="text-align:center"><span class="req-tag" style="margin:0 auto">${esc(dk.metric2Lbl)}</span><strong style="font-size:18px;color:var(--success)">${esc(dk.metric2Val)}</strong><p>Measured Runtime Target</p></div>
@@ -1784,6 +2014,15 @@ portfolio=function(){
               <div class="req-card" style="text-align:center"><span class="req-tag" style="margin:0 auto">${esc(dk.metric4Lbl)}</span><strong style="font-size:18px;color:var(--success)">${esc(dk.metric4Val)}</strong><p>Reliability Verification</p></div>
             </div>
           </div>
+
+          ${f3.evaluation ? `
+            <div style="margin-top:16px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Critical Reflection, Limitations &amp; Next Steps</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f3.evaluation)}</p>
+              </div>
+            </div>
+          ` : ''}
         </article>
       </section>
 
@@ -2033,13 +2272,13 @@ function department(){
 function openRosterTeam(id){openTeamPortfolio(id)}
 function saveTeamDetails(){if(!isAdmin())return;const topic=$('#team-topic')?.value?.trim()||activeTeam().topic;state.repo=$('#repo')?.value?.trim()||state.repo;activeTeam().topic=topic;save();toast('Project details saved.');}
 function teamStatus(t){return t.id===state.activeTeamId?state:state.workspaces[t.id]||{status1:'Draft',status2:'Locked'}}
-function facultyCards(){return facultyNames().map(name=>{const teams=state.teams.filter(t=>t.faculty===name);return `<div class="faculty-card">${avatar({name})}<div><h3>${esc(name)}</h3><p class="mini">Faculty guide · CS AI · ${teams.length} team${teams.length===1?'':'s'}</p><p class="mini">${teams.map(t=>'Team '+esc(t.id)).join(' · ')||'No teams assigned'}</p></div></div>`}).join('')}
-function allocationForm(){return `<section class="card"><h2>Team guide allocation</h2><p>Faculty Admin coordinates guide assignments under the CS AI HOD.</p><label for="allocate-team">Team</label><select id="allocate-team">${state.teams.map(t=>`<option value="${esc(t.id)}">Team ${esc(t.id)} · ${esc(t.title)}</option>`).join('')}</select><label for="allocate-guide">Faculty guide</label><select id="allocate-guide">${facultyNames().map(n=>`<option>${esc(n)}</option>`).join('')}</select><button class="btn" style="margin-top:16px" onclick="allocateGuide()">Save allocation</button></section>`}
-function facultyAdminPanel(){return heading('Coordinate faculty. Support every team.','CS AI Faculty Admin · under '+esc(state.department.hod))+`<div class="grid"><div>${allocationForm()}<section class="card"><h2>Faculty directory</h2>${facultyCards()}</section></div><section class="card"><h2>Department ownership</h2><p><strong>Department:</strong> CS AI</p><p><strong>HOD:</strong> ${esc(state.department.hod)}</p><p><strong>Faculty Admin:</strong> ${esc(state.department.facultyAdmin)}</p><div class="notice">Faculty Admin manages guide allocations. The assigned Faculty guide reviews and approves submissions. Admin imports the complete Excel roster.</div><button class="btn secondary" onclick="go('Department')">View all CS AI teams →</button></section></div>`}
-function allocateGuide(){if(!['Admin','Faculty Admin'].includes(state.role))return;const t=state.teams.find(t=>t.id===$('#allocate-team').value),name=$('#allocate-guide').value;if(!t||!facultyNames().includes(name))return;save();t.faculty=name;if(t.id===state.activeTeamId)state.guide=name;if(state.workspaces[t.id])state.workspaces[t.id].guide=name;save();render();toast('CS AI guide allocation saved.')}
+function facultyCards(){return facultyNames().map(name=>{const teams=state.teams.filter(t=>t.faculty===name);return `<div class="faculty-card">${avatar({name})}<div><h3>${esc(name)}</h3><p class="mini">Faculty guide · CS (AI) · ${teams.length} team${teams.length===1?'':'s'}</p><p class="mini">${teams.map(t=>'Team '+esc(t.id)).join(' · ')||'No teams assigned'}</p></div></div>`}).join('')}
+function allocationForm(){return `<section class="card"><h2>Team guide allocation</h2><p>Faculty Admin coordinates guide assignments under the CS (AI) HOD.</p><label for="allocate-team">Team</label><select id="allocate-team">${state.teams.map(t=>`<option value="${esc(t.id)}">Team ${esc(t.id)} · ${esc(t.title)}</option>`).join('')}</select><label for="allocate-guide">Faculty guide</label><select id="allocate-guide">${facultyNames().map(n=>`<option>${esc(n)}</option>`).join('')}</select><button class="btn" style="margin-top:16px" onclick="allocateGuide()">Save allocation</button></section>`}
+function facultyAdminPanel(){return heading('Coordinate faculty. Support every team.','CS (AI) Faculty Admin · under '+esc(state.department.hod))+`<div class="grid"><div>${allocationForm()}<section class="card"><h2>Faculty directory</h2>${facultyCards()}</section></div><section class="card"><h2>Department ownership</h2><p><strong>Department:</strong> CS (AI)</p><p><strong>HOD:</strong> ${esc(state.department.hod)}</p><p><strong>Faculty Admin:</strong> ${esc(state.department.facultyAdmin)}</p><div class="notice">Faculty Admin manages guide allocations. The assigned Faculty guide reviews and approves submissions. Admin imports the complete Excel roster.</div><button class="btn secondary" onclick="go('Department')">View all CS (AI) teams →</button></section></div>`}
+function allocateGuide(){if(!['Admin','Faculty Admin'].includes(state.role))return;const t=state.teams.find(t=>t.id===$('#allocate-team').value),name=$('#allocate-guide').value;if(!t||!facultyNames().includes(name))return;save();t.faculty=name;if(t.id===state.activeTeamId)state.guide=name;if(state.workspaces[t.id])state.workspaces[t.id].guide=name;save();render();toast('CS (AI) guide allocation saved.')}
 let importPreview=null;
-function adminPanel(){return heading('CS AI · Administration','Import the department roster, assign guides and manage department ownership.',`<span class="tag">ADMIN PANEL</span>`)+`<div class="grid"><div><section class="card"><h2>Import complete Excel roster</h2><p>One row per team, with four member names and USNs, faculty, topic and project title.</p><div class="actions"><a class="btn secondary" href="CS-AI-Roster-Template.xlsx" download>↓ Excel template with dummy teams</a><button class="btn secondary" onclick="exportRoster()">Export current roster (CSV)</button></div><label for="roster-file">Excel / CSV file</label><input id="roster-file" type="file" accept=".xlsx,.xls,.csv"><p class="mini">Files stay in this browser. Up to 10 MB and 2,000 team rows. Macros and formulas are never executed.</p><button class="btn" onclick="readRosterFile()">Read & validate file →</button><div id="import-result" role="status">${importPreview?previewHTML():''}</div><details style="margin-top:18px"><summary>Required columns and import rules</summary><p class="mini">Team ID, Faculty Name, Topic, Project Title, Member 1 Name, Member 1 USN … Member 4 Name, Member 4 USN. Member 1 is Team Lead. Department, HOD and Faculty Admin are optional columns; blank values use the current CS AI settings. Non-CS-AI departments are rejected. Only sheets with recognized team columns are read. Existing Team IDs are updated; new IDs are added. Other teams and their saved work are preserved.</p></details></section>${allocationForm()}</div><div><section class="card"><h2>One department. One HOD.</h2><label for="department-name">Department</label><input id="department-name" value="CS AI" disabled><label for="hod-name">CS AI HOD name</label><input id="hod-name" value="${esc(state.department.hod)}"><label for="faculty-admin-name">Faculty Admin name</label><input id="faculty-admin-name" value="${esc(state.department.facultyAdmin)}"><button class="btn secondary" style="margin-top:16px" onclick="saveDepartmentOwner()">Save department ownership</button><p class="mini">HOD and Faculty Admin names are placeholders until you enter the real names or import them.</p></section><section class="card"><h2>Faculty directory</h2>${facultyCards()}</section><section class="card"><h2>Department records</h2><p>${state.teams.length} teams · ${state.teams.length*4} students · CS AI</p><button class="btn secondary" onclick="go('Department')">Open complete roster →</button></section></div></div>`}
-function saveDepartmentOwner(){if(state.role!=='Admin')return;const hod=$('#hod-name').value.trim(),facultyAdmin=$('#faculty-admin-name').value.trim();if(!hod||!facultyAdmin)return toast('Enter both the HOD and Faculty Admin names.');state.department={name:'CS AI',hod,facultyAdmin};state.teams.forEach(t=>{t.hod=hod;t.facultyAdmin=facultyAdmin});save();render();toast('All CS AI teams now report to the saved department owners.')}
+function adminPanel(){return heading('CS (AI) · Administration','Import the department roster, assign guides and manage department ownership.',`<span class="tag">ADMIN PANEL</span>`)+`<div class="grid"><div><section class="card"><h2>Import complete Excel roster</h2><p>One row per team, with four member names and USNs, faculty, topic and project title.</p><div class="actions"><a class="btn secondary" href="CS-AI-Roster-Template.xlsx" download>↓ Excel template with dummy teams</a><button class="btn secondary" onclick="exportRoster()">Export current roster (CSV)</button></div><label for="roster-file">Excel / CSV file</label><input id="roster-file" type="file" accept=".xlsx,.xls,.csv"><p class="mini">Files stay in this browser. Up to 10 MB and 2,000 team rows. Macros and formulas are never executed.</p><button class="btn" onclick="readRosterFile()">Read & validate file →</button><div id="import-result" role="status">${importPreview?previewHTML():''}</div><details style="margin-top:18px"><summary>Required columns and import rules</summary><p class="mini">Team ID, Faculty Name, Topic, Project Title, Member 1 Name, Member 1 USN … Member 4 Name, Member 4 USN. Member 1 is Team Lead. Department, HOD and Faculty Admin are optional columns; blank values use the current CS (AI) settings. Non-CS-AI departments are rejected. Only sheets with recognized team columns are read. Existing Team IDs are updated; new IDs are added. Other teams and their saved work are preserved.</p></details></section>${allocationForm()}</div><div><section class="card"><h2>One department. One HOD.</h2><label for="department-name">Department</label><input id="department-name" value="CS (AI)" disabled><label for="hod-name">CS (AI) HOD name</label><input id="hod-name" value="${esc(state.department.hod)}"><label for="faculty-admin-name">Faculty Admin name</label><input id="faculty-admin-name" value="${esc(state.department.facultyAdmin)}"><button class="btn secondary" style="margin-top:16px" onclick="saveDepartmentOwner()">Save department ownership</button><p class="mini">HOD and Faculty Admin names are placeholders until you enter the real names or import them.</p></section><section class="card"><h2>Faculty directory</h2>${facultyCards()}</section><section class="card"><h2>Department records</h2><p>${state.teams.length} teams · ${state.teams.length*4} students · CS (AI)</p><button class="btn secondary" onclick="go('Department')">Open complete roster →</button></section></div></div>`}
+function saveDepartmentOwner(){if(state.role!=='Admin')return;const hod=$('#hod-name').value.trim(),facultyAdmin=$('#faculty-admin-name').value.trim();if(!hod||!facultyAdmin)return toast('Enter both the HOD and Faculty Admin names.');state.department={name:'CS (AI)',hod,facultyAdmin};state.teams.forEach(t=>{t.hod=hod;t.facultyAdmin=facultyAdmin});save();render();toast('All CS (AI) teams now report to the saved department owners.')}
 const normalHeader=s=>String(s??'').toLowerCase().replace(/[^a-z0-9]/g,'');
 function headerKey(label){const k=normalHeader(label),aliases={teamid:'id',teamno:'id',teamnumber:'id',team:'id',department:'department',dept:'department',hod:'hod',hodname:'hod',facultyadmin:'facultyAdmin',facultyadminname:'facultyAdmin',facultyadministrator:'facultyAdmin',facultyname:'faculty',faculty:'faculty',guide:'faculty',guidename:'faculty',facultyguide:'faculty',topic:'topic',theme:'topic',projecttopic:'topic',projecttitle:'title',title:'title',projectname:'title'};if(aliases[k])return aliases[k];const m=k.match(/^(?:member|student|teammember)([1-4])(name|usn)$/)||k.match(/^(name|usn)([1-4])$/);if(m)return /^\d$/.test(m[1])?'member'+m[1]+m[2]:'member'+m[2]+m[1];return null}
 const isCSAI=s=>['csai','computerscienceai','computerscienceandartificialintelligence','computerscienceartificialintelligence','cseai','csaidepartment'].includes(normalHeader(s));
@@ -2051,17 +2290,17 @@ function parseRoster(workbook){
  if(head<0){skipped.push(name);continue}found=true;
  const needed=['id','faculty','topic','title',...Array.from({length:4},(_,i)=>['member'+(i+1)+'name','member'+(i+1)+'usn']).flat()];const missing=needed.filter(k=>!keys.includes(k));if(missing.length){errors.push(`Sheet ${name}: missing columns ${missing.join(', ')}.`);continue}
  const duplicateKeys=keys.filter((k,i)=>k&&keys.indexOf(k)!==i);if(duplicateKeys.length){errors.push(`Sheet ${name}: duplicate recognized column(s): ${[...new Set(duplicateKeys)].join(', ')}.`);continue}
- for(let i=head+1;i<rows.length;i++){const row=rows[i];if(!row.some(v=>String(v).trim()))continue;const obj={};keys.forEach((key,j)=>{if(key)obj[key]=String(row[j]??'').trim()});if(!Object.values(obj).some(v=>v.trim()))continue;const at=`${name}, row ${i+1}`;if(needed.some(k=>!obj[k])){errors.push(`${at}: complete all four names/USNs, team ID, faculty, topic and title.`);continue}if(obj.department&&!isCSAI(obj.department)){errors.push(`${at}: department must be CS AI.`);continue}let id=obj.id.replace(/^team[\s-]*/i,'').trim();if(/^\d+$/.test(id))id=String(Number(id)).padStart(2,'0');if(!/^[A-Za-z0-9_-]{1,30}$/.test(id)){errors.push(`${at}: Team ID must contain only letters, digits, hyphens or underscores (max 30).`);continue}const team={id,department:'CS AI',hod:obj.hod||state.department.hod,facultyAdmin:obj.facultyAdmin||state.department.facultyAdmin,faculty:obj.faculty,topic:obj.topic,title:obj.title,members:Array.from({length:4},(_,j)=>({name:obj['member'+(j+1)+'name'],usn:obj['member'+(j+1)+'usn'].toUpperCase()})),sample:false,source:at};if(Object.values(obj).some(v=>v.length>3000)){errors.push(`${at}: one or more fields exceed 3,000 characters.`);continue}team.sample=team.members.every(m=>m.usn.startsWith('DEMO-'));teams.push(team)}
+ for(let i=head+1;i<rows.length;i++){const row=rows[i];if(!row.some(v=>String(v).trim()))continue;const obj={};keys.forEach((key,j)=>{if(key)obj[key]=String(row[j]??'').trim()});if(!Object.values(obj).some(v=>v.trim()))continue;const at=`${name}, row ${i+1}`;if(needed.some(k=>!obj[k])){errors.push(`${at}: complete all four names/USNs, team ID, faculty, topic and title.`);continue}if(obj.department&&!isCSAI(obj.department)){errors.push(`${at}: department must be CS (AI).`);continue}let id=obj.id.replace(/^team[\s-]*/i,'').trim();if(/^\d+$/.test(id))id=String(Number(id)).padStart(2,'0');if(!/^[A-Za-z0-9_-]{1,30}$/.test(id)){errors.push(`${at}: Team ID must contain only letters, digits, hyphens or underscores (max 30).`);continue}const team={id,department:'CS (AI)',hod:obj.hod||state.department.hod,facultyAdmin:obj.facultyAdmin||state.department.facultyAdmin,faculty:obj.faculty,topic:obj.topic,title:obj.title,members:Array.from({length:4},(_,j)=>({name:obj['member'+(j+1)+'name'],usn:obj['member'+(j+1)+'usn'].toUpperCase()})),sample:false,source:at};if(Object.values(obj).some(v=>v.length>3000)){errors.push(`${at}: one or more fields exceed 3,000 characters.`);continue}team.sample=team.members.every(m=>m.usn.startsWith('DEMO-'));teams.push(team)}
  }
  if(!found)errors.push('No team sheet found. Use the downloadable template with Team ID and Project Title headers.');if(teams.length>2000)errors.push('Maximum 2,000 teams per import.');
  const ids=new Set();teams.forEach(t=>{const key=t.id.toLowerCase();if(ids.has(key))errors.push(`${t.source}: duplicate Team ID ${t.id}.`);ids.add(key)});
  const incomingIds=new Set(teams.map(t=>t.id.toLowerCase())),merged=[...state.teams.filter(t=>!incomingIds.has(t.id.toLowerCase())),...teams],usns=new Map();merged.forEach(t=>t.members.forEach(m=>{const key=m.usn.toUpperCase();if(usns.has(key))errors.push(`Duplicate USN ${m.usn}: teams ${usns.get(key)} and ${t.id}.`);else usns.set(key,t.id)}));
- const hods=[...new Set(teams.map(t=>t.hod))],admins=[...new Set(teams.map(t=>t.facultyAdmin))];if(hods.length>1)errors.push('All rows must have the same CS AI HOD.');if(admins.length>1)errors.push('All rows must have the same CS AI Faculty Admin.');
+ const hods=[...new Set(teams.map(t=>t.hod))],admins=[...new Set(teams.map(t=>t.facultyAdmin))];if(hods.length>1)errors.push('All rows must have the same CS (AI) HOD.');if(admins.length>1)errors.push('All rows must have the same CS (AI) Faculty Admin.');
  if(!teams.length&&!errors.length)errors.push('No populated team records found.');return {teams,errors,skipped,hod:hods[0],facultyAdmin:admins[0]};
 }
 async function readRosterFile(){if(state.role!=='Admin')return;const file=$('#roster-file').files[0];if(!file)return toast('Choose an Excel or CSV file first.');if(!/\.(xlsx|xls|csv)$/i.test(file.name)||file.size>10*1024*1024)return toast('Choose .xlsx, .xls or .csv under 10 MB.');try{if(typeof XLSX==='undefined')throw Error('Excel library unavailable. Reload the page.');const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellFormula:false,cellHTML:false,cellStyles:false,bookVBA:false});importPreview=parseRoster(wb);importPreview.filename=file.name;$('#import-result').innerHTML=previewHTML()}catch(e){importPreview=null;$('#import-result').textContent='Could not read this file: '+e.message}}
-function previewHTML(){if(!importPreview)return '';const p=importPreview;return `<div class="notice" style="margin-top:18px"><strong>${esc(p.filename||'Workbook')} · ${p.teams.length} team rows · ${p.errors.length} validation errors</strong><p class="mini">${p.skipped.length?'Skipped sheets without team headers: '+esc(p.skipped.join(', ')):''}</p>${p.errors.length?`<ul>${p.errors.slice(0,30).map(e=>`<li>${esc(e)}</li>`).join('')}</ul>${p.errors.length>30?'<p>Only the first 30 errors are shown.</p>':''}<p>No changes saved. Correct the file and read it again.</p>`:`<p>Ready to add ${p.teams.filter(t=>!state.teams.some(x=>x.id.toLowerCase()===t.id.toLowerCase())).length} teams and update ${p.teams.filter(t=>state.teams.some(x=>x.id.toLowerCase()===t.id.toLowerCase())).length} existing teams. Department: CS AI · HOD: ${esc(p.hod)} · Faculty Admin: ${esc(p.facultyAdmin)}</p><div class="tablewrap"><table><thead><tr><th>Team</th><th>Faculty</th><th>Project title / Topic</th><th>Four members / USN</th></tr></thead><tbody>${p.teams.slice(0,10).map(t=>`<tr><td>${esc(t.id)}</td><td>${esc(t.faculty)}</td><td>${esc(t.title)}<p class="mini">${esc(t.topic)}</p></td><td>${t.members.map(m=>esc(m.name)+' · '+esc(m.usn)).join('<br>')}</td></tr>`).join('')}</tbody></table></div>${p.teams.length>10?'<p>Preview shows the first 10 teams; all validated records will import.</p>':''}<button class="btn" onclick="commitRosterImport()">Import ${p.teams.length} validated teams</button>`}</div>`}
-function commitRosterImport(){if(state.role!=='Admin'||!importPreview||importPreview.errors.length)return;syncTeam();const backup=clone(state);try{const p=importPreview;state.department={name:'CS AI',hod:p.hod,facultyAdmin:p.facultyAdmin};p.teams.forEach(incoming=>{const old=state.teams.find(t=>t.id.toLowerCase()===incoming.id.toLowerCase()),t=clone(incoming);delete t.source;if(old){t.id=old.id;const w=state.workspaces[old.id];if(w){w.members=t.members.map((m,i)=>({...w.members[i],...m}));w.guide=t.faculty;w.forms[1].title=t.title}Object.assign(old,t)}else{state.teams.push(t);state.workspaces[t.id]=newTeamWorkspace(t)}});state.teams.forEach(t=>{t.hod=p.hod;t.facultyAdmin=p.facultyAdmin});const active=state.teams.find(t=>t.id===state.activeTeamId),w=state.workspaces[active.id];workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.guide=active.faculty;state.members=state.members.map((m,i)=>({...m,...active.members[i]}));state.forms[1].title=active.title;if(!save()){state=backup;return}const count=p.teams.length;importPreview=null;render();toast(`Imported ${count} teams. CS AI roster saved in this browser.`)}catch(e){state=backup;toast('Import was not saved: '+e.message)}}
-function rosterMatrix(){const h=['Department','HOD','Faculty Admin','Team ID','Faculty Name','Topic','Project Title',...Array.from({length:4},(_,i)=>['Member '+(i+1)+' Name','Member '+(i+1)+' USN']).flat()];return [h,...state.teams.map(t=>['CS AI',state.department.hod,state.department.facultyAdmin,t.id,t.faculty,t.topic,t.title,...t.members.flatMap(m=>[m.name,m.usn])])]}
+function previewHTML(){if(!importPreview)return '';const p=importPreview;return `<div class="notice" style="margin-top:18px"><strong>${esc(p.filename||'Workbook')} · ${p.teams.length} team rows · ${p.errors.length} validation errors</strong><p class="mini">${p.skipped.length?'Skipped sheets without team headers: '+esc(p.skipped.join(', ')):''}</p>${p.errors.length?`<ul>${p.errors.slice(0,30).map(e=>`<li>${esc(e)}</li>`).join('')}</ul>${p.errors.length>30?'<p>Only the first 30 errors are shown.</p>':''}<p>No changes saved. Correct the file and read it again.</p>`:`<p>Ready to add ${p.teams.filter(t=>!state.teams.some(x=>x.id.toLowerCase()===t.id.toLowerCase())).length} teams and update ${p.teams.filter(t=>state.teams.some(x=>x.id.toLowerCase()===t.id.toLowerCase())).length} existing teams. Department: CS (AI) · HOD: ${esc(p.hod)} · Faculty Admin: ${esc(p.facultyAdmin)}</p><div class="tablewrap"><table><thead><tr><th>Team</th><th>Faculty</th><th>Project title / Topic</th><th>Four members / USN</th></tr></thead><tbody>${p.teams.slice(0,10).map(t=>`<tr><td>${esc(t.id)}</td><td>${esc(t.faculty)}</td><td>${esc(t.title)}<p class="mini">${esc(t.topic)}</p></td><td>${t.members.map(m=>esc(m.name)+' · '+esc(m.usn)).join('<br>')}</td></tr>`).join('')}</tbody></table></div>${p.teams.length>10?'<p>Preview shows the first 10 teams; all validated records will import.</p>':''}<button class="btn" onclick="commitRosterImport()">Import ${p.teams.length} validated teams</button>`}</div>`}
+function commitRosterImport(){if(state.role!=='Admin'||!importPreview||importPreview.errors.length)return;syncTeam();const backup=clone(state);try{const p=importPreview;state.department={name:'CS (AI)',hod:p.hod,facultyAdmin:p.facultyAdmin};p.teams.forEach(incoming=>{const old=state.teams.find(t=>t.id.toLowerCase()===incoming.id.toLowerCase()),t=clone(incoming);delete t.source;if(old){t.id=old.id;const w=state.workspaces[old.id];if(w){w.members=t.members.map((m,i)=>({...w.members[i],...m}));w.guide=t.faculty;w.forms[1].title=t.title}Object.assign(old,t)}else{state.teams.push(t);state.workspaces[t.id]=newTeamWorkspace(t)}});state.teams.forEach(t=>{t.hod=p.hod;t.facultyAdmin=p.facultyAdmin});const active=state.teams.find(t=>t.id===state.activeTeamId),w=state.workspaces[active.id];workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.guide=active.faculty;state.members=state.members.map((m,i)=>({...m,...active.members[i]}));state.forms[1].title=active.title;if(!save()){state=backup;return}const count=p.teams.length;importPreview=null;render();toast(`Imported ${count} teams. CS (AI) roster saved in this browser.`)}catch(e){state=backup;toast('Import was not saved: '+e.message)}}
+function rosterMatrix(){const h=['Department','HOD','Faculty Admin','Team ID','Faculty Name','Topic','Project Title',...Array.from({length:4},(_,i)=>['Member '+(i+1)+' Name','Member '+(i+1)+' USN']).flat()];return [h,...state.teams.map(t=>['CS (AI)',state.department.hod,state.department.facultyAdmin,t.id,t.faculty,t.topic,t.title,...t.members.flatMap(m=>[m.name,m.usn])])]}
 function exportRoster(){if(!['Admin','Faculty Admin'].includes(state.role))return;save();const matrix=rosterMatrix(),csv=matrix.map(r=>r.map(v=>'"'+String(v).replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"').join(',')).join('\r\n'),url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='CS-AI-Complete-Roster.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 save();render();

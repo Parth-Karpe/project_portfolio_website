@@ -279,7 +279,7 @@ render=function(){
   const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
   if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();
 }
-function adminPanel(){return heading('CS AI Administration','Loading department workspace…')}
+function adminPanel(){return heading('CS (AI) Administration','Loading department workspace…')}
 const originalReview=review;
 review=function(){let html=originalReview();if(isFaculty())html=html.replace(`>${esc(state.feedback)}</textarea>`,`>${esc(state.reviews?.[state.stage]?.feedback||'')}</textarea>`).replace(`value="${esc(state.score)}"`,`value="${esc(state.reviews?.[state.stage]?.score??8)}"`);return html+evidenceSection(state.stage)};
 
