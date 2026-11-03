@@ -1448,7 +1448,19 @@ portfolio=function(){
     <main class="portfolio-content">
 
       <!-- STAGE 0: Problem Identification -->
-      <section class="portfolio-section" id="stage-0">
+      <!-- Stage Switcher Tabs (Stage 0, Stage 1) -->
+      <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
+        <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||0)===0?'active':''}" data-tab="0" onclick="switchPortfolioStage(0, true)">
+          <span class="tab-badge">Stage 0</span>
+          <span>Problem Identification</span>
+        </button>
+        <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||0)===1?'active':''}" data-tab="1" onclick="switchPortfolioStage(1, true)">
+          <span class="tab-badge">Stage 1</span>
+          <span>Requirement Engineering</span>
+        </button>
+      </div>
+
+      <section class="portfolio-section" id="stage-0" style="${(window.activePortfolioStage||0)===0?'':'display:none;'}">
         <div class="portfolio-section-title">
           <span class="portfolio-stage-badge">STAGE 0</span>
           <h2>Problem Identification</h2>
@@ -1736,7 +1748,7 @@ portfolio=function(){
       </section>
 
       <!-- STAGE 1: Requirement Engineering -->
-      <section class="portfolio-section" id="stage-1">
+      <section class="portfolio-section" id="stage-1" style="${(window.activePortfolioStage||0)===1?'':'display:none;'}">
         <div class="portfolio-section-title">
           <span class="portfolio-stage-badge">STAGE 1</span>
           <h2>Requirement Engineering</h2>
@@ -1882,7 +1894,7 @@ portfolio=function(){
       </section>
 
       <!-- STAGE 2: Implementation -->
-      <section class="portfolio-section" id="stage-2">
+      <section class="portfolio-section" id="stage-2" style="${(window.activePortfolioStage||0)===2?'':'display:none;'}">
         <div class="portfolio-section-title">
           <span class="portfolio-stage-badge">STAGE 2</span>
           <h2>Implementation</h2>
@@ -1940,7 +1952,7 @@ portfolio=function(){
       </section>
 
       <!-- STAGE 3: Testing and Validations -->
-      <section class="portfolio-section" id="stage-3">
+      <section class="portfolio-section" id="stage-3" style="${(window.activePortfolioStage||0)===3?'':'display:none;'}">
         <div class="portfolio-section-title">
           <span class="portfolio-stage-badge">STAGE 3</span>
           <h2>Testing and Validations</h2>

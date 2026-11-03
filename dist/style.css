@@ -2077,6 +2077,58 @@ tbody tr:hover {
   color: var(--brand);
 }
 
+/* Stage Switcher Tabs (Stage 0, Stage 1) */
+.portfolio-stage-tabs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.portfolio-stage-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.portfolio-stage-tab:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--surface);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+.portfolio-stage-tab .tab-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--brand-subtle);
+  color: var(--brand);
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+.portfolio-stage-tab.active {
+  background: var(--brand);
+  color: #ffffff;
+  border-color: var(--brand);
+  box-shadow: 0 4px 14px var(--brand-glow);
+}
+.portfolio-stage-tab.active .tab-badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
 /* Portfolio Section Presentation Cards */
 .portfolio-section {
   background: var(--surface);

@@ -26,6 +26,43 @@ go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is
 function openSection(n,key=''){if(!rolePages[state.role].includes('Design Journey'))return;state.stage=n;page='Design Journey';selectedSection=key;save();render();if(key)document.getElementById('f-'+key)?.scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo(0,0)}
 
 let activePortfolioTopic = 'stage-0';
+let activePortfolioStage = 0;
+window.activePortfolioStage = activePortfolioStage;
+
+function switchPortfolioStage(stageNum, autoScroll = false){
+  activePortfolioStage = stageNum;
+  window.activePortfolioStage = stageNum;
+
+  // 1. Update tab buttons
+  document.querySelectorAll('.portfolio-stage-tab').forEach(btn => {
+    const isCur = Number(btn.getAttribute('data-tab')) === stageNum;
+    btn.classList.toggle('active', isCur);
+  });
+
+  // 2. Show / hide stage sections
+  const sec0 = document.getElementById('stage-0');
+  const sec1 = document.getElementById('stage-1');
+  const sec2 = document.getElementById('stage-2');
+  const sec3 = document.getElementById('stage-3');
+
+  if(sec0) sec0.style.display = stageNum === 0 ? '' : 'none';
+  if(sec1) sec1.style.display = stageNum === 1 ? '' : 'none';
+  if(sec2) sec2.style.display = stageNum === 2 ? '' : 'none';
+  if(sec3) sec3.style.display = stageNum === 3 ? '' : 'none';
+
+  // 3. Highlight corresponding stage in sidebar
+  const defaultNavId = stageNum === 0 ? 'stage-0' : stageNum === 1 ? 'stage-1' : stageNum === 2 ? 'stage-2' : 'stage-3';
+  updateActivePortfolioNav(defaultNavId);
+
+  // 4. Smooth scroll to tab area if clicked on tab button
+  if(autoScroll){
+    const tabEl = document.getElementById('portfolio-stage-tabs');
+    if(tabEl){
+      tabEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+}
+window.switchPortfolioStage = switchPortfolioStage;
 function portfolioSubnav(){
   return `<div class="subnav portfolio-subnav">
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-0'?'selected':''}" data-target="stage-0" onclick="scrollToPortfolioTopic('stage-0')">
@@ -76,21 +113,28 @@ function portfolioSubnav(){
 
 function scrollToPortfolioTopic(id){
   activePortfolioTopic = id;
-  if(page !== 'Team Portfolio'){
-    go('Team Portfolio');
+  const isStage1 = ['stage-1', 'sec-fr', 'sec-nfr', 'sec-arch', 'sec-workflow', 'sec-techstack'].includes(id);
+  const isStage0 = ['stage-0', 'sec-problem', 'sec-objectives', 'sec-usecase'].includes(id);
+  const isStage2 = id === 'stage-2';
+  const isStage3 = id === 'stage-3';
+  const targetStage = isStage1 ? 1 : isStage2 ? 2 : isStage3 ? 3 : 0;
+
+  const performScroll = () => {
+    switchPortfolioStage(targetStage, false);
     setTimeout(() => {
       const el = document.getElementById(id);
       if(el){
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         updateActivePortfolioNav(id);
       }
-    }, 150);
+    }, 20);
+  };
+
+  if(page !== 'Team Portfolio'){
+    go('Team Portfolio');
+    setTimeout(performScroll, 150);
   } else {
-    const el = document.getElementById(id);
-    if(el){
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      updateActivePortfolioNav(id);
-    }
+    performScroll();
   }
 }
 
@@ -121,7 +165,7 @@ window.addEventListener('scroll', () => {
     let current = '';
     for(const id of ids){
       const el = document.getElementById(id);
-      if(!el) continue;
+      if(!el || el.offsetParent === null) continue;
       const rect = el.getBoundingClientRect();
       if(rect.top <= 160 && rect.bottom >= 60){
         current = id;
