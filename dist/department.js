@@ -1426,13 +1426,6 @@ portfolio=function(){
 
   return `
 <div class="portfolio-container">
-  <!-- Sticky Back Button Bar to Respective Theme Page -->
-  <div class="portfolio-sticky-bar" style="position: sticky; top: 72px; z-index: 100; background: var(--bg); padding: 10px 0; margin-bottom: 12px; display: flex; align-items: center; border-bottom: 1px solid var(--line);">
-    <button class="btn secondary" style="padding:8px 18px; font-size:13.5px; font-weight:700; display:inline-flex; align-items:center; gap:8px; cursor:pointer; background:var(--surface); border:1.5px solid var(--line); border-radius:8px; box-shadow:var(--shadow-sm);" onclick="backToThemeProjects(${esc(themeNo)})">
-      ← Back to Theme ${esc(themeNo)}
-    </button>
-  </div>
-
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
     <div>
@@ -1454,9 +1447,8 @@ portfolio=function(){
             ${avatar(m)}
             <div>
               <strong style="display:block;font-size:14px;color:var(--ink);line-height:1.25">${esc(m.name)}</strong>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-                <span class="tag ${i===0?'':'gray'}" style="font-size:11px;padding:2px 8px;font-weight:700">${i===0?'Team Leader':'Team Member'}</span>
-                <span style="font-size:12px;color:var(--muted)"><b>USN:</b> ${esc(m.usn)}</span>
+              <div style="margin-top:4px">
+                <span style="font-size:12.5px;color:var(--muted)"><b>USN:</b> ${esc(m.usn)}</span>
               </div>
             </div>
           </div>
