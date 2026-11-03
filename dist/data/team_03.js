@@ -1,14 +1,12 @@
 /**
  * Static Data File for Team 03
- * Source documents: Mini_Project_Gate_0_details_team_03.docx & Gate_01_team_03.docx
+ * Source documents provided by user:
+ * 1. Stage_0_Smart_Campus_Lab_Resource_Optimizer.docx
+ * 2. Team_3_Gate_1_Smart_Campus_Lab_Resource_Optimizer.docx
+ * 3. System Design.docx
  * Project: Smart Campus Lab & Resource Optimizer
  * Theme: Concurrent and Transactional Systems (Theme 22)
  * Guide: Mr. Amit K
- *
- * HOW TO EDIT OR PROVIDE NEW CONTENT:
- * 1. Modify the fields or table arrays below.
- * 2. To change or add images, place your image file in `dist/assets/` and set the path in `useCaseImage`, `asIsWorkflowImage`, or `archImage`.
- * 3. All tables below match the exact columns and rows from the official Word documents.
  */
 
 window.STATIC_TEAMS_DATA = window.STATIC_TEAMS_DATA || {};
@@ -56,146 +54,186 @@ const team03Data = {
   ],
 
   // ==========================================
-  // STAGE 0: PROBLEM IDENTIFICATION (Gate 0)
+  // STAGE 0: PROBLEM STATEMENT & NEED IDENTIFICATION
+  // Source: Stage_0_Smart_Campus_Lab_Resource_Optimizer.docx
   // ==========================================
   stage0: {
-    problem: 'Campus labs, project rooms, and shared equipment (workstations, 3D printers, oscilloscopes, etc.) are booked manually through paper registers, spreadsheets, or ad-hoc WhatsApp/email requests. Booking requests are checked for conflicts by hand, one at a time, with no systematic way to verify that a resource\'s capacity or time-window constraints are respected across all simultaneous requests. As demand grows near exam weeks or project deadlines, this manual checking breaks down -- the same slot gets promised to more than one group, and no one can say, with evidence, how efficiently the available lab capacity is actually being used.',
-    targetUsers: 'Students and project teams needing lab time; faculty/lab instructors who approve bookings; lab and facility administrators who resolve conflicts; and the timetable/scheduling committee responsible for term-wide resource allocation.',
-    baselineFriction: 'The current process is manual and pairwise -- each new request is checked against existing bookings by a person reading a register, which is slow, error-prone at scale, and does not hold up past a handful of simultaneous requests. There is no optimization: slots are allocated first-come-first-served, not by any measure of overall utilization or fairness across competing student/course groups. When demand exceeds capacity, conflicts are discovered late -- sometimes only when two groups show up to the same lab -- and there is no principled way to decide priority.',
-    objectives: '1. Detect all resource/time-window conflicts among booking requests correctly and efficiently, at scale beyond simple pairwise checking. 2. Design and implement an allocation algorithm that respects every resource\'s capacity and eligibility constraints with zero violations. 3. Achieve a measurably higher utilization/fairness outcome than a naive first-come-first-served baseline, on the same booking-request set. 4. Precisely identify and report unavoidable conflicts whenever demand exceeds capacity, tracing each conflict to competing requests. 5. Demonstrate scalable conflict-detection and allocation performance.',
-    success1: 'Zero Conflict Invariants: Strict constraint satisfaction with zero double-booked resources or capacity violations across all concurrent requests.',
-    success2: 'Measurable Utilization Gain: Demonstrably higher lab utilization and fair distribution over naive FCFS with sub-second interval conflict detection.',
-
-    // Images for Stage 0 (Extracted directly from Gate 0 & Gate 1 docx files)
-    useCaseImage: 'assets/team03_usecase_diagram.png',
-    useCaseCaption: 'Figure 0.1: Contextual UML Use Case Diagram for Smart Campus Lab & Resource Optimizer (Gate 01 Source Document).',
-    asIsWorkflowImage: 'assets/team03_asis_workflow.png',
-    asIsWorkflowCaption: 'Figure 0.2: AS-IS Process Swimlane Workflow Diagram for Current Manual Booking Process (Gate 00 Source Document).',
-
-    // Word Table 3 (Gate 0): Foundation Course Integration
-    coursesTable: [
-      { sl: '1', course: 'Design & Analysis of Algorithms', concepts: 'Algorithm-design paradigms (greedy, dynamic programming, backtracking, branch-and-bound); complexity and asymptotic analysis', role: 'Dominant' },
-      { sl: '2', course: 'Data Structures & Algorithms', concepts: 'Graphs, trees, heaps, hashing, and interval/overlap structures for efficient conflict detection', role: 'Dominant' },
-      { sl: '3', course: 'Operating Systems', concepts: 'Concurrency and resource coordination for simultaneous booking requests', role: 'Dominant' },
-      { sl: '4', course: 'Discrete Mathematical Structures', concepts: 'Formal modelling of constraints (sets, relations, graphs); correctness and complexity reasoning', role: 'Supporting' },
-      { sl: '5', course: 'Software Engineering & SDLC', concepts: 'Modular solver architecture; requirements traceability from constraints to acceptance evidence', role: 'Supporting' },
-      { sl: '6', course: 'Database Management Systems', concepts: 'Persistent storage of booking instances, solutions, and constraint data', role: 'Supporting' }
+    problem: 'In many colleges, academic timetables and resource allocation are still managed manually, making it difficult to handle sudden changes, additional classes, and faculty unavailability. These challenges often result in scheduling conflicts, underutilized classrooms and laboratories, and uneven faculty workloads. Managing multiple scheduling requests is also complicated due to the lack of a systematic approach to prioritizing requests, ensuring fairness, and considering resource availability. Therefore, an efficient system is needed to simplify timetable management, optimize the use of existing resources, and ensure smooth academic activities with minimal disruption.',
+    objectives: [
+      'To detect overlapping booking requests and resource conflicts accurately.',
+      'To allocate resources while following capacity, time-slot and eligibility rules.',
+      'To improve resource utilization and fairness compared with first-come-first-served allocation.',
+      'To identify and report requests that cannot be fulfilled when resources are limited.',
+      'To generate reports on resource utilization, fairness and conflicts.',
+      'To test the system with increasing numbers of booking requests.'
     ],
 
-    // Word Table (Gate 0): Conceptual Pipeline Flow
+    // 3. Foundation Course Integration Table
+    coursesTable: [
+      { sl: '1', course: 'Design & Analysis of Algorithms', concepts: 'Greedy algorithms, Dynamic Programming and Backtracking', role: 'Core' },
+      { sl: '2', course: 'Data Structures & Algorithms', concepts: 'Trees, heaps, graphs and interval-based conflict detection', role: 'Core' },
+      { sl: '3', course: 'Operating Systems', concepts: 'Concurrency, process scheduling, locks and resource coordination', role: 'Core' },
+      { sl: '4', course: 'Discrete Mathematical Structures', concepts: 'Sets, relations, graphs and constraint modelling', role: 'Supporting' },
+      { sl: '5', course: 'Software Engineering', concepts: 'Modular design, requirements and system testing', role: 'Supporting' },
+      { sl: '6', course: 'Database Management Systems', concepts: 'Booking records, data storage, transactions and data consistency', role: 'Core' }
+    ],
+
+    // 4. Conceptual Workflow Tables
     pipelineTable: [
       {
-        input: 'Booking requests with resource, time-window, and eligibility constraints',
-        assessment: 'DSA interval-conflict detector and OS concurrency engine evaluate constraint feasibility',
-        userAction: 'Review allocated slots, inspect conflicting alternatives, or confirm queued requests',
-        output: 'Conflict-free resource allocation schedule with auditable utilization reports'
+        input: 'Booking request with resource, date, time and requirements',
+        processing: 'Check availability, capacity, eligibility and time conflicts',
+        userAction: 'Confirm request, select an alternative or join waiting queue',
+        output: 'Confirmed allocation or conflict/waiting status'
       }
     ],
 
-    // Word Table 6 (Gate 1) / Engine Decomposition Summary
     enginesTable: [
-      { id: 'E1', name: 'Operating Systems (OS) Engine', desc: 'Scheduling, queue management, synchronization, and concurrent shared-resource coordination. Primary Owner: Nupur Bagave.' },
-      { id: 'E2', name: 'Data Structures & Algorithms (DSA) Engine', desc: 'Efficient search, conflict detection, ranking, allocation decision logic, and alternative recommendation. Primary Owner: Sachi Aratti.' },
-      { id: 'E3', name: 'Database Management Systems (DBMS) Engine', desc: 'Persistent, consistent, and traceable academic, resource, request, allocation, and audit data management. Primary Owner: Parth Karpe.' },
-      { id: 'E4', name: 'Web Technologies Engine', desc: 'User interaction, role-based workflows, dashboards, and system communication. Primary Owner: Vedant Khot.' }
+      { id: 'E1', name: 'Scheduling & Concurrency Controller', desc: 'Manages simultaneous requests using queues, priorities and locks.' },
+      { id: 'E2', name: 'Search, Conflict & Allocation Engine', desc: 'Finds available resources, detects clashes and selects suitable allocations.' },
+      { id: 'E3', name: 'Data Management & Integrity Engine', desc: 'Stores booking and resource data and maintains accurate, consistent records.' },
+      { id: 'E4', name: 'Control & Monitoring Dashboard', desc: 'Provides user dashboards to submit requests, view schedules and monitor resource usage.' }
     ],
 
-    // Word Table 27 (Gate 0): Broad In-Scope Items
+    // 5. Project Scope Tables
     scopeInTable: [
-      { num: '1', item: 'Resource and booking constraint modelling (capacity, time windows, eligibility)' },
-      { num: '2', item: 'Efficient interval/time-slot conflict detection at scale (interval-tree or sweep-line based)' },
-      { num: '3', item: 'An allocation algorithm (constraint-based search or a utilization-optimizing heuristic)' },
-      { num: '4', item: 'Precise reporting of unavoidable conflicts when demand exceeds capacity, plus a utilization/fairness report' }
+      { num: '1', item: 'Model resources and booking rules such as capacity, time slots and eligibility.' },
+      { num: '2', item: 'Detect time-slot conflicts efficiently using interval-based algorithms.' },
+      { num: '3', item: 'Allocate resources using constraint-based or utilization-focused algorithms.' },
+      { num: '4', item: 'Report unavoidable conflicts, resource utilization and allocation fairness.' }
     ],
 
-    // Word Table 28 (Gate 0): Out-of-Scope Items
     scopeOutTable: [
-      { num: '1', item: 'Real-time IoT sensor integration with physical lab equipment (cameras, RFID, relays, occupancy sensors)', reason: 'Explicitly out of scope per the assigned brief; adds hardware cost/risk without serving the core algorithmic problem' },
-      { num: '2', item: 'Multi-building, campus-wide real deployment', reason: 'A synthetic dataset / pilot-scale demonstration is sufficient to prove the algorithm this semester' },
-      { num: '3', item: 'Payment/billing integration', reason: 'Not relevant to the resource-allocation problem; would expand scope without adding algorithmic value' }
+      { num: '1', item: 'Real-time IoT integration with cameras, RFID or occupancy sensors.', reason: 'Hardware integration is outside the project scope.' },
+      { num: '2', item: 'Full campus-wide deployment across multiple buildings.', reason: 'A pilot-scale software demonstration is sufficient.' },
+      { num: '3', item: 'Payment and billing integration.', reason: 'Not required for resource allocation.' }
     ],
 
-    // Word Table 33 (Gate 0): Feasibility Assessment
+    // 6. Feasibility & Constraints Table
     feasibilityTable: [
-      { aspect: 'Algorithm Design Skill', assessment: 'Achievable: Interval-tree/sweep-line conflict detection and greedy/constraint-based allocation are well-documented, standard DAA/DSA techniques.' },
-      { aspect: 'Implementation Tooling', assessment: 'Achievable: Standard open-source libraries (e.g., Python interval-tree packages, or constraint solver such as OR-Tools) are freely available.' },
-      { aspect: 'Testing / Benchmarking', assessment: 'Achievable: Synthetic data generation and brute-force pairwise comparison for correctness validation are straightforward to build.' },
-      { aspect: 'Team Skill Coverage', assessment: 'Achievable with effort: Team has coursework exposure to DAA/DSA/Discrete Math; OS-level concurrency concepts may need extra self-study.' },
-      { aspect: 'Overall Feasibility Conclusion', assessment: 'Go: Algorithmic core is feasible within team skillset and 15-week timeline with no external hardware dependencies.' }
-    ],
-
-    // Word Table 11 (Gate 1): Use Case / User Story Specifications
-    userStoryTable: [
-      { id: 'UC-01', actor: 'Department / Authorized User', desc: 'Load / Validate Pilot Timetable: Validate and store Div-A/Div-B timetable and derive activity information.', mainFlow: 'Load pilot dataset; validate required fields and store activity records.', exceptionFlow: 'Invalid or incomplete timetable is rejected and flagged.' },
-      { id: 'UC-02', actor: 'Admin / HOD', desc: 'Maintain Resource Profile: Store resource type, capacity, location, facilities, sharing and suitability.', mainFlow: 'Inspect records and run completeness validation.', exceptionFlow: 'Incomplete or inconsistent resource data is rejected.' },
-      { id: 'UC-03', actor: 'Student / Faculty', desc: 'Search Suitable Resource: Return resources satisfying time, capacity and suitability constraints.', mainFlow: 'Run predefined searches and filter available resources.', exceptionFlow: 'No feasible resource: return explanation and alternatives where available.' },
-      { id: 'UC-04', actor: 'Student / Faculty', desc: 'Submit Resource Request: Submit activity, group size, time window and applicable constraints.', mainFlow: 'Submit request with activity, group size, and time window parameters.', exceptionFlow: 'Invalid or incomplete request is rejected with validation feedback.' },
-      { id: 'UC-05', actor: 'System', desc: 'Allocate Resource: Filter candidates, apply hard constraints, evaluate feasible candidates, select and commit allocation.', mainFlow: 'Evaluate constraints, allocate optimal resource, commit atomically.', exceptionFlow: 'No feasible resource: do not commit; explain conflict and provide alternatives/queue.' },
-      { id: 'UC-06', actor: 'System / Admin', desc: 'Detect & Explain Conflict: Detect overlap/constraint conflicts and identify the cause.', mainFlow: 'Detect interval overlap and generate structured conflict reason.', exceptionFlow: 'Conflicting or incomplete data is flagged without changing committed allocation.' },
-      { id: 'UC-07', actor: 'System / Authorized User', desc: 'Resolve Priority / Authority Conflict: Apply configured rules and support authorized reallocation.', mainFlow: 'Apply priority and authority rules to reallocate resources.', exceptionFlow: 'No valid resolution: retain valid allocation and record unresolved conflict.' },
-      { id: 'UC-08', actor: 'Affected Requester', desc: 'Accept Alternative or Join Queue: Review alternative, accept/reject it or enter queue.', mainFlow: 'Return feasible alternatives or place request into queue.', exceptionFlow: 'No feasible alternative: retain request in queue or unresolved status.' },
-      { id: 'UC-09', actor: 'HOD / Admin', desc: 'Analyze Faculty Workload: View workload, consecutive allocations and fairness-related measures.', mainFlow: 'Calculate workload distribution and consecutive slot counts.', exceptionFlow: 'Incomplete faculty or allocation data is flagged.' },
-      { id: 'UC-10', actor: 'HOD / Admin', desc: 'Analyze Resource Utilization: View resource and department-wise utilization.', mainFlow: 'Compute utilization metrics and compare parameter configurations.', exceptionFlow: 'Missing allocation records are excluded or flagged.' },
-      { id: 'UC-12', actor: 'HOD / Admin', desc: 'Review Allocation Audit: Trace request, actor, decision, allocation/reallocation and outcome history.', mainFlow: 'Inspect complete historical audit log of all allocation decisions.', exceptionFlow: 'Missing audit information is flagged.' }
+      { aspect: 'Technical Feasibility', assessment: 'Achievable using standard algorithms, data structures and open-source tools.' },
+      { aspect: 'Operational Feasibility', assessment: 'The system can be tested using sample booking requests and simulated resource availability.' },
+      { aspect: 'Time Feasibility', assessment: 'The project is achievable within the 15-week semester.' },
+      { aspect: 'Resource Feasibility', assessment: 'A team of four can develop and test the system using standard laptops; no special hardware is required.' },
+      { aspect: 'Constraints', assessment: 'Limited access to real booking data; testing will use synthetic datasets. The team has a 15-week timeline and must ensure correct conflict detection and fair allocation.' },
+      { aspect: 'Overall Feasibility', assessment: 'Go – the software-based project is achievable within the available time, team size and resources.' }
     ]
   },
 
   // ==========================================
-  // STAGE 1: REQUIREMENT ENGINEERING (Gate 1)
+  // STAGE 1: REQUIREMENT ANALYSIS
+  // Source: Team_3_Gate_1_Smart_Campus_Lab_Resource_Optimizer.docx
   // ==========================================
   stage1: {
-    // Word Table 8 (Gate 1): Functional Requirements Table
+    // 1. Functional Requirements Table
     frTable: [
-      { id: 'FR-01', desc: 'Manage and validate timetable and academic activity information, including faculty, division, and student-strength details.', priority: 'Mandatory', sourceNeed: 'S0-01: Need verified timetable and academic activity information.' },
-      { id: 'FR-02', desc: 'Maintain structured resource information including type, capacity, location, availability, suitability, and classification.', priority: 'Mandatory', sourceNeed: 'S0-02: Need structured resource information and classification.' },
-      { id: 'FR-03', desc: 'Search and filter available resources based on time, capacity, type, suitability, facilities, and sharing requirements.', priority: 'Mandatory', sourceNeed: 'S0-03: Need reliable availability and suitability-based resource search.' },
-      { id: 'FR-04', desc: 'Manage faculty availability and analyze workload and allocation fairness across faculty members.', priority: 'Mandatory', sourceNeed: 'S0-04: Need visibility of faculty availability, workload and fairness.' },
-      { id: 'FR-05', desc: 'Create, validate, track, edit, and cancel resource requests with the required activity, time, group, and constraint details.', priority: 'Mandatory', sourceNeed: 'S0-05: Need a structured resource request and booking workflow.' },
-      { id: 'FR-06', desc: 'Allocate resources while satisfying hard constraints and detect and explain allocation conflicts.', priority: 'Mandatory', sourceNeed: 'S0-06: Need valid allocation and explainable conflict handling.' },
-      { id: 'FR-07', desc: 'Resolve competing requests using priority and authority rules and support authorized resource reallocation.', priority: 'Mandatory', sourceNeed: 'S0-07: Need configured handling of competing requests and authorized reallocation.' },
-      { id: 'FR-08', desc: 'Generate suitable alternative resources and manage alternative acceptance, rejection, and request queuing.', priority: 'Mandatory', sourceNeed: 'S0-08: Need alternatives and queue handling when preferred resources are unavailable.' },
-      { id: 'FR-09', desc: 'Analyze resource and department utilization and compare allocation results using different parameter configurations.', priority: 'Challenge', sourceNeed: 'S0-09: Need measurable utilization analysis and comparison of allocation parameters.' },
-      { id: 'FR-10', desc: 'Provide role-based access, dashboards, and traceable records of allocation and reallocation decisions.', priority: 'Mandatory', sourceNeed: 'S0-10: Need controlled access, visibility and traceable allocation history.' }
+      { id: '01', desc: 'The system shall allow students and project teams to submit booking requests by selecting a resource, date, time slot and required capacity.', priority: 'Mandatory', sourceNeed: 'Online resource booking' },
+      { id: '02', desc: 'The system shall display available labs, project rooms and shared equipment for the selected time slot.', priority: 'Mandatory', sourceNeed: 'Visibility of resource availability' },
+      { id: '03', desc: 'The system shall check resource capacity, time-window and eligibility rules before accepting a booking.', priority: 'Mandatory', sourceNeed: 'Capacity and eligibility validation' },
+      { id: '04', desc: 'The system shall detect overlapping bookings and prevent the same resource from being allocated more than once for the same time slot.', priority: 'Mandatory', sourceNeed: 'Automated conflict detection' },
+      { id: '05', desc: 'The system shall compare competing requests and allocate resources based on availability, priority and fairness.', priority: 'Mandatory', sourceNeed: 'Fair resource allocation' },
+      { id: '06', desc: 'The system shall suggest suitable alternative resources or time slots when the requested resource is unavailable.', priority: 'Mandatory', sourceNeed: 'Alternative resource suggestions' },
+      { id: '07', desc: 'The system shall place eligible unallocated requests in a waiting queue and recheck them when a resource becomes available.', priority: 'Mandatory', sourceNeed: 'Waiting queue management' },
+      { id: '08', desc: 'The system shall store booking requests, allocation decisions and updates while maintaining correct records during simultaneous requests.', priority: 'Mandatory', sourceNeed: 'Reliable booking and data integrity' },
+      { id: '09', desc: 'The system shall generate reports showing resource utilization, allocation fairness and unresolved conflicts.', priority: 'Mandatory', sourceNeed: 'Utilization and conflict reporting' }
     ],
 
-    // Word Table 9 (Gate 1): Non-Functional Requirements Table
+    // 2. Non Functional Requirements Table
     nfrTable: [
-      { id: 'NFR-01', desc: 'Resource search and request submission shall be completed within a maximum of 5 interaction steps after authentication.', cat: 'Usability', target: '≤ 5 interaction steps' },
-      { id: 'NFR-02', desc: 'Normal availability/resource searches shall target a response time of ≤2 seconds under the defined pilot workload.', cat: 'Performance', target: '≤ 2 seconds' },
-      { id: 'NFR-03', desc: 'Committed records shall satisfy data-integrity constraints and shall not contain invalid resource-time relationships.', cat: 'Data Integrity', target: '0 invalid committed records' },
-      { id: 'NFR-04', desc: 'Concurrent requests shall be handled transactionally so race conditions cannot create conflicting committed allocations.', cat: 'Concurrency & Safety', target: '0 conflicting commits from race conditions' },
-      { id: 'NFR-05', desc: 'Users shall access data and actions according to assigned roles; unauthorized actions shall be denied.', cat: 'Security', target: '100% of tested unauthorized actions denied' },
-      { id: 'NFR-06', desc: 'Committed allocation and reallocation changes shall retain history to trace request, actor, action and outcome.', cat: 'Auditability', target: '100% of committed changes traceable' },
-      { id: 'NFR-07', desc: 'Resource values, priority/authority rules and allocation parameters shall be changeable without rewriting core allocation logic.', cat: 'Configurability', target: 'Configuration changes without core-logic rewrite' },
-      { id: 'NFR-09', desc: 'Validation failures shall not corrupt committed allocation data, and core allocation modules shall be independently testable and maintainable.', cat: 'Reliability', target: '0 corrupted commits; independent module tests' },
-      { id: 'NFR-10', desc: 'Allocation/conflict results shall provide timely feedback and enough reason information to explain allocation, rejection or redirection.', cat: 'Responsiveness', target: '100% of tested decisions include outcome and reason' }
+      { id: '01', desc: 'The system shall prevent overlapping confirmed bookings for the same resource and time slot.', cat: 'Accuracy', target: 'Zero conflicting confirmed allocations in test cases' },
+      { id: '02', desc: 'The system shall process simultaneous requests without allocating the same resource more than once.', cat: 'Concurrency', target: 'Only one request receives a resource when requests compete for the same slot' },
+      { id: '03', desc: 'The system shall save every confirmed booking and its allocation details.', cat: 'Reliability', target: '100% of confirmed bookings are present in stored records' },
+      { id: '04', desc: 'The system shall handle booking requests according to the defined priority and fairness rules.', cat: 'Fairness', target: 'Waiting time and allocation results are recorded for each request' },
+      { id: '05', desc: 'The system shall provide a simple interface to view availability and submit or track requests.', cat: 'Usability', target: 'Users can complete a booking request using the displayed steps' },
+      { id: '06', desc: 'The system shall allow only authorized users to approve or modify bookings.', cat: 'Security', target: 'Unauthorized booking changes are rejected' },
+      { id: '07', desc: 'The system shall preserve existing confirmed bookings when a request fails or an allocation is retried.', cat: 'Data Integrity', target: 'No previously confirmed booking is changed by a failed request' }
     ],
 
-    // Architecture description & tech details
-    archDesc: 'The Smart Campus Lab & Resource Optimizer is partitioned into four decoupled, course-aligned engines: E1 (OS Concurrency & Queue Manager), E2 (DSA Search & Interval Conflict Detector), E3 (DBMS Relational Data & Audit Store), and E4 (Web Technologies Interface & Dashboards). Concurrency control and transactional safety prevent race conditions during peak booking periods.',
-    archImage: '', // Can be customized with dedicated architecture diagram
-    archCaption: 'Figure 1.1: Multi-Engine Concurrent Architecture for Smart Campus Lab & Resource Optimizer.',
-
-    workflowDesc: '1. Requesters authenticate and submit booking requests with activity time-windows and constraints. 2. E4 forwards requests to E1 for queue sequencing and concurrency arbitration. 3. E2 evaluates feasibility using interval structures against current commitments in E3. 4. If free, an atomic commit is logged in E3; if a clash occurs, explainable conflict reasons and feasible alternatives are generated. 5. Audits and real-time utilization analytics are exported to HOD and administrator dashboards.',
-
-    techStack: [
-      { layer: 'Frontend Tier', tech: 'HTML5, Modern CSS3, ES2022 JavaScript, SheetJS for dataset ingestion' },
-      { layer: 'Application & Routing', tech: 'Node.js / Express or Python FastAPI with RESTful JSON endpoints' },
-      { layer: 'Algorithmic Solver', tech: 'Interval Trees, Sweep-Line Conflict Detection, OR-Tools CP-SAT / Greedy Heuristics' },
-      { layer: 'Data & Persistence', tech: 'PostgreSQL / SQLite with ACID transactions, IndexedDB Local Cache' },
-      { layer: 'Testing & Validation', tech: 'Jest / PyTest suite, synthetic load generator, brute-force pairwise verification' }
+    // 3. Use Cases Table & Diagram
+    useCaseImage: 'assets/team03_usecase_diagram_doc.png',
+    useCaseCaption: 'Fig : Use case diagram',
+    userStoryTable: [
+      { id: '01', actor: 'Student / Project Team', desc: 'User wants to view available labs, rooms or equipment.', mainFlow: 'Log in → Open resource list → Select date and time → System displays available resources.', exceptionFlow: 'No matching resource → System displays that no resource is available.' },
+      { id: '02', actor: 'Student / Project Team', desc: 'User wants to request a resource.', mainFlow: 'Select resource → Enter time slot, group size and requirements → Submit request.', exceptionFlow: 'Missing or invalid details → System asks the user to correct them.' },
+      { id: '03', actor: 'System', desc: 'System wants to validate a booking request.', mainFlow: 'Check time availability → Check capacity and eligibility → Check existing bookings.', exceptionFlow: 'Constraint not satisfied → System rejects the request or shows the reason.' },
+      { id: '04', actor: 'System', desc: 'System wants to detect conflicts between requests.', mainFlow: 'Compare time windows and resource usage → Identify overlapping requests → Mark conflict.', exceptionFlow: 'Booking data unavailable → System reports the validation failure.' },
+      { id: '05', actor: 'System', desc: 'System wants to allocate resources fairly.', mainFlow: 'Rank eligible requests → Apply priority and fairness rules → Select suitable resource → Confirm allocation.', exceptionFlow: 'Resource taken by another request → System retries allocation or places request in waiting queue.' },
+      { id: '06', actor: 'Student / Project Team', desc: 'User wants an alternative when the requested resource is unavailable.', mainFlow: 'System searches suitable alternatives → Displays available resources/time slots → User selects an option.', exceptionFlow: 'No suitable alternative → User may join the waiting queue or leave the request unresolved.' },
+      { id: '07', actor: 'Faculty / Lab Instructor', desc: 'Faculty wants to review and manage booking requests.', mainFlow: 'View requests → Check details and availability → Approve or reject request.', exceptionFlow: 'Request violates resource rules → System displays the reason and does not confirm it.' },
+      { id: '08', actor: 'Lab / Facility Administrator', desc: 'Administrator wants to manage resource and booking information.', mainFlow: 'View resource records → Add or update resource details and constraints → Save changes.', exceptionFlow: 'Invalid details or conflicting update → System rejects the change.' },
+      { id: '09', actor: 'HOD / Administrator', desc: 'HOD or administrator wants to monitor resource usage.', mainFlow: 'Open dashboard → View utilization, waiting requests, conflicts and fairness reports.', exceptionFlow: 'Report data unavailable → System displays an appropriate status message.' }
     ],
 
-    // Test suite matrix
-    testCases: [
-      { id: 'TC-01', req: 'FR-01', desc: 'Load Div-A/Div-B timetable dataset and verify student-strength integrity.', criteria: 'Invalid or incomplete timetable records rejected with informative errors.', status: 'PASSED' },
-      { id: 'TC-02', req: 'FR-02', desc: 'Verify resource profile completeness across all campus labs and equipment.', criteria: 'Every managed lab entity contains valid capacity, location, and suitability tags.', status: 'PASSED' },
-      { id: 'TC-03', req: 'FR-03', desc: 'Search for 60-seat lab during peak Tuesday slot; verify undersized rooms filtered.', criteria: 'Zero undersized or unavailable rooms returned in candidate list.', status: 'PASSED' },
-      { id: 'TC-04', req: 'FR-04', desc: 'Evaluate faculty consecutive allocation limits and workload distribution.', criteria: 'Calculates consecutive allocations correctly; flags overload scenarios.', status: 'PASSED' },
-      { id: 'TC-05', req: 'FR-06', desc: 'Simulate concurrent requests for identical resource and time interval.', criteria: 'Zero double-booking committed; second request receives structured conflict explanation.', status: 'PASSED' },
-      { id: 'TC-06', req: 'FR-08', desc: 'Request unavailable resource; verify automated alternative recommendations.', criteria: 'Returned alternatives satisfy capacity and time constraints without new clashes.', status: 'PASSED' },
-      { id: 'TC-07', req: 'NFR-04', desc: 'Execute 50 simultaneous synthetic booking threads to test transactional safety.', criteria: 'Zero race-condition corruptions or duplicate resource commitments.', status: 'PASSED' }
+    // 4. Acceptance Criteria Table
+    acceptanceTable: [
+      { req: '01', criteria: 'The system displays resources that are available for the selected date and time.', method: 'Create resource records with known availability and verify the displayed list.' },
+      { req: '02', criteria: 'The system accepts valid booking requests containing resource, time slot and group size details.', method: 'Submit valid and invalid booking requests and verify the response.' },
+      { req: '03', criteria: 'The system checks capacity, eligibility and time-window constraints before confirming a booking.', method: 'Test requests that satisfy and violate each constraint.' },
+      { req: '04', criteria: 'The system detects overlapping requests and does not confirm conflicting allocations.', method: 'Submit requests for the same resource and overlapping time slots.' },
+      { req: '05', criteria: 'The system allocates resources using the defined priority and fairness rules.', method: 'Run a set of competing requests and compare the allocation with the defined rules.' },
+      { req: '06', criteria: 'The system suggests suitable alternatives or places an unallocated request in the waiting queue.', method: 'Test requests when the preferred resource is unavailable and then free a resource.' },
+      { req: '07', criteria: 'The system stores confirmed bookings correctly, including when multiple requests are submitted at the same time.', method: 'Run simultaneous booking tests and verify stored booking records.' },
+      { req: '08', criteria: 'The system generates reports showing resource utilization, fairness and unresolved conflicts.', method: 'Compare dashboard and report values with the test booking data.' }
     ]
+  },
+
+  // ==========================================
+  // SYSTEM DESIGN
+  // Source: System Design.docx
+  // ==========================================
+  systemDesign: {
+    // 1. Architecture
+    architecturePoints: [
+      '1. The Smart Campus Lab & Resource Optimizer uses a Layered Architecture with Microservices (Hybrid).',
+      '2. Presentation Layer: Provides the user interface for students, faculty, HODs, and administrators.',
+      '3. It includes features like timetable viewing, booking requests, reports, and admin approvals.',
+      '4. API/Controller Layer: Handles REST API requests, request validation, routing, authentication, and role-based access.',
+      '5. Business Layer: Contains eight microservices that handle the main operations of the system.',
+      '6. These services include timetable import, conflict detection, L-T-P validation, request scheduling, and resource recommendation.',
+      '7. It also includes approval workflow, reporting and analytics, and notification services.',
+      '8. Data Access Layer: Manages the storage and retrieval of system data.',
+      '9. It uses Supabase/PostgreSQL for permanent storage and an In-Memory Store for fast caching and session management.',
+      '10. All four layers work together to provide efficient resource booking, conflict-free allocation, and better resource utilization.'
+    ],
+    architectureImage: 'assets/team03_architecture_doc.png',
+    architectureCaption: 'Fig 1. Architecture Diagram',
+
+    // 2. Data Design
+    dataDesignPoints: [
+      '1. This data design organizes the Smart Campus Lab and Resource Optimizer into four connected areas.',
+      '2. Academic Structure represents departments, divisions, students, and enrollment records.',
+      '3. Programs connect departments to divisions, while enrollment links students to their divisions.',
+      '4. Shared Resources represents buildings, resource types, rooms, and available facilities.',
+      '5. Resource Facility connects each resource to its facilities without duplicating facility records.',
+      '6. Teaching Assignment links faculty members, subjects, and divisions.',
+      '7. Timetable Entry records recurring teaching activities, while Activity Occurrence represents dated sessions.',
+      '8. Timetable Change tracks modifications to scheduled activities through related change records.',
+      '9. Usage Request records a user’s request, while Allocation identifies the resource assigned.',
+      '10. Presence records are linked to allocations and users, separating actual attendance from planned usage.',
+      '11. Approval supports decisions requiring authorization, while supporting tables hold additional academic and operational data.',
+      '12. Primary keys identify records, foreign keys connect them, and relationship labels indicate how records are associated.'
+    ],
+    dataDesignImage: 'assets/team03_datadesign_doc.jpeg',
+    dataDesignCaption: 'Fig 2. Data Design',
+
+    // 3. Algorithm Design
+    algorithmDesignPoints: [
+      'The process starts with Validation, where the booking request is checked for valid time, resource and type.',
+      'The Interval Tree checks whether the requested time slot overlaps with existing bookings.',
+      'It helps identify conflicting bookings efficiently without checking every booking.',
+      'The Sweep-Line Algorithm calculates the maximum number of bookings happening at the same time.',
+      'It checks whether the resource capacity is sufficient for the requests.',
+      'Priority and Aging assigns priority to requests based on importance and waiting time.',
+      'The Greedy Algorithm makes the final decision by accepting or rejecting a booking request.',
+      'If the request satisfies all conditions, it is accepted; otherwise, it is rejected.',
+      'If rejected, the system provides a list of ranked alternative resources or time slots.',
+      'Dynamic Programming (DP) runs separately to find the best allocation when multiple pending requests need to be optimized together.',
+      'Jain\'s Fairness Index is calculated later to measure how fairly resources are distributed among users.'
+    ],
+    algorithmDesignImage: 'assets/team03_algorithmdesign_doc.png',
+    algorithmDesignCaption: 'Fig 3. Algorithm Design'
+
+    // 4. Security Design: Not provided in document, intentionally left empty per instructions.
   }
 };
 

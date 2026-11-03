@@ -1384,6 +1384,7 @@ portfolio=function(){
         staticTeam=(typeof window!=='undefined'&&window.STATIC_TEAMS_DATA&&(window.STATIC_TEAMS_DATA[t.id] || window.STATIC_TEAMS_DATA[cleanId] || window.STATIC_TEAMS_DATA[String(cleanId).padStart(2,'0')] || window.STATIC_TEAMS_DATA[String(parseInt(cleanId, 10))]))||null,
         st0=staticTeam?.stage0||{},
         st1=staticTeam?.stage1||{},
+        sys=staticTeam?.systemDesign||{},
         f0=state.forms?.[0]||{},
         f1=state.forms?.[1]||{},
         f2=state.forms?.[2]||{},
@@ -1467,118 +1468,86 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
-          <p class="portfolio-prose">${esc(st0.problem || f0.problem || f1.problem || dk.problem)}</p>
-          <div class="req-grid" style="margin-top:4px">
-            <div class="req-card">
-              <span class="req-tag">Target Users</span>
-              <strong>Key Stakeholders</strong>
-              <p>${esc(st0.targetUsers || f0.users || f1.users || dk.targetUsers)}</p>
-            </div>
-            <div class="req-card">
-              <span class="req-tag">Baseline Friction</span>
-              <strong>Industry &amp; Academic Pain Points</strong>
-              <p>${esc(st0.baselineFriction || f0.baseline || dk.baselineFriction)}</p>
-            </div>
-          </div>
+          <p class="portfolio-prose">${esc(st0.problem || f0.problem || dk.problem)}</p>
         </article>
 
         <article class="portfolio-subblock" id="sec-objectives">
           <h3>2. Project Objectives</h3>
-          <p class="portfolio-prose">${esc(st0.objectives || f0.objectives || f1.objectives || dk.objectives)}</p>
-          <div class="req-grid" style="margin-top:4px">
-            <div class="req-card">
-              <span class="req-tag">Measurable Target 1</span>
-              <strong>Validation Accuracy &amp; Integrity</strong>
-              <p>${esc(st0.success1 || f1.success || dk.success1)}</p>
-            </div>
-            <div class="req-card">
-              <span class="req-tag">Measurable Target 2</span>
-              <strong>Operational Performance</strong>
-              <p>${esc(st0.success2 || dk.success2)}</p>
-            </div>
+          <div class="portfolio-prose">
+            <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
+              ${(Array.isArray(st0.objectives) ? st0.objectives : (st0.objectives ? [st0.objectives] : [dk.objectives])).map(o=>`<li>${esc(o)}</li>`).join('')}
+            </ul>
           </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-courses">
           <h3>3. Foundation Course Integration</h3>
-          ${coursesRows && coursesRows.length ? `
-            <div class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:65px">Sl. No.</th>
+                  <th style="width:230px">Foundation Course</th>
+                  <th>Concepts Used</th>
+                  <th style="width:130px">Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st0.coursesTable || coursesRows || []).map(c=>`
                   <tr>
-                    <th style="width:65px">Sl. No.</th>
-                    <th style="width:230px">Foundation Course</th>
-                    <th>Broad Concepts / Areas Expected to Be Applied</th>
-                    <th style="width:130px">Role</th>
+                    <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
+                    <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
+                    <td style="color:var(--ink-secondary);font-size:12px">${esc(c.concepts)}</td>
+                    <td><span class="tag ${String(c.role).includes('Core')||String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${coursesRows.map(c=>`
-                    <tr>
-                      <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
-                      <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
-                      <td style="color:var(--ink-secondary);font-size:12px">${esc(c.concepts)}</td>
-                      <td><span class="tag ${String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : '<p class="portfolio-prose">Foundation course integration mapped across algorithms, data structures, and software engineering.</p>'}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-workflow-concept">
           <h3>4. Conceptual Workflow</h3>
-          ${pipelineRows && pipelineRows.length ? `
-            <div class="tablewrap" style="margin-bottom:12px">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap" style="margin-bottom:12px">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th>Input</th>
+                  <th>Processing</th>
+                  <th>User action</th>
+                  <th>Output</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st0.pipelineTable || pipelineRows || []).map(p=>`
                   <tr>
-                    <th>Input</th>
-                    <th>Assessment</th>
-                    <th>User Action</th>
-                    <th>Output</th>
+                    <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
+                    <td style="color:var(--ink-secondary);font-size:12px">${esc(p.processing || p.assessment)}</td>
+                    <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
+                    <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${pipelineRows.map(p=>`
-                    <tr>
-                      <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
-                      <td style="color:var(--ink-secondary);font-size:12px">${esc(p.assessment)}</td>
-                      <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
-                      <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
-          ${enginesRows && enginesRows.length ? `
-            <div class="tablewrap" style="margin-bottom:12px">
-              <table class="test-suite-table">
-                <thead>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:280px">Engine</th>
+                  <th>Conceptual responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st0.enginesTable || enginesRows || []).map(e=>`
                   <tr>
-                    <th style="width:250px">Engine</th>
-                    <th>Conceptual Responsibility</th>
+                    <td style="font-weight:700;color:var(--ink)"><span class="req-tag" style="margin-right:6px">${esc(e.id||'')}</span>${esc(e.name||e.engine)}</td>
+                    <td style="color:var(--ink-secondary);font-size:12px">${esc(e.desc)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${enginesRows.map(e=>`
-                    <tr>
-                      <td style="font-weight:700;color:var(--ink)"><span class="req-tag" style="margin-right:6px">${esc(e.id||'')}</span>${esc(e.name||e.engine)}</td>
-                      <td style="color:var(--ink-secondary);font-size:12px">${esc(e.desc)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
-          ${st0.asIsWorkflowImage ? `
-            <div class="diagram-frame">
-              <img src="${st0.asIsWorkflowImage}" alt="AS-IS Workflow Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
-              <p class="diagram-caption">${esc(st0.asIsWorkflowCaption || ('Figure: AS-IS Process Workflow Diagram for '+t.title))}</p>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-scope">
@@ -1592,11 +1561,11 @@ portfolio=function(){
                 <thead>
                   <tr>
                     <th style="width:40px">#</th>
-                    <th>Broad In-Scope Item</th>
+                    <th>In-Scope Item</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${scopeInRows.map(s=>`
+                  ${(st0.scopeInTable || scopeInRows || []).map(s=>`
                     <tr>
                       <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
                       <td style="color:var(--ink);font-size:12px">${esc(s.item)}</td>
@@ -1614,11 +1583,11 @@ portfolio=function(){
                   <tr>
                     <th style="width:40px">#</th>
                     <th>Out-of-Scope Item</th>
-                    <th>Reason / Boundary</th>
+                    <th>Reason</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${scopeOutRows.map(s=>`
+                  ${(st0.scopeOutTable || scopeOutRows || []).map(s=>`
                     <tr>
                       <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
                       <td style="color:var(--ink);font-size:12px">${esc(s.item)}</td>
@@ -1633,26 +1602,24 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-feasibility">
           <h3>6. Feasibility &amp; Constraints</h3>
-          ${feasibilityRows && feasibilityRows.length ? `
-            <div class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:230px">Aspect</th>
+                  <th>Assessment</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st0.feasibilityTable || feasibilityRows || []).map(f=>`
                   <tr>
-                    <th style="width:230px">Aspect</th>
-                    <th>Assessment from Source / Baseline</th>
+                    <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
+                    <td style="color:var(--ink-secondary);font-size:12px">${esc(f.assessment)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${feasibilityRows.map(f=>`
-                    <tr>
-                      <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
-                      <td style="color:var(--ink-secondary);font-size:12px">${esc(f.assessment)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : '<p class="portfolio-prose">Operates within 3-credit academic scope with zero cloud infrastructure cost.</p>'}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
       </section>
 
@@ -1664,89 +1631,86 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
-          ${renderRequirementsTable(f1.functional, st1.frTable || dk.frList, 'FR')}
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:70px">FR ID</th>
+                  <th>Description</th>
+                  <th style="width:160px">Priority</th>
+                  <th style="width:220px">Source Need</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st1.frTable || []).map(fr=>`
+                  <tr>
+                    <td><span class="req-tag">${esc(fr.id)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
+                    <td><span class="tag ${fr.priority==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.priority||'Mandatory')}</span></td>
+                    <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-nfr">
           <h3>2. Non - Functional Requirements</h3>
-          ${renderRequirementsTable(f1.nonfunctional, st1.nfrTable || dk.nfrList, 'NFR')}
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:80px">NFR ID</th>
+                  <th>Description</th>
+                  <th style="width:130px">Category</th>
+                  <th style="width:260px">Measurable Target</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st1.nfrTable || []).map(nfr=>`
+                  <tr>
+                    <td><span class="req-tag">${esc(nfr.id)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
+                    <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||nfr.category||'')}</span></td>
+                    <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-usecase">
           <h3>3. Use Cases</h3>
-          <div class="diagram-frame">
-            ${(()=>{
-              const customImg0=getStageImage(0);
-              if(customImg0){
-                return `<img data-media="${customImg0.id}" alt="${esc(customImg0.caption)}" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
-                <p class="diagram-caption">${esc(customImg0.caption||('Figure: Use Case Diagram for '+t.title))}</p>`;
-              }
-              const imgSrc = st0.useCaseImage || dk.useCaseImg;
-              if(imgSrc){
-                return `<img src="${imgSrc}" alt="Use Case Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
-                <p class="diagram-caption">${esc(st0.useCaseCaption || ('Figure: Use Case Diagram for '+t.title))}</p>`;
-              }
-              return `<svg viewBox="0 0 740 320" xmlns="http://www.w3.org/2000/svg">
-                <rect x="220" y="20" width="340" height="280" rx="14" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.5" stroke-dasharray="4 4"/>
-                <text x="240" y="44" font-size="12" font-weight="700" fill="var(--muted)">«System Boundary: ${esc(t.title)}»</text>
-                <circle cx="80" cy="120" r="16" fill="var(--brand-subtle)" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="80" y1="136" x2="80" y2="180" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="60" y1="150" x2="100" y2="150" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="80" y1="180" x2="62" y2="215" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="80" y1="180" x2="98" y2="215" stroke="var(--brand)" stroke-width="2"/>
-                <text x="80" y="235" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">Primary Operator</text>
-                <circle cx="660" cy="90" r="14" fill="var(--brand-subtle)" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="660" y1="104" x2="660" y2="140" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="644" y1="116" x2="676" y2="116" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="660" y1="140" x2="646" y2="170" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="660" y1="140" x2="674" y2="170" stroke="var(--brand)" stroke-width="2"/>
-                <text x="660" y="190" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">Faculty Guide</text>
-                <circle cx="660" cy="220" r="14" fill="var(--brand-subtle)" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="660" y1="234" x2="660" y2="265" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="644" y1="246" x2="676" y2="246" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="660" y1="265" x2="646" y2="295" stroke="var(--brand)" stroke-width="2"/>
-                <line x1="660" y1="265" x2="674" y2="295" stroke="var(--brand)" stroke-width="2"/>
-                <text x="660" y="312" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">Student Cohort</text>
-                <g transform="translate(390, 75)"><ellipse cx="0" cy="0" rx="125" ry="19" fill="var(--bg-subtle)" stroke="var(--brand)" stroke-width="1.2"/><text x="0" y="4" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">${esc(dk.uc1)}</text></g>
-                <g transform="translate(390, 130)"><ellipse cx="0" cy="0" rx="125" ry="19" fill="var(--bg-subtle)" stroke="var(--brand)" stroke-width="1.2"/><text x="0" y="4" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">${esc(dk.uc2)}</text></g>
-                <g transform="translate(390, 185)"><ellipse cx="0" cy="0" rx="125" ry="19" fill="var(--bg-subtle)" stroke="var(--brand)" stroke-width="1.2"/><text x="0" y="4" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">${esc(dk.uc3)}</text></g>
-                <g transform="translate(390, 240)"><ellipse cx="0" cy="0" rx="125" ry="19" fill="var(--bg-subtle)" stroke="var(--brand)" stroke-width="1.2"/><text x="0" y="4" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">${esc(dk.uc4)}</text></g>
-                <line x1="100" y1="150" x2="270" y2="80" stroke="var(--line-strong)" stroke-width="1.2"/>
-                <line x1="100" y1="150" x2="265" y2="130" stroke="var(--line-strong)" stroke-width="1.2"/>
-                <line x1="100" y1="150" x2="270" y2="235" stroke="var(--line-strong)" stroke-width="1.2"/>
-                <line x1="640" y1="120" x2="515" y2="85" stroke="var(--line-strong)" stroke-width="1.2"/>
-                <line x1="640" y1="120" x2="515" y2="185" stroke="var(--line-strong)" stroke-width="1.2"/>
-                <line x1="640" y1="245" x2="515" y2="240" stroke="var(--line-strong)" stroke-width="1.2"/>
-              </svg>
-              <p class="diagram-caption">Figure: Contextual Use Case Diagram for ${esc(t.title)}.</p>`;
-            })()}
-          </div>
-          ${userStoryRows && userStoryRows.length ? `
-            <div style="margin-top:16px" class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap" style="margin-bottom:14px">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:50px">ID</th>
+                  <th style="width:170px">Actor</th>
+                  <th style="width:220px">Description / User Story</th>
+                  <th>Main Flow</th>
+                  <th>Exception Flow</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st1.userStoryTable || []).map(u=>`
                   <tr>
-                    <th style="width:50px">ID</th>
-                    <th style="width:75px">Actor</th>
-                    <th style="width:260px">Description / User Story</th>
-                    <th>Main Flow</th>
-                    <th>Exception Flow</th>
+                    <td><span class="req-tag">${esc(u.id)}</span></td>
+                    <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
+                    <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
+                    <td style="font-size:11.5px;color:var(--ink-secondary)">${esc(u.mainFlow)}</td>
+                    <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${userStoryRows.map(u=>`
-                    <tr>
-                      <td><span class="req-tag">${esc(u.id)}</span></td>
-                      <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
-                      <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
-                      <td style="font-size:11.5px;color:var(--ink-secondary)">${esc(u.mainFlow)}</td>
-                      <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${st1.useCaseImage || 'assets/team03_usecase_diagram_doc.png'}" alt="Fig : Use case diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig : Use case diagram</p>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-acceptance">
@@ -1755,23 +1719,17 @@ portfolio=function(){
             <table class="test-suite-table">
               <thead>
                 <tr>
-                  <th style="width:70px">Test ID</th>
-                  <th style="width:85px">Requirement</th>
-                  <th>Acceptance Criteria &amp; Scenario</th>
-                  <th style="width:110px">Status</th>
+                  <th style="width:110px">Requirement ID</th>
+                  <th>Acceptance Criteria</th>
+                  <th style="width:340px">Test / Verification Method</th>
                 </tr>
               </thead>
               <tbody>
-                ${(staticTeam?.testCases || dk.testSuite || [
-                  { id: 'TC-01', req: 'FR-01', desc: 'Core input ingestion and schema validation', criteria: 'Valid records parsed successfully; schema violations rejected with precise line and column diagnostics.', status: 'PASSED' },
-                  { id: 'TC-02', req: 'FR-02', desc: 'Core business logic and algorithmic constraints', criteria: 'Constraint validation assertions enforce non-conflicting allocations and limits.', status: 'PASSED' },
-                  { id: 'TC-03', req: 'FR-03', desc: 'Result reporting and state persistence', criteria: 'Final outputs successfully written to LocalStorage and exported in verifiable format.', status: 'PASSED' }
-                ]).map(tc=>`
+                ${(st1.acceptanceTable || []).map(tc=>`
                   <tr>
-                    <td><span class="req-tag">${esc(tc.id)}</span></td>
-                    <td style="font-weight:600;color:var(--brand)">${esc(tc.req||'FR-01')}</td>
-                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria || tc.desc || tc.scenario)}</td>
-                    <td><span class="tag" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0;font-weight:700;font-size:10.5px">✓ ${esc(tc.status||'PASSED')}</span></td>
+                    <td><span class="req-tag">${esc(tc.req)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
+                    <td style="font-size:12px;color:var(--ink-secondary)">${esc(tc.method)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1788,120 +1746,39 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-arch">
           <h3>1. Architecture</h3>
-          <p class="portfolio-prose">${esc(st1.archDesc || f1.architecture || f2.architecture || dk.archDesc)}</p>
-          <div class="diagram-frame">
-            ${(()=>{
-              const customImg1=getStageImage(1);
-              if(customImg1){
-                return `<img data-media="${customImg1.id}" alt="${esc(customImg1.caption)}" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
-                <p class="diagram-caption">${esc(customImg1.caption||('Figure: System Architecture for '+t.title))}</p>`;
-              }
-              const archSrc = st1.archImage || dk.archImg;
-              if(archSrc){
-                return `<img src="${archSrc}" alt="Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
-                <p class="diagram-caption">${esc(st1.archCaption || ('Figure: Architecture Pipeline for '+t.title))}</p>`;
-              }
-              return `<svg viewBox="0 0 740 190" xmlns="http://www.w3.org/2000/svg">
-                <g transform="translate(15, 15)">
-                  <rect width="155" height="155" rx="10" fill="var(--surface)" stroke="var(--brand)" stroke-width="1.5"/>
-                  <rect width="155" height="32" rx="10" fill="var(--brand-subtle)"/>
-                  <text x="77" y="21" text-anchor="middle" font-size="11" font-weight="800" fill="var(--brand)">PRESENTATION</text>
-                  <text x="77" y="60" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Web Dashboard</text>
-                  <text x="77" y="82" text-anchor="middle" font-size="11" fill="var(--muted)">Interactive Visualizer</text>
-                  <text x="77" y="104" text-anchor="middle" font-size="11" fill="var(--muted)">SheetJS File Engine</text>
-                  <text x="77" y="136" text-anchor="middle" font-size="10" font-weight="700" fill="var(--brand)">HTML5 / CSS / ES2022</text>
-                </g>
-                <line x1="175" y1="92" x2="200" y2="92" stroke="var(--brand)" stroke-width="2"/>
-                <g transform="translate(205, 15)">
-                  <rect width="155" height="155" rx="10" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.5"/>
-                  <rect width="155" height="32" rx="10" fill="var(--bg-subtle)"/>
-                  <text x="77" y="21" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)">API GATEWAY</text>
-                  <text x="77" y="60" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">REST Endpoints</text>
-                  <text x="77" y="82" text-anchor="middle" font-size="11" fill="var(--muted)">Input Sanitizer</text>
-                  <text x="77" y="104" text-anchor="middle" font-size="11" fill="var(--muted)">State Synchronizer</text>
-                  <text x="77" y="136" text-anchor="middle" font-size="10" font-weight="700" fill="var(--muted)">FastAPI Router</text>
-                </g>
-                <line x1="365" y1="92" x2="390" y2="92" stroke="var(--brand)" stroke-width="2"/>
-                <g transform="translate(395, 15)">
-                  <rect width="155" height="155" rx="10" fill="var(--surface)" stroke="var(--brand)" stroke-width="1.5"/>
-                  <rect width="155" height="32" rx="10" fill="var(--brand-subtle)"/>
-                  <text x="77" y="21" text-anchor="middle" font-size="11" font-weight="800" fill="var(--brand)">CORE ENGINE</text>
-                  <text x="77" y="60" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Specialized Model</text>
-                  <text x="77" y="82" text-anchor="middle" font-size="11" fill="var(--muted)">Optimization / Heuristic</text>
-                  <text x="77" y="104" text-anchor="middle" font-size="11" fill="var(--muted)">Validation Hooks</text>
-                  <text x="77" y="136" text-anchor="middle" font-size="10" font-weight="700" fill="var(--brand)">Python 3.11</text>
-                </g>
-                <line x1="555" y1="92" x2="580" y2="92" stroke="var(--brand)" stroke-width="2"/>
-                <g transform="translate(585, 15)">
-                  <rect width="140" height="155" rx="10" fill="var(--surface)" stroke="var(--line-strong)" stroke-width="1.5"/>
-                  <rect width="140" height="32" rx="10" fill="var(--bg-subtle)"/>
-                  <text x="70" y="21" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)">STORAGE TIER</text>
-                  <text x="70" y="60" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink)">Browser IndexedDB</text>
-                  <text x="70" y="82" text-anchor="middle" font-size="11" fill="var(--muted)">LocalStorage State</text>
-                  <text x="70" y="104" text-anchor="middle" font-size="11" fill="var(--muted)">GitHub Repository</text>
-                  <text x="70" y="136" text-anchor="middle" font-size="10" font-weight="700" fill="var(--muted)">Local-First DB</text>
-                </g>
-              </svg>
-              <p class="diagram-caption">Figure: Multi-Tier Modular Architecture for ${esc(t.title)}.</p>`;
-            })()}
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig 1. Architecture Diagram</p>
           </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-data-design">
           <h3>2. Data Design</h3>
-          <div class="techstack-container">
-            <div class="techstack-group">
-              <span class="techstack-group-title">Storage Tier &amp; Persistence Schema</span>
-              <div class="techstack-pills">
-                ${(dk.techStorage||['Browser IndexedDB (Media)','LocalStorage JSON State','Git & GitHub Versioning','UTF-8 CSV Roster Exporter']).map(tech=>`<span class="tech-pill"><span class="tech-pill-dot" style="background:#f59e0b"></span>${esc(tech)}</span>`).join('')}
-              </div>
-            </div>
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
           </div>
-          <div class="req-grid" style="margin-top:8px">
-            <div class="req-card">
-              <span class="req-tag">Entities &amp; Relations</span>
-              <strong>Relational &amp; State Models</strong>
-              <p>Entities maintain referential consistency across project states, team allocations, and submission reviews.</p>
-            </div>
-            <div class="req-card">
-              <span class="req-tag">Immutability</span>
-              <strong>Local Persistence &amp; Integrity</strong>
-              <p>All data payloads are serialized locally with zero server leakage, preserving state integrity and deterministic export.</p>
-            </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig 2. Data Design</p>
           </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-algo-design">
           <h3>3. Algorithm Design</h3>
-          <p class="portfolio-prose">${esc(f2.implementation || dk.implDesc || 'Algorithmic modeling enforces structural constraints, heuristic optimization, and automated verification.')}</p>
-          <div class="req-grid" style="margin-top:4px">
-            <div class="req-card">
-              <span class="req-tag">System Condition 1</span>
-              <strong>${esc(dk.hard1Name)}</strong>
-              <p>${esc(dk.hard1Desc)}</p>
-            </div>
-            <div class="req-card">
-              <span class="req-tag">System Condition 2</span>
-              <strong>${esc(dk.hard2Name)}</strong>
-              <p>${esc(dk.hard2Desc)}</p>
-            </div>
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_doc.png'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig 3. Algorithm Design</p>
           </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-security-design">
           <h3>4. Security Design</h3>
-          <div class="req-grid" style="margin-top:4px">
-            <div class="req-card">
-              <span class="req-tag">Input Sanitization</span>
-              <strong>Safe Data Ingestion</strong>
-              <p>Strict type validation, UTF-8 escaping, and malicious payload sanitization across all input channels.</p>
-            </div>
-            <div class="req-card">
-              <span class="req-tag">Role Isolation</span>
-              <strong>Access Control &amp; Boundaries</strong>
-              <p>Operational roles (Student, Team Lead, Faculty, HOD) are enforced with read-only gates and review approval boundaries.</p>
-            </div>
-          </div>
         </article>
       </section>
 
@@ -1910,33 +1787,6 @@ portfolio=function(){
         <div class="portfolio-section-title">
           <h2>Implementation and Integration</h2>
         </div>
-
-        <article class="portfolio-subblock">
-          <p class="portfolio-prose">${esc(f2.implementation || dk.implDesc)}</p>
-          ${f2.modules ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Core Modules &amp; Algorithmic Components</h4>
-              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
-                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f2.modules)}</p>
-              </div>
-            </div>
-          ` : ''}
-          ${f2.challenges ? `
-            <div style="margin-top:14px">
-              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Technical Challenges &amp; Mitigation Strategies</h4>
-              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px">
-                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f2.challenges)}</p>
-              </div>
-            </div>
-          ` : ''}
-          <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:14px">
-            <div>
-              <strong style="color:var(--ink);font-size:14px">Implementation Repository &amp; Commit History</strong>
-              <p style="margin:2px 0 0;font-size:12px;color:var(--muted)">Source code, module implementations, and validation tests.</p>
-            </div>
-            <a class="btn" href="${safe(f2.repo || repoUrl)}" target="_blank" rel="noopener">Explore Code on GitHub ↗</a>
-          </div>
-        </article>
       </section>
 
       <!-- Testing and Validations -->
@@ -1944,38 +1794,6 @@ portfolio=function(){
         <div class="portfolio-section-title">
           <h2>Testing and Validations</h2>
         </div>
-
-        <article class="portfolio-subblock">
-          <p class="portfolio-prose">${esc(f3.testing || f2.testing || 'Unit testing and validation assertions executed against test splits and synthetic edge cases.')}</p>
-          <div class="tablewrap" style="margin-top:14px">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="width:140px">Requirement / Test ID</th>
-                  <th>Acceptance Criteria &amp; Scenario</th>
-                  <th>Verification Method</th>
-                  <th>Observed Result</th>
-                  <th style="width:80px">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(staticTeam?.testCases || [
-                  { req: 'FR-01', scenario: 'Load dataset and verify student-strength integrity', method: 'Automated Assertion', result: 'Integrity verified; invalid records filtered', status: 'PASS' },
-                  { req: 'FR-02', scenario: 'Validate non-conflicting allocations and limits', method: 'Unit Test', result: 'Validations pass with zero conflict', status: 'PASS' },
-                  { req: 'FR-03', scenario: 'Persistence integrity check', method: 'State Inspection', result: 'LocalStorage persistence intact', status: 'PASS' }
-                ]).map(t=>`
-                  <tr>
-                    <td><span class="req-tag">${esc(t.req||t.id)}</span></td>
-                    <td style="font-size:12px;color:var(--ink)">${esc(t.scenario||t.desc)}</td>
-                    <td style="font-size:12px;color:var(--ink-secondary)">${esc(t.method||'Automated Verification')}</td>
-                    <td style="font-size:12px;color:var(--ink)">${esc(t.result||t.criteria||'PASSED')}</td>
-                    <td><span class="tag" style="background:#ecfdf5;color:#047857;border-color:#a7f3d0;font-size:10.5px">✓ PASS</span></td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        </article>
       </section></main>
   </div>
 </div>
