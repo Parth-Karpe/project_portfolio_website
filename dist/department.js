@@ -113,34 +113,6 @@ function seedTeams(){
     "excel_order": 4
   },
   {
-    "id": "A-08",
-    "faculty": "Ms.Sneha Varur",
-    "topic": "Theme 2: Data Processing and Analytics Systems",
-    "theme_no": 2,
-    "theme_name": "Data Processing and Analytics Systems",
-    "title": "Large-Scale Dataset Profiling & Data Quality Engine",
-    "members": [
-      {
-        "name": "Anupriya S",
-        "usn": "01FE24BCI046"
-      },
-      {
-        "name": "Pavitra J",
-        "usn": "01FE24BCI049"
-      },
-      {
-        "name": "Anushree A",
-        "usn": "01FE24BCI050"
-      },
-      {
-        "name": "Sahana A",
-        "usn": "01FE24BCI030"
-      }
-    ],
-    "sample": true,
-    "excel_order": 5
-  },
-  {
     "id": "A-09",
     "faculty": "Ms.Sneha Varur",
     "topic": "Theme 2: Data Processing and Analytics Systems",
@@ -166,35 +138,7 @@ function seedTeams(){
       }
     ],
     "sample": true,
-    "excel_order": 6
-  },
-  {
-    "id": "A-13",
-    "faculty": "Ms.Umadevi F M",
-    "topic": "Theme 2: Data Processing and Analytics Systems",
-    "theme_no": 2,
-    "theme_name": "Data Processing and Analytics Systems",
-    "title": "Distributed Event Processing & Notification Engine",
-    "members": [
-      {
-        "name": "Avinash B Z",
-        "usn": "01FE24BCI045"
-      },
-      {
-        "name": "Sagar B U",
-        "usn": "01FE24BCI054"
-      },
-      {
-        "name": "Ramesh S K",
-        "usn": "01FE24BCI039"
-      },
-      {
-        "name": "ABHINANDAN",
-        "usn": "01FE24BCI052"
-      }
-    ],
-    "sample": true,
-    "excel_order": 7
+    "excel_order": 5
   },
   {
     "id": "B-10",
@@ -219,6 +163,62 @@ function seedTeams(){
       {
         "name": "Amit K",
         "usn": "01FE24BCI090"
+      }
+    ],
+    "sample": true,
+    "excel_order": 6
+  },
+  {
+    "id": "A-08",
+    "faculty": "Ms.Sneha Varur",
+    "topic": "Theme 2: Data Processing and Analytics Systems",
+    "theme_no": 2,
+    "theme_name": "Data Processing and Analytics Systems",
+    "title": "Large-Scale Dataset Profiling & Data Quality Engine",
+    "members": [
+      {
+        "name": "Anupriya S",
+        "usn": "01FE24BCI046"
+      },
+      {
+        "name": "Pavitra J",
+        "usn": "01FE24BCI049"
+      },
+      {
+        "name": "Anushree A",
+        "usn": "01FE24BCI050"
+      },
+      {
+        "name": "Sahana A",
+        "usn": "01FE24BCI030"
+      }
+    ],
+    "sample": true,
+    "excel_order": 7
+  },
+  {
+    "id": "A-13",
+    "faculty": "Ms.Umadevi F M",
+    "topic": "Theme 2: Data Processing and Analytics Systems",
+    "theme_no": 2,
+    "theme_name": "Data Processing and Analytics Systems",
+    "title": "Distributed Event Processing & Notification Engine",
+    "members": [
+      {
+        "name": "Avinash B Z",
+        "usn": "01FE24BCI045"
+      },
+      {
+        "name": "Sagar B U",
+        "usn": "01FE24BCI054"
+      },
+      {
+        "name": "Ramesh S K",
+        "usn": "01FE24BCI039"
+      },
+      {
+        "name": "ABHINANDAN",
+        "usn": "01FE24BCI052"
       }
     ],
     "sample": true,
@@ -253,34 +253,6 @@ function seedTeams(){
     "excel_order": 9
   },
   {
-    "id": "A-02",
-    "faculty": "Ms.N D Kulenavar",
-    "topic": "Theme 3: System Software and Development Tools",
-    "theme_no": 3,
-    "theme_name": "System Software and Development Tools",
-    "title": "C Language Compiler & Code Generation Engine",
-    "members": [
-      {
-        "name": "Vaishnavi K",
-        "usn": "01FE24BCI051"
-      },
-      {
-        "name": "Shreenidhi D",
-        "usn": "01FE24BCI042"
-      },
-      {
-        "name": "Suhas K",
-        "usn": "01FE24BCI019"
-      },
-      {
-        "name": "Sanket  Y U",
-        "usn": "01FE24BCI037"
-      }
-    ],
-    "sample": true,
-    "excel_order": 10
-  },
-  {
     "id": "A-14",
     "faculty": "Ms.Arundati Aralimatti",
     "topic": "Theme 3: System Software and Development Tools",
@@ -306,35 +278,7 @@ function seedTeams(){
       }
     ],
     "sample": true,
-    "excel_order": 11
-  },
-  {
-    "id": "B-01",
-    "faculty": "Mr.Dheerajkumar",
-    "topic": "Theme 3: System Software and Development Tools",
-    "theme_no": 3,
-    "theme_name": "System Software and Development Tools",
-    "title": "Incremental Build & Dependency Resolution Tool",
-    "members": [
-      {
-        "name": "Sankalp Patil",
-        "usn": "01FE24BCI095"
-      },
-      {
-        "name": "Sai Jarkiholi",
-        "usn": "01FE24BCI014"
-      },
-      {
-        "name": "Pranav Naik",
-        "usn": "01FE24BCI100"
-      },
-      {
-        "name": "Abdul Khadar I",
-        "usn": "01FE24BCI102"
-      }
-    ],
-    "sample": true,
-    "excel_order": 12
+    "excel_order": 10
   },
   {
     "id": "B-07",
@@ -362,115 +306,63 @@ function seedTeams(){
       }
     ],
     "sample": true,
+    "excel_order": 11
+  },
+  {
+    "id": "A-02",
+    "faculty": "Ms.N D Kulenavar",
+    "topic": "Theme 3: System Software and Development Tools",
+    "theme_no": 3,
+    "theme_name": "System Software and Development Tools",
+    "title": "C Language Compiler & Code Generation Engine",
+    "members": [
+      {
+        "name": "Vaishnavi K",
+        "usn": "01FE24BCI051"
+      },
+      {
+        "name": "Shreenidhi D",
+        "usn": "01FE24BCI042"
+      },
+      {
+        "name": "Suhas K",
+        "usn": "01FE24BCI019"
+      },
+      {
+        "name": "Sanket  Y U",
+        "usn": "01FE24BCI037"
+      }
+    ],
+    "sample": true,
+    "excel_order": 12
+  },
+  {
+    "id": "B-01",
+    "faculty": "Mr.Dheerajkumar",
+    "topic": "Theme 3: System Software and Development Tools",
+    "theme_no": 3,
+    "theme_name": "System Software and Development Tools",
+    "title": "Incremental Build & Dependency Resolution Tool",
+    "members": [
+      {
+        "name": "Sankalp Patil",
+        "usn": "01FE24BCI095"
+      },
+      {
+        "name": "Sai Jarkiholi",
+        "usn": "01FE24BCI014"
+      },
+      {
+        "name": "Pranav Naik",
+        "usn": "01FE24BCI100"
+      },
+      {
+        "name": "Abdul Khadar I",
+        "usn": "01FE24BCI102"
+      }
+    ],
+    "sample": true,
     "excel_order": 13
-  },
-  {
-    "id": "A-05",
-    "faculty": "Ms.Sadaf Anjum Savanu",
-    "topic": "Theme 4: Networked Systems and Tools",
-    "theme_no": 4,
-    "theme_name": "Networked Systems and Tools",
-    "title": "Distributed Peer Search & File Sharing Engine",
-    "members": [
-      {
-        "name": "Mudit J Nayak",
-        "usn": "01FE24BCI076"
-      },
-      {
-        "name": "Anusha Hebasur",
-        "usn": "01FE24BCI009"
-      },
-      {
-        "name": "Kartik NHM",
-        "usn": "01FE24BCI072"
-      },
-      {
-        "name": "Aditya Patil",
-        "usn": "01FE24BCI059"
-      }
-    ],
-    "sample": true,
-    "excel_order": 14
-  },
-  {
-    "id": "A-07",
-    "faculty": "Ms.Pooja P Shettar",
-    "topic": "Theme 4: Networked Systems and Tools",
-    "theme_no": 4,
-    "theme_name": "Networked Systems and Tools",
-    "title": "Network Traffic Monitoring & Protocol Analysis Tool",
-    "members": [
-      {
-        "name": "Chhavi Mishra",
-        "usn": "01FE24BCI066"
-      },
-      {
-        "name": "Hrishikesh Patil",
-        "usn": "01FE24BCI043"
-      },
-      {
-        "name": "Vaibhav P",
-        "usn": "01FE24BCI074"
-      },
-      {
-        "name": "M Janaki",
-        "usn": "01FE24BCI067"
-      }
-    ],
-    "sample": true,
-    "excel_order": 15
-  },
-  {
-    "id": "B-11",
-    "faculty": "Mr.Pavankumar Saunshi",
-    "topic": "Theme 4: Networked Systems and Tools",
-    "theme_no": 4,
-    "theme_name": "Networked Systems and Tools",
-    "title": "DNS Resolver & Caching Server",
-    "members": [
-      {
-        "name": "Vageesh Mathad",
-        "usn": "01FE24BCI008"
-      },
-      {
-        "name": "Mehak sayed Yusuf",
-        "usn": "01FE24BCI012"
-      },
-      {
-        "name": "Joel Biju",
-        "usn": "01FE24BCI021"
-      }
-    ],
-    "sample": true,
-    "excel_order": 16
-  },
-  {
-    "id": "B-12",
-    "faculty": "Ms.Sadaf Anjum Savanur",
-    "topic": "Theme 4: Networked Systems and Tools",
-    "theme_no": 4,
-    "theme_name": "Networked Systems and Tools",
-    "title": "HTTP Proxy Server with Caching",
-    "members": [
-      {
-        "name": "Adarsh MR",
-        "usn": "01FE24BCI011"
-      },
-      {
-        "name": "Krish Janagekar",
-        "usn": "01FE24BCI097"
-      },
-      {
-        "name": "Vivek Raikar",
-        "usn": "01FE25BCI704"
-      },
-      {
-        "name": "Akash",
-        "usn": "01FE24BCI123"
-      }
-    ],
-    "sample": true,
-    "excel_order": 17
   },
   {
     "id": "B-13",
@@ -498,7 +390,7 @@ function seedTeams(){
       }
     ],
     "sample": true,
-    "excel_order": 18
+    "excel_order": 14
   },
   {
     "id": "B-14",
@@ -523,6 +415,114 @@ function seedTeams(){
       {
         "name": "Akshay Bhat",
         "usn": "01FE24BCI024"
+      }
+    ],
+    "sample": true,
+    "excel_order": 15
+  },
+  {
+    "id": "A-07",
+    "faculty": "Ms.Pooja P Shettar",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "Network Traffic Monitoring & Protocol Analysis Tool",
+    "members": [
+      {
+        "name": "Chhavi Mishra",
+        "usn": "01FE24BCI066"
+      },
+      {
+        "name": "Hrishikesh Patil",
+        "usn": "01FE24BCI043"
+      },
+      {
+        "name": "Vaibhav P",
+        "usn": "01FE24BCI074"
+      },
+      {
+        "name": "M Janaki",
+        "usn": "01FE24BCI067"
+      }
+    ],
+    "sample": true,
+    "excel_order": 16
+  },
+  {
+    "id": "A-05",
+    "faculty": "Ms.Sadaf Anjum Savanu",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "Distributed Peer Search & File Sharing Engine",
+    "members": [
+      {
+        "name": "Mudit J Nayak",
+        "usn": "01FE24BCI076"
+      },
+      {
+        "name": "Anusha Hebasur",
+        "usn": "01FE24BCI009"
+      },
+      {
+        "name": "Kartik NHM",
+        "usn": "01FE24BCI072"
+      },
+      {
+        "name": "Aditya Patil",
+        "usn": "01FE24BCI059"
+      }
+    ],
+    "sample": true,
+    "excel_order": 17
+  },
+  {
+    "id": "B-11",
+    "faculty": "Mr.Pavankumar Saunshi",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "DNS Resolver & Caching Server",
+    "members": [
+      {
+        "name": "Vageesh Mathad",
+        "usn": "01FE24BCI008"
+      },
+      {
+        "name": "Mehak sayed Yusuf",
+        "usn": "01FE24BCI012"
+      },
+      {
+        "name": "Joel Biju",
+        "usn": "01FE24BCI021"
+      }
+    ],
+    "sample": true,
+    "excel_order": 18
+  },
+  {
+    "id": "B-12",
+    "faculty": "Ms.Sadaf Anjum Savanur",
+    "topic": "Theme 4: Networked Systems and Tools",
+    "theme_no": 4,
+    "theme_name": "Networked Systems and Tools",
+    "title": "HTTP Proxy Server with Caching",
+    "members": [
+      {
+        "name": "Adarsh MR",
+        "usn": "01FE24BCI011"
+      },
+      {
+        "name": "Krish Janagekar",
+        "usn": "01FE24BCI097"
+      },
+      {
+        "name": "Vivek Raikar",
+        "usn": "01FE25BCI704"
+      },
+      {
+        "name": "Akash",
+        "usn": "01FE24BCI123"
       }
     ],
     "sample": true,
@@ -929,9 +929,9 @@ function ensureDepartment(){
   if(state.department?.hod) state.department.hod = state.department.hod.replace(/\s*\(demo\)/gi, '');
   if(state.department?.facultyAdmin) state.department.facultyAdmin = state.department.facultyAdmin.replace(/\s*\(demo\)/gi, '');
   const seeds=seedTeams();
-  if(!state.teams||state.teams.length<33||state.excelVersion!==3){
+  if(!state.teams||state.teams.length<33||state.excelVersion!==4){
     state.teams=seeds;
-    state.excelVersion=3;
+    state.excelVersion=4;
     state.activeTeamId=state.teams.some(t=>t.id===state.activeTeamId)?state.activeTeamId:'A-03';
     state.workspaces=state.workspaces||{};
     state.facultyAccount=state.facultyAccount||'Mr.Amit Kachavimath';
@@ -939,6 +939,14 @@ function ensureDepartment(){
       t.department='CSE(AI)';t.hod=state.department.hod;t.facultyAdmin=state.department.facultyAdmin;
       if(!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
     });
+  }
+  if(state.teams && state.teams.length >= 33){
+    const orderMap = {};
+    seeds.forEach(s => { orderMap[s.id] = s.excel_order; });
+    state.teams.forEach(t => {
+      if(orderMap[t.id]) t.excel_order = orderMap[t.id];
+    });
+    state.teams.sort((a,b) => (a.excel_order || 0) - (b.excel_order || 0));
   }
   state.version=3;
   if(state.members) state.members.forEach(m=>delete m.share);
@@ -1401,38 +1409,30 @@ function renderRequirementsTable(text, defaultList, type){
 
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
-        cleanId=(t.id||'').replace(/^[A-Za-z]-/, ''),
-        staticTeam=(typeof window!=='undefined'&&window.STATIC_TEAMS_DATA&&(window.STATIC_TEAMS_DATA[t.id] || window.STATIC_TEAMS_DATA[cleanId] || window.STATIC_TEAMS_DATA[String(cleanId).padStart(2,'0')] || window.STATIC_TEAMS_DATA[String(parseInt(cleanId, 10))]))||null,
-        st0=staticTeam?.stage0||{},
-        st1=staticTeam?.stage1||{},
-        sys=staticTeam?.systemDesign||{},
-        f0=state.forms?.[0]||{},
-        f1=state.forms?.[1]||{},
-        f2=state.forms?.[2]||{},
-        f3=state.forms?.[3]||{},
-        topic=staticTeam?.theme||t.topic||'Specialization Theme',
-        title=staticTeam?.title||f0.title||f1.title||t.title||'Project Portfolio',
-        guide=staticTeam?.guide||state.guide||t.faculty||'Faculty Guide',
-        repoUrl=safe(staticTeam?.repo||f2.repo||state.repo||t.repo||'https://github.com'),
-        dk=getDomainKnowledge(t);
-
-  const coursesRows = parseTableRows(f0.courses, 'COURSES', st0.coursesTable || dk.courseIntegration);
-  const pipelineRows = st0.pipelineTable || dk.pipelineTable || [
-    {input:'Upload structured dataset',assessment:'Profile → detect issues → analyze statistical patterns',userAction:'Select issues → apply supported corrections → revalidate',output:'Quality score and report'}
-  ];
-  const enginesRows = parseTableRows(f0.engines, 'ENGINES', st0.enginesTable || dk.conceptualEngines);
-  const scopeInRows = st0.scopeInTable || dk.scopeTableIn || (dk.scopeIn||[]).map((s,i)=>({num:String(i+1),item:s}));
-  const scopeOutRows = st0.scopeOutTable || dk.scopeTableOut || (dk.scopeOut||[]).map((s,i)=>({num:String(i+1),item:s,reason:'Beyond student 3-credit academic scope'}));
-  const feasibilityRows = st0.feasibilityTable || dk.feasibilityTable || [
-    {aspect:'Feasibility within 3-credit scope',assessment:dk.feasibilityNotes||'Operates within standard 15-week academic semester constraints.'},
-    {aspect:'Required computing / resources',assessment:'Local CPU & RAM execution; zero cloud cost.'},
-    {aspect:'Prerequisite knowledge',assessment:'Core foundation courses in CSE(AI) curriculum.'},
-    {aspect:'Major constraints / limitations',assessment:'Data immutability & bounded memory limits.'}
-  ];
-  const userStoryRows = st0.userStoryTable || dk.userStoryTable || (dk.ucList||[]).map((u,i)=>({id:String(i+1).padStart(2,'0'),actor:dk.ucActor||'User',desc:u,mainFlow:'Input → Process → Output',exceptionFlow:'Validation error triggered'}));
+        isSmartCampus = (t.id === 'A-03' || t.title === 'Smart Campus Lab and Resource Optimizer' || t.title === 'Smart Campus Lab & Resource Optimizer'),
+        staticTeam = (isSmartCampus && typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (window.STATIC_TEAMS_DATA['03'] || window.STATIC_TEAMS_DATA['A-03'])) || null,
+        st0 = isSmartCampus ? (staticTeam?.stage0 || {}) : {},
+        st1 = isSmartCampus ? (staticTeam?.stage1 || {}) : {},
+        sys = isSmartCampus ? (staticTeam?.systemDesign || {}) : {},
+        f0 = isSmartCampus ? (state.forms?.[0] || {}) : {},
+        f1 = isSmartCampus ? (state.forms?.[1] || {}) : {},
+        f2 = isSmartCampus ? (state.forms?.[2] || {}) : {},
+        f3 = isSmartCampus ? (state.forms?.[3] || {}) : {},
+        topic = isSmartCampus ? (staticTeam?.theme || t.topic || 'Specialization Theme') : (t.topic || 'Specialization Theme'),
+        title = isSmartCampus ? (staticTeam?.title || t.title) : (t.title || 'Project Portfolio'),
+        guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide'),
+        repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
+        themeNo = t.theme_no || window.lastViewedTheme || 1;
 
   return `
 <div class="portfolio-container">
+  <!-- Back Button to Respective Theme Page -->
+  <div style="margin-bottom: 14px;">
+    <button class="btn secondary" style="padding:7px 16px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects()">
+      ← Back to Theme ${esc(themeNo)}
+    </button>
+  </div>
+
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
     <div>
@@ -1442,13 +1442,13 @@ portfolio=function(){
         <span>Team: <strong>Team ${esc(t.id)}</strong></span>
         <span>Faculty Guide: <strong>${esc(guide)}</strong></span>
         <span>Academic Year: <strong>2026–27</strong></span>
-        <a href="${repoUrl}" target="_blank" rel="noopener" class="btn secondary" style="margin-left:auto">GitHub Repository ↗</a>
+        ${isSmartCampus ? `<a href="${repoUrl}" target="_blank" rel="noopener" class="btn secondary" style="margin-left:auto">GitHub Repository ↗</a>` : ''}
       </div>
     </div>
 
     <!-- Team Members Details (Name, Role, USN only) -->
     <div class="portfolio-members-grid">
-      ${(staticTeam?.members||t.members).map((m,i)=>`
+      ${(staticTeam?.members||t.members||[]).map((m,i)=>`
         <article class="portfolio-member-card" style="padding:14px 16px;">
           <div style="display:flex;align-items:center;gap:12px">
             ${avatar(m)}
@@ -1489,158 +1489,168 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
-          <p class="portfolio-prose">${esc(st0.problem || f0.problem || dk.problem)}</p>
+          ${isSmartCampus ? `<p class="portfolio-prose">${esc(st0.problem || '')}</p>` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-objectives">
           <h3>2. Project Objectives</h3>
-          <div class="portfolio-prose">
-            <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
-              ${(Array.isArray(st0.objectives) ? st0.objectives : (st0.objectives ? [st0.objectives] : [dk.objectives])).map(o=>`<li>${esc(o)}</li>`).join('')}
-            </ul>
-          </div>
+          ${isSmartCampus ? `
+            <div class="portfolio-prose">
+              <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
+                ${(Array.isArray(st0.objectives) ? st0.objectives : (st0.objectives ? [st0.objectives] : [])).map(o=>`<li>${esc(o)}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-courses">
           <h3>3. Foundation Course Integration</h3>
-          <div class="tablewrap">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="width:65px">Sl. No.</th>
-                  <th style="width:230px">Foundation Course</th>
-                  <th>Concepts Used</th>
-                  <th style="width:130px">Role</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st0.coursesTable || coursesRows || []).map(c=>`
+          ${isSmartCampus ? `
+            <div class="tablewrap">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
-                    <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
-                    <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
-                    <td><span class="tag ${String(c.role).includes('Core')||String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
+                    <th style="width:65px">Sl. No.</th>
+                    <th style="width:230px">Foundation Course</th>
+                    <th>Concepts Used</th>
+                    <th style="width:130px">Role</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${(st0.coursesTable || []).map(c=>`
+                    <tr>
+                      <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
+                      <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
+                      <td><span class="tag ${String(c.role).includes('Core')||String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-workflow-concept">
           <h3>4. Conceptual Workflow</h3>
-          <div class="tablewrap" style="margin-bottom:12px">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th>Input</th>
-                  <th>Processing</th>
-                  <th>User action</th>
-                  <th>Output</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st0.pipelineTable || pipelineRows || []).map(p=>`
+          ${isSmartCampus ? `
+            <div class="tablewrap" style="margin-bottom:12px">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
-                    <td style="color:#000000;font-size:12px">${esc(p.processing || p.assessment)}</td>
-                    <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
-                    <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
+                    <th>Input</th>
+                    <th>Processing</th>
+                    <th>User action</th>
+                    <th>Output</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-          <div class="tablewrap">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="min-width:380px;width:40%">Engine</th>
-                  <th style="width:60%">Conceptual responsibility</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st0.enginesTable || enginesRows || []).map(e=>`
+                </thead>
+                <tbody>
+                  ${(st0.pipelineTable || []).map(p=>`
+                    <tr>
+                      <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(p.processing || p.assessment)}</td>
+                      <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
+                      <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div class="tablewrap">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
-                    <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
+                    <th style="min-width:380px;width:40%">Engine</th>
+                    <th style="width:60%">Conceptual responsibility</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${(st0.enginesTable || []).map(e=>`
+                    <tr>
+                      <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
+                      <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-scope">
           <h3>5. Project Scope</h3>
-          <div style="display:flex;flex-direction:column;gap:18px">
-            <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
-              <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
-                i) In Scope
-              </div>
-              <table class="test-suite-table">
-                <thead>
-                  <tr>
-                    <th style="width:40px">#</th>
-                    <th>In-Scope Item</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${(st0.scopeInTable || scopeInRows || []).map(s=>`
+          ${isSmartCampus ? `
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
+                <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
+                  i) In Scope
+                </div>
+                <table class="test-suite-table">
+                  <thead>
                     <tr>
-                      <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
+                      <th style="width:40px">#</th>
+                      <th>In-Scope Item</th>
                     </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            <div id="sec-scope-out" class="tablewrap" style="scroll-margin-top:100px">
-              <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
-                ii) Out of Scope
+                  </thead>
+                  <tbody>
+                    ${(st0.scopeInTable || []).map(s=>`
+                      <tr>
+                        <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
+                        <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
               </div>
-              <table class="test-suite-table">
-                <thead>
-                  <tr>
-                    <th style="width:40px">#</th>
-                    <th>Out-of-Scope Item</th>
-                    <th>Reason</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${(st0.scopeOutTable || scopeOutRows || []).map(s=>`
+              <div id="sec-scope-out" class="tablewrap" style="scroll-margin-top:100px">
+                <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
+                  ii) Out of Scope
+                </div>
+                <table class="test-suite-table">
+                  <thead>
                     <tr>
-                      <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
-                      <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
+                      <th style="width:40px">#</th>
+                      <th>Out-of-Scope Item</th>
+                      <th>Reason</th>
                     </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    ${(st0.scopeOutTable || []).map(s=>`
+                      <tr>
+                        <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
+                        <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
+                        <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-feasibility">
           <h3>6. Feasibility &amp; Constraints</h3>
-          <div class="tablewrap">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="width:230px">Aspect</th>
-                  <th>Assessment</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st0.feasibilityTable || feasibilityRows || []).map(f=>`
+          ${isSmartCampus ? `
+            <div class="tablewrap">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
-                    <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
+                    <th style="width:230px">Aspect</th>
+                    <th>Assessment</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${(st0.feasibilityTable || []).map(f=>`
+                    <tr>
+                      <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
         </article>
       </section>
 
@@ -1652,110 +1662,118 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
-          <div class="tablewrap">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="width:70px">FR ID</th>
-                  <th>Description</th>
-                  <th style="width:160px">Priority</th>
-                  <th style="width:220px">Source Need</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st1.frTable || []).map(fr=>`
+          ${isSmartCampus ? `
+            <div class="tablewrap">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td><span class="req-tag">${esc(fr.id)}</span></td>
-                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-                    <td><span class="tag ${fr.priority==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.priority||'Mandatory')}</span></td>
-                    <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
+                    <th style="width:70px">FR ID</th>
+                    <th>Description</th>
+                    <th style="width:160px">Priority</th>
+                    <th style="width:220px">Source Need</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${(st1.frTable || []).map(fr=>`
+                    <tr>
+                      <td><span class="req-tag">${esc(fr.id)}</span></td>
+                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
+                      <td><span class="tag ${fr.priority==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.priority||'Mandatory')}</span></td>
+                      <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-nfr">
           <h3>2. Non - Functional Requirements</h3>
-          <div class="tablewrap">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="width:80px">NFR ID</th>
-                  <th>Description</th>
-                  <th style="width:130px">Category</th>
-                  <th style="width:260px">Measurable Target</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st1.nfrTable || []).map(nfr=>`
+          ${isSmartCampus ? `
+            <div class="tablewrap">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td><span class="req-tag">${esc(nfr.id)}</span></td>
-                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
-                    <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||nfr.category||'')}</span></td>
-                    <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
+                    <th style="width:80px">NFR ID</th>
+                    <th>Description</th>
+                    <th style="width:130px">Category</th>
+                    <th style="width:260px">Measurable Target</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${(st1.nfrTable || []).map(nfr=>`
+                    <tr>
+                      <td><span class="req-tag">${esc(nfr.id)}</span></td>
+                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
+                      <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||nfr.category||'')}</span></td>
+                      <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-usecase">
           <h3>3. Use Cases</h3>
-          <div class="tablewrap" style="margin-bottom:14px">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="width:50px">ID</th>
-                  <th style="width:170px">Actor</th>
-                  <th style="width:220px">Description / User Story</th>
-                  <th>Main Flow</th>
-                  <th>Exception Flow</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st1.userStoryTable || []).map(u=>`
+          ${isSmartCampus ? `
+            <div class="tablewrap" style="margin-bottom:14px">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td><span class="req-tag">${esc(u.id)}</span></td>
-                    <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
-                    <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
-                    <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
-                    <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
+                    <th style="width:50px">ID</th>
+                    <th style="width:170px">Actor</th>
+                    <th style="width:220px">Description / User Story</th>
+                    <th>Main Flow</th>
+                    <th>Exception Flow</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${st1.useCaseImage || 'assets/team03_usecase_diagram_doc.png'}" alt="Fig : Use case diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig : Use case diagram</p>
-          </div>
+                </thead>
+                <tbody>
+                  ${(st1.userStoryTable || []).map(u=>`
+                    <tr>
+                      <td><span class="req-tag">${esc(u.id)}</span></td>
+                      <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
+                      <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
+                      <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
+                      <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+              <img src="${st1.useCaseImage || 'assets/team03_usecase_diagram_doc.png'}" alt="Fig : Use case diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig : Use case diagram</p>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-acceptance">
           <h3>4. Acceptance Criteria</h3>
-          <div class="tablewrap">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th style="width:110px">Requirement ID</th>
-                  <th>Acceptance Criteria</th>
-                  <th style="width:340px">Test / Verification Method</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(st1.acceptanceTable || []).map(tc=>`
+          ${isSmartCampus ? `
+            <div class="tablewrap">
+              <table class="test-suite-table">
+                <thead>
                   <tr>
-                    <td><span class="req-tag">${esc(tc.req)}</span></td>
-                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
-                    <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
+                    <th style="width:110px">Requirement ID</th>
+                    <th>Acceptance Criteria</th>
+                    <th style="width:340px">Test / Verification Method</th>
                   </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  ${(st1.acceptanceTable || []).map(tc=>`
+                    <tr>
+                      <td><span class="req-tag">${esc(tc.req)}</span></td>
+                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
+                      <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
         </article>
       </section>
 
@@ -1767,35 +1785,41 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-arch">
           <h3>1. Architecture</h3>
-          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-            ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-          </div>
-          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 1. Architecture Diagram</p>
-          </div>
+          ${isSmartCampus ? `
+            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+              ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+            </div>
+            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+              <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 1. Architecture Diagram</p>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-data-design">
           <h3>2. Data Design</h3>
-          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-            ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-          </div>
-          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 2. Data Design</p>
-          </div>
+          ${isSmartCampus ? `
+            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+              ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+            </div>
+            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+              <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 2. Data Design</p>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-algo-design">
           <h3>3. Algorithm Design</h3>
-          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-            ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-          </div>
-          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_doc.png'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
-          </div>
+          ${isSmartCampus ? `
+            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+              ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+            </div>
+            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+              <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_doc.png'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
+            </div>
+          ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-security-design">
@@ -1815,15 +1839,26 @@ portfolio=function(){
         <div class="portfolio-section-title">
           <h2>Testing and Validations</h2>
         </div>
-      </section></main>
+      </section>
+    </main>
   </div>
 </div>
 `;};
 
 function openTeamPortfolio(id){
+  window.lastViewedTheme = selectedTheme;
   switchTeam(id);
   go('Team Portfolio');
+  window.scrollTo(0, 0);
 }
+
+function backToThemeProjects(){
+  const t = activeTeam() || state.teams[0];
+  selectedTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
+  go('Department');
+  window.scrollTo(0, 0);
+}
+
 
 let selectedTheme = null;
 
@@ -1993,51 +2028,40 @@ function department(){
           HOD Academic Dashboard
         </h1>
       </div>
-      <div style="display:flex; gap:8px">
-        <button class="btn secondary" style="padding:6px 14px; font-size:12.5px; margin:0" onclick="downloadHODProjectCSVTemplate()">↓ Download CSV Template</button>
-      </div>
+      
     </div>
 
     <div class="stat-cards-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 6px 0 16px;">
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 18px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 14px 20px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:24px; font-weight:800; color:var(--brand); min-width:32px; line-height:1">
           06
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:14px; font-weight:700; color:#000000; line-height:1.2">
+          <div style="font-size:13.5px; font-weight:700; color:#000000; line-height:1.2">
             No. of Themes
           </div>
         </div>
-        <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
-          ${ICONS['Design Journey'].replace('<svg', '<svg style="width:18px;height:18px;color:var(--brand);flex-shrink:0"')}
-        </div>
       </div>
 
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 18px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 14px 20px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:24px; font-weight:800; color:var(--brand); min-width:32px; line-height:1">
           ${String(facultyList.length).padStart(2,'0')}
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:14px; font-weight:700; color:#000000; line-height:1.2">
+          <div style="font-size:13.5px; font-weight:700; color:#000000; line-height:1.2">
             No. of Faculty Mentors
           </div>
         </div>
-        <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
-          ${ICONS['Faculty Review'].replace('<svg', '<svg style="width:18px;height:18px;color:var(--brand);flex-shrink:0"')}
-        </div>
       </div>
 
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 12px 18px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:26px; font-weight:800; color:var(--brand); min-width:36px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 14px 20px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:24px; font-weight:800; color:var(--brand); min-width:32px; line-height:1">
           ${String(all.length).padStart(2,'0')}
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:14px; font-weight:700; color:#000000; line-height:1.2">
+          <div style="font-size:13.5px; font-weight:700; color:#000000; line-height:1.2">
             No. of Teams
           </div>
-        </div>
-        <div class="stat-icon-wrapper" style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:8px; background:var(--brand-subtle); color:var(--brand); flex-shrink:0;">
-          ${ICONS.users.replace('<svg', '<svg style="width:18px;height:18px;color:var(--brand);flex-shrink:0"')}
         </div>
       </div>
     </div>
@@ -2047,9 +2071,7 @@ function department(){
         <h2 style="font-size:17px; font-weight:800; color:#000000; margin:0">
           Project Themes
         </h2>
-        <button class="textbtn" style="font-size:13px; font-weight:700; color:var(--brand); cursor:pointer" onclick="openThemePage('all')">
-          View All Projects (${all.length}) →
-        </button>
+        
       </div>
 
       <div class="theme-cards-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;">
