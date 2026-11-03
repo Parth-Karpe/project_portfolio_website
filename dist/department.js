@@ -1526,6 +1526,10 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-workflow-concept">
           <h3>4. Conceptual Workflow</h3>
           ${isSmartCampus ? `
+            <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
+              <img src="assets/team03_conceptual_flow.jpg" alt="Conceptual Flow - Smart Campus Lab & Resource Optimizer" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
+            </div>
+
             <div class="tablewrap" style="margin-bottom:12px">
               <table class="test-suite-table">
                 <thead>
@@ -1659,10 +1663,10 @@ portfolio=function(){
               <table class="test-suite-table">
                 <thead>
                   <tr>
-                    <th style="width:70px">FR ID</th>
+                    <th style="width:85px">FR ID</th>
                     <th>Description</th>
-                    <th style="width:160px">Priority</th>
-                    <th style="width:220px">Source Need</th>
+                    <th style="width:140px">Priority</th>
+                    <th style="width:280px">Source Need (from S0)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1687,9 +1691,9 @@ portfolio=function(){
               <table class="test-suite-table">
                 <thead>
                   <tr>
-                    <th style="width:80px">NFR ID</th>
+                    <th style="width:95px">NFR ID</th>
                     <th>Description</th>
-                    <th style="width:130px">Category</th>
+                    <th style="width:140px">Category</th>
                     <th style="width:260px">Measurable Target</th>
                   </tr>
                 </thead>

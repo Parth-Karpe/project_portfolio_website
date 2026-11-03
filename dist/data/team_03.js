@@ -78,6 +78,9 @@ const team03Data = {
       { sl: '6', course: 'Database Management Systems', concepts: 'Booking records, data storage, transactions and data consistency', role: 'Core' }
     ],
 
+    // 4. Conceptual Workflow Diagram & Tables
+    conceptualFlowImage: 'assets/team03_conceptual_flow.jpg',
+    conceptualFlowCaption: 'Conceptual Flow - Smart Campus Lab & Resource Optimizer',
     // 4. Conceptual Workflow Tables
     pipelineTable: [
       {
@@ -125,28 +128,34 @@ const team03Data = {
   // Source: Team_3_Gate_1_Smart_Campus_Lab_Resource_Optimizer.docx
   // ==========================================
   stage1: {
-    // 1. Functional Requirements Table
+    // 1. Functional Requirements Table (Source: Smart_Campus_FRs_NFRs.docx)
     frTable: [
-      { id: '01', desc: 'The system shall allow students and project teams to submit booking requests by selecting a resource, date, time slot and required capacity.', priority: 'Mandatory', sourceNeed: 'Online resource booking' },
-      { id: '02', desc: 'The system shall display available labs, project rooms and shared equipment for the selected time slot.', priority: 'Mandatory', sourceNeed: 'Visibility of resource availability' },
-      { id: '03', desc: 'The system shall check resource capacity, time-window and eligibility rules before accepting a booking.', priority: 'Mandatory', sourceNeed: 'Capacity and eligibility validation' },
-      { id: '04', desc: 'The system shall detect overlapping bookings and prevent the same resource from being allocated more than once for the same time slot.', priority: 'Mandatory', sourceNeed: 'Automated conflict detection' },
-      { id: '05', desc: 'The system shall compare competing requests and allocate resources based on availability, priority and fairness.', priority: 'Mandatory', sourceNeed: 'Fair resource allocation' },
-      { id: '06', desc: 'The system shall suggest suitable alternative resources or time slots when the requested resource is unavailable.', priority: 'Mandatory', sourceNeed: 'Alternative resource suggestions' },
-      { id: '07', desc: 'The system shall place eligible unallocated requests in a waiting queue and recheck them when a resource becomes available.', priority: 'Mandatory', sourceNeed: 'Waiting queue management' },
-      { id: '08', desc: 'The system shall store booking requests, allocation decisions and updates while maintaining correct records during simultaneous requests.', priority: 'Mandatory', sourceNeed: 'Reliable booking and data integrity' },
-      { id: '09', desc: 'The system shall generate reports showing resource utilization, allocation fairness and unresolved conflicts.', priority: 'Mandatory', sourceNeed: 'Utilization and conflict reporting' }
+      { id: 'FR-01', desc: 'Allow coordinators to upload existing college timetables.', priority: 'Mandatory', sourceNeed: 'Reduce manual timetable preparation and updating.' },
+      { id: 'FR-02', desc: 'Extract subjects, faculty, classrooms, laboratories, and time slots from uploaded timetables.', priority: 'Mandatory', sourceNeed: 'Organize timetable information in a usable form.' },
+      { id: 'FR-03', desc: 'Detect overlapping classes, faculty conflicts, and room conflicts.', priority: 'Mandatory', sourceNeed: 'Prevent scheduling conflicts and booking clashes.' },
+      { id: 'FR-04', desc: 'Check whether the required lecture, tutorial, and practical (L:T:P) hours are followed.', priority: 'Mandatory', sourceNeed: 'Ensure academic hour requirements are met.' },
+      { id: 'FR-05', desc: 'Allow students and faculty to view timetables and available time slots.', priority: 'Mandatory', sourceNeed: 'Provide clear timetable information and reduce confusion.' },
+      { id: 'FR-06', desc: 'Allow faculty to request extra classes, schedule changes, or report unavailability.', priority: 'Mandatory', sourceNeed: 'Handle additional classes and faculty unavailability.' },
+      { id: 'FR-07', desc: 'Handle incoming requests based on priority, fairness, and resource availability.', priority: 'Mandatory', sourceNeed: 'Manage competing requests fairly and efficiently.' },
+      { id: 'FR-08', desc: 'Suggest available classrooms, laboratories, and suitable faculty members.', priority: 'Mandatory', sourceNeed: 'Improve use of available rooms, labs, and faculty time.' },
+      { id: 'FR-09', desc: 'Allow HODs to approve or reject scheduling requests.', priority: 'Mandatory', sourceNeed: 'Support controlled approval of scheduling changes.' },
+      { id: 'FR-10', desc: 'Update the timetable after approved changes.', priority: 'Mandatory', sourceNeed: 'Keep the timetable accurate after approved changes.' },
+      { id: 'FR-11', desc: 'Generate reports showing classroom usage, laboratory usage, and faculty workload.', priority: 'Mandatory', sourceNeed: 'Monitor resource utilization and faculty workload.' },
+      { id: 'FR-12', desc: 'Notify affected students and faculty about timetable changes.', priority: 'Challenge', sourceNeed: 'Keep students and faculty informed about schedule changes.' }
     ],
 
-    // 2. Non Functional Requirements Table
+    // 2. Non Functional Requirements Table (Source: Smart_Campus_FRs_NFRs.docx)
     nfrTable: [
-      { id: '01', desc: 'The system shall prevent overlapping confirmed bookings for the same resource and time slot.', cat: 'Accuracy', target: 'Zero conflicting confirmed allocations in test cases' },
-      { id: '02', desc: 'The system shall process simultaneous requests without allocating the same resource more than once.', cat: 'Concurrency', target: 'Only one request receives a resource when requests compete for the same slot' },
-      { id: '03', desc: 'The system shall save every confirmed booking and its allocation details.', cat: 'Reliability', target: '100% of confirmed bookings are present in stored records' },
-      { id: '04', desc: 'The system shall handle booking requests according to the defined priority and fairness rules.', cat: 'Fairness', target: 'Waiting time and allocation results are recorded for each request' },
-      { id: '05', desc: 'The system shall provide a simple interface to view availability and submit or track requests.', cat: 'Usability', target: 'Users can complete a booking request using the displayed steps' },
-      { id: '06', desc: 'The system shall allow only authorized users to approve or modify bookings.', cat: 'Security', target: 'Unauthorized booking changes are rejected' },
-      { id: '07', desc: 'The system shall preserve existing confirmed bookings when a request fails or an allocation is retried.', cat: 'Data Integrity', target: 'No previously confirmed booking is changed by a failed request' }
+      { id: 'NFR-01', desc: 'Timetables should load quickly.', cat: 'Performance', target: 'Within 3 seconds.' },
+      { id: 'NFR-02', desc: 'Avoid overlapping faculty and room allocations.', cat: 'Accuracy', target: 'Zero conflicts in approved schedules.' },
+      { id: 'NFR-03', desc: 'Scheduling requests should not be lost.', cat: 'Reliability', target: '100% of accepted requests saved.' },
+      { id: 'NFR-04', desc: 'Requests should be handled fairly without unnecessary delays.', cat: 'Fairness', target: 'Track waiting time for every request.' },
+      { id: 'NFR-05', desc: 'System should be simple and easy to use.', cat: 'Usability', target: 'Basic tasks completed without training.' },
+      { id: 'NFR-06', desc: 'Only authorized users can modify schedules.', cat: 'Security', target: 'Access based on user roles.' },
+      { id: 'NFR-07', desc: 'System should support multiple semesters.', cat: 'Scalability', target: 'Initially support 1st, 3rd, and 5th semesters.' },
+      { id: 'NFR-08', desc: 'Scheduling rules should be easy to update.', cat: 'Maintainability', target: 'Change rules without modifying core code.' },
+      { id: 'NFR-09', desc: 'New scheduling requests should be processed quickly.', cat: 'Responsiveness', target: 'Suggest allocation within 5 seconds.' },
+      { id: 'NFR-10', desc: 'Original timetable information should remain safe.', cat: 'Data Integrity', target: 'Maintain original and updated timetable versions.' }
     ],
 
     // 3. Use Cases Table & Diagram
