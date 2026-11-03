@@ -54,9 +54,13 @@ AI Mentor's offline coach asks questions quoting the team's actual saved claims 
 
 Faculty/team Discussion persists locally and can demonstrate both sides by switching panels. HOD can read it. It is not live messaging across devices.
 
+## Viva answer submission
+
+Team Lead draft answers save locally while typing. Submit viva answers validates that every question is answered and that the saved source content still matches. A successful submission creates a fixed, read-only record visible in Faculty Review to the assigned Faculty and HOD. The records persist separately for each team; generating another question set preserves earlier submissions. Faculty cannot edit student answers.
+
 ## Optional Ollama
 
-Save the local endpoint (default http://localhost:11434) and an installed model name in AI Mentor, then choose Ollama mode. Calls use /api/generate and need a running model and allowed browser origin. The suggested qwen3:4b model is editable. Live questions require valid source fields and exact quotes; unverifiable citations are rejected. Connection/model errors are explicit. This integration is implemented but has not been verified against a running model. There is no silent fallback presented as live AI.
+Only the Faculty panel can view or manage the AI connection settings and generation mode. These settings are absent from the Team Lead/student view. In the Faculty panel, save the local endpoint (default http://localhost:11434) and an installed model name in AI Mentor, then choose Ollama mode. Calls use /api/generate and need a running model and allowed browser origin. The suggested qwen3:4b model is editable. Live questions require valid source fields and exact quotes; unverifiable citations are rejected. Connection/model errors are explicit. This integration is implemented but has not been verified against a running model. There is no silent fallback presented as live AI.
 
 ## Storage and verification
 
