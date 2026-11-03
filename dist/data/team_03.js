@@ -4,7 +4,7 @@
  * 1. Stage_0_Smart_Campus_Lab_Resource_Optimizer.docx
  * 2. Team_3_Gate_1_Smart_Campus_Lab_Resource_Optimizer.docx
  * 3. System Design.docx
- * Project: Smart Campus Lab & Resource Optimizer
+ * Project: Smart Campus Lab and Resource Optimizer
  * Theme: Concurrent and Transactional Systems (Theme 22)
  * Guide: Mr. Amit K
  */
@@ -14,7 +14,7 @@ window.STATIC_TEAMS_DATA = window.STATIC_TEAMS_DATA || {};
 const team03Data = {
   id: '03',
   theme: 'Concurrent and Transactional Systems',
-  title: 'Smart Campus Lab & Resource Optimizer',
+  title: 'Smart Campus Lab and Resource Optimizer',
   guide: 'Mr. Amit K',
   academicYear: '2026–27',
   repo: 'https://github.com/topics/campus-resource-optimizer',
@@ -184,7 +184,7 @@ const team03Data = {
   systemDesign: {
     // 1. Architecture
     architecturePoints: [
-      '1. The Smart Campus Lab & Resource Optimizer uses a Layered Architecture with Microservices (Hybrid).',
+      '1. The Smart Campus Lab and Resource Optimizer uses a Layered Architecture with Microservices (Hybrid).',
       '2. Presentation Layer: Provides the user interface for students, faculty, HODs, and administrators.',
       '3. It includes features like timetable viewing, booking requests, reports, and admin approvals.',
       '4. API/Controller Layer: Handles REST API requests, request validation, routing, authentication, and role-based access.',
