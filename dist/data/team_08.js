@@ -183,3 +183,6 @@ window.STATIC_TEAMS_DATA['08'] = {
     constraints: 'Hardware: Standard commodity workstation with min 8GB RAM and quad-core CPU. Software: Modern browser with ES2022 & IndexedDB support; Python 3.10+ runtime. Operational: Zero external cloud reliance for data processing to maintain strict privacy compliance.'
   }
 };
+
+window.STATIC_TEAMS_DATA['A-08'] = window.STATIC_TEAMS_DATA['08'];
+window.STATIC_TEAMS_DATA['8'] = window.STATIC_TEAMS_DATA['08'];
