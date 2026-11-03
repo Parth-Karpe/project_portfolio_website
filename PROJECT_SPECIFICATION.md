@@ -170,9 +170,9 @@ interface SystemState {
   guide: string;                          // Guide assigned to active team
   facultyAccount: string;                 // Currently selected faculty identity
   department: {
-    name: 'CS AI';
-    hod: string;                          // E.g., 'CS AI HOD (demo)'
-    facultyAdmin: string;                 // E.g., 'CS AI Faculty Admin (demo)'
+    name: 'CS (AI)';
+    hod: string;                          // E.g., 'CS (AI) HOD (demo)'
+    facultyAdmin: string;                 // E.g., 'CS (AI) Faculty Admin (demo)'
   };
   teams: TeamMeta[];                      // Directory of all teams in cohort
   workspaces: Record<string, TeamWorkspace>; // Isolated data per team ID
@@ -187,7 +187,7 @@ interface SystemState {
 
 interface TeamMeta {
   id: string;                             // Normalized string (e.g. '03')
-  department: 'CS AI';
+  department: 'CS (AI)';
   hod: string;
   facultyAdmin: string;
   faculty: string;                        // Guide name
@@ -388,7 +388,7 @@ The AI mentoring module offers two operational modes.
 - Security Constraints: Pure client-side parsing via `XLSX.read(arrayBuffer)`. Explicitly disables macros, formulas, HTML, and VBA (`cellFormula: false, cellHTML: false, cellStyles: false, bookVBA: false`).
 
 ### Expected Roster Schema (One row per team)
-1. `Department` (Optional, defaults to 'CS AI'; non-CS-AI strings rejected)
+1. `Department` (Optional, defaults to 'CS (AI)'; non-CS-AI strings rejected)
 2. `HOD` (Optional, defaults to active HOD)
 3. `Faculty Admin` (Optional, defaults to active Faculty Admin)
 4. `Team ID` (Normalized to two-digit format if numeric, e.g. '3' $\rightarrow$ '03')
