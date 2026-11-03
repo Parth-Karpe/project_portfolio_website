@@ -1,0 +1,161 @@
+=== PARAGRAPHS ===
+P0: PORTFOLIO CONTENT
+P1: Project title:- SMART CAMPUS LAB AND RESOURCE OPTIMIZER
+P2: Theme:- Concurrent and Transactional Systems
+P4: 1)Problem Statement :-
+P5: In many colleges, academic timetables and resource allocation are still managed manually, making it difficult to handle sudden changes, additional classes, and faculty unavailability. These challenges often result in scheduling conflicts, underutilized classrooms and laboratories, and uneven faculty workloads. Managing multiple scheduling requests is also complicated due to the lack of a systematic approach to prioritizing requests, ensuring fairness, and considering resource availability. Therefore, an efficient system is needed to simplify timetable management, optimize the use of existing resources, and ensure smooth academic activities with minimal disruption.
+P6: 2)Stakeholders :-
+P9: 3)Use Case Diagram:-
+P11: 4)Functional Requirements and Non-Functional Requirements:-
+P12: Functional Requirements (FRs)
+P14: Non-Functional Requirements (NFRs)
+P17: 5)Architecture:-
+P20: 6)Tech Stack:-
+P22: 7)Four Engines:-
+P23: i)E1 - Scheduling & Concurrency Controller(Operating Systems):-
+P24: 1. What it does
+P25: Handles multiple booking requests at the same time and makes sure that two people don't get the same resource simultaneously.
+P26: Maintains three queues: READY, WAITING and RETRY. If a request cannot be processed immediately, it is placed in a queue and handled in order.
+P27: Uses priority rules to decide which request should be processed first.
+P28: Protects shared data using locks and critical sections so that multiple requests don't create conflicts or incorrect results.
+P31: 2. What students should do
+P32: - Define the complete journey of every request:
+P33: NEW → VALIDATED → READY → RUNNING → ALLOCATED / WAITING / REJECTED
+P34: Implement a priority system where important requests are processed first. If two requests have the same priority, process the one that arrived earlier.
+P35: Use locks to protect important operations, especially when checking and booking a resource.
+P36: Test multiple requests trying to book the same resource at the same time. Make sure only one request gets the resource.
+P37: Measure system performance using:
+P38: Average and maximum waiting time.
+P39: Time spent waiting for locks.
+P40: Number of requests waiting for too long (starvation).
+P41: Number of deadlock events (target: zero).
+P42: 3. Academic Focus & Subjects Used
+P43: Operating Systems: Process scheduling, priority queues, locks, critical sections and deadlock prevention.
+P44: Data Structures & Algorithms: Using queues and priority-based scheduling to manage requests.
+P45: Database Management Systems: Making sure booking operations are saved correctly without conflicts.
+P46: Software Engineering: Dividing the system into separate modules such as scheduler, lock manager and retry manager.
+P48: ii)E2 - Search, Conflict & Allocation Engine(Data Structures and Algorithms)  :-
+P49: 1. What it does
+P50: Checks three things for every booking request:
+P51: Is the resource available?
+P52: If multiple people request it, who should get it?
+P53: If the first choice is unavailable, what is the next best option?
+P54: Searches and filters available resources based on time, capacity and suitability.
+P55: Identifies timetable clashes and capacity issues before confirming any booking.
+P56: Compares different booking requests and selects the best option using fixed rules, so decisions are fair and easy to understand.
+P57: 2. What students should do
+P58: Use an Interval Tree (a special type of search tree) to quickly find overlapping time slots.
+P59: Use a Sweep Line Algorithm to check how many people are using a resource at the same time, especially for resources with multiple seats.
+P60: Implement two allocation methods:
+P61: Greedy Algorithm: Quickly selects the best available option for immediate requests.
+P62: Dynamic Programming: Finds the best possible allocation when handling a group of requests together.
+P63: Make the system fair by increasing the priority of requests that have been waiting longer. Use Jain's Fairness Index to measure fairness.
+P64: Test the algorithms to make sure they give correct results. Compare their output with manually calculated answers.
+P65: 3. Academic Focus & Subjects Used
+P66: Data Structures & Algorithms: Interval Trees, Sweep Line Algorithm, Greedy Method, Dynamic Programming, Binary Search and Sorting.
+P67: Operating Systems: Passes the selected resource to Engine 01, which safely confirms the booking using locks.
+P68: Mathematics / Discrete Structures: Uses Jain's Fairness Index to measure fairness and mathematical methods to verify algorithm correctness.
+P69: Software Engineering: Measures algorithm performance and keeps searching, allocation and fairness modules separate.
+P71: iii) E3 - Data Management & Integrity Engine(Database Management Systems)
+P72: 1. What it does
+P73: Stores and organizes all the important information in the system, such as departments, programs, students, faculty, subjects, rooms and users.
+P74: Maintains data accuracy using primary keys, foreign keys and unique rules. This prevents duplicate records and missing connections between data.
+P75: Stores all booking and scheduling details, including time slots, room requests, room allocations and special facility bookings.
+P76: Controls who can view, access or modify data based on their roles and permissions.
+P77: 2. What students should do
+P78: Design a proper database structure using an ER Diagram and organize all six modules with the correct relationships between tables.
+P79: Create junction tables to connect information that has many-to-many relationships, such as faculty and subjects, or rooms and equipment.
+P80: Add rules to prevent common booking problems:
+P81: The same room cannot be booked by two people at the same time.
+P82: A faculty member cannot handle two classes at the same time.
+P83: Room capacity must be enough for the number of students.
+P84: Use Database Transactions to make sure a booking is saved only after all conflict checks are successful.
+P85: Write SQL queries to find:
+P86: Available rooms for a particular time.
+P87: Faculty timetables.
+P88: Room usage reports.
+P89: Scheduling conflicts.
+P90: Bookings waiting for approval.
+P91: 3. Academic Focus & Subjects Used
+P92: Database Management Systems: ER diagrams, database normalization, primary keys, foreign keys, SQL queries and transactions.
+P93: Operating Systems: Coordinates database transactions with Engine 01's locking mechanism to prevent conflicts.
+P94: Data Structures & Algorithms: Uses indexes on rooms, dates and time slots to find available resources quickly.
+P95: Software Engineering: Focuses on proper database design, user permissions and dividing the system into six separate modules.
+P96: iv)E4 - Control & Monitoring Dashboard(Web Technology) :-
+P97: 1. What it does
+P98: Provides an easy-to-use website that allows faculty, HODs, administrators, students and other staff to access the system.
+P99: Displays live information such as room availability, booking requests, waiting lists and timetables through separate dashboards for different users.
+P100: Allows users to submit room booking requests, check their status, approve requests and understand why a request was rejected.
+P101: Connects to the backend through secure and verified REST APIs to exchange data safely.
+P103: 2. What students should do
+P104: Create a responsive website using HTML5 and CSS3 that works properly on both computers and mobile phones.
+P105: Implement secure login and different access levels so users can only see and perform actions allowed for their roles.
+P106: Use JavaScript to fetch updated information from the server and refresh the dashboard without reloading the entire page.
+P107: Display useful charts showing room usage, waiting requests and booking conflicts. Organize the code using JavaScript modules and the MVC pattern.
+P108: Validate user inputs and test whether the website is easy to use, accessible and handles API errors properly.
+P109: 3. Academic Focus & Subjects Used
+P110: Web Technologies: HTML, CSS, JavaScript, responsive web design and asynchronous programming.
+P111: Computer Networks: HTTP, HTTPS, REST APIs and communication between frontend and backend.
+P112: Software Engineering: UI/UX design, MVC architecture, accessibility and usability testing.
+P113: Database Management Systems: Form validation, preventing SQL injection, connecting website data with the database and managing user permissions.
+P115: 8)Workflow:-
+P116: The Smart Campus Lab & Resource Optimizer begins when a Faculty member or HOD logs into the system, where the system authenticates their credentials, identifies their role and provides access to the appropriate dashboard. The authorized user can then search for available resources or submit a resource request by specifying the activity, required time slot, group size and other requirements. The system validates the request and retrieves the available resource information, timetable data, faculty availability and configured rules. It then filters the resources in a specific order: time availability, capacity, resource type and suitability, facilities and department-sharing rules, and faculty availability. If suitable resources are found, the system ranks them according to configured weights and suitability, and proceeds with the allocation process. Before confirming the allocation, it checks the latest booking information to ensure that no other request has occupied the same resource during that time. If all constraints are satisfied, the system allocates the resource, updates the request status and records the allocation details. If multiple requests compete for the same resource, the system applies the configured priority and authority rules to resolve the conflict and supports authorized reallocation where necessary. If no suitable resource is available, the system identifies the reason, searches for feasible alternative resources and presents them to the requester. The requester can accept an alternative, reject it and choose to join the waiting queue, or leave the request unresolved. Whenever a resource becomes available, the system re-evaluates eligible queued requests and attempts allocation again. Throughout the process, the system handles validation errors and transaction failures without affecting previously confirmed allocations, while maintaining records of requests, decisions, actions and outcomes. Finally, the HOD and Administrator can access dashboards to monitor faculty workload, allocation fairness, resource utilization, department-wise usage, parameter comparisons and audit history.
+P119: 9)Gate 0 ppt submission :- 
+10)Gate 1 ppt submission:-
+
+=== TABLES ===
+
+--- Table 1 (7 rows x 5 cols) ---
+R0: Stakeholder | Role / Description | Needs & Expectations | Current Pain Points | Influence (H/M/L)
+R1: Dean / College Management | Oversees the overall functioning of the college | Better use of classrooms, laboratories, and faculty time | Available resources are not always used effectively | H
+R2: Head of Department (HOD) | Manages departmental academic activities | Smooth scheduling, fair distribution of work, and fewer conflicts | Difficulty managing sudden changes and balancing faculty schedules | H
+R3: Timetable Coordinator | Prepares timetables and manages changes | Easy scheduling, quick changes, and fewer errors | Manual work takes time, especially when multiple changes are needed | H
+R4: Faculty Members | Conduct classes and laboratory sessions | Fair schedules, suitable time slots, and an easy way to request changes | Uneven schedules, difficulty arranging extra classes, and delays in approvals | M
+R5: Students | Attend classes and laboratory sessions | Regular classes, timely updates, and fewer disruptions | Sudden changes, missed classes, and confusion about updated schedules | M
+R6: Classroom & Lab Coordinators | Manage classrooms and laboratories | Better use of available rooms and labs without overlapping bookings | Some rooms remain unused while others are in high demand | M
+
+--- Table 2 (13 rows x 3 cols) ---
+R0: FR ID | Description | Priority
+R1: FR-01 | Allow coordinators to upload existing college timetables | Mandatory
+R2: FR-02 | Extract subjects, faculty, classrooms, laboratories, and time slots from uploaded timetables | Mandatory
+R3: FR-03 | Detect overlapping classes, faculty conflicts, and room conflicts | Mandatory
+R4: FR-04 | Check whether the required lecture, tutorial, and practical (L:T:P) hours are followed | Mandatory
+R5: FR-05 | Allow students and faculty to view timetables and available time slots | Mandatory
+R6: FR-06 | Allow faculty to request extra classes, schedule changes, or report unavailability | Mandatory
+R7: FR-07 | Handle incoming requests based on priority, fairness, and resource availability | Mandatory
+R8: FR-08 | Suggest available classrooms, laboratories, and suitable faculty members | Mandatory
+R9: FR-09 | Allow HODs to approve or reject scheduling requests | Mandatory
+R10: FR-10 | Update the timetable after approved changes | Mandatory
+R11: FR-11 | Generate reports showing classroom usage, laboratory usage, and faculty workload | Mandatory
+R12: FR-12 | Notify affected students and faculty about timetable changes | Challenge
+
+--- Table 3 (11 rows x 4 cols) ---
+R0: NFR ID | Category | Requirement | Measurable Target
+R1: NFR-01 | Performance | Timetables should load quickly | Within 3 seconds
+R2: NFR-02 | Accuracy | Avoid overlapping faculty and room allocations | Zero conflicts in approved schedules
+R3: NFR-03 | Reliability | Scheduling requests should not be lost | 100% of accepted requests saved
+R4: NFR-04 | Fairness | Requests should be handled fairly without unnecessary delays | Track waiting time for every request
+R5: NFR-05 | Usability | System should be simple and easy to use | Basic tasks completed without training
+R6: NFR-06 | Security | Only authorized users can modify schedules | Access based on user roles
+R7: NFR-07 | Scalability | System should support multiple semesters | Initially support 1st, 3rd, and 5th semesters
+R8: NFR-08 | Maintainability | Scheduling rules should be easy to update | Change rules without modifying core code
+R9: NFR-09 | Responsiveness | New scheduling requests should be processed quickly | Suggest allocation within 5 seconds
+R10: NFR-10 | Data Integrity | Original timetable information should remain safe | Maintain original and updated timetable versions
+
+--- Table 4 (16 rows x 3 cols) ---
+R0: Category | Technology | Usage
+R1: Frontend & Application Framework | Next.js 15 | Full-stack web framework used to build the application and its APIs.
+R2: Frontend & Application Framework | React 19 | Builds reusable and interactive user interface components.
+R3: Frontend & Application Framework | TypeScript | Adds types to JavaScript, making code safer and helping prevent errors.
+R4: Frontend & Application Framework | Tailwind CSS / PostCSS | Provides responsive styling, including dark mode, grids and page layouts.
+R5: Frontend & Application Framework | Lucide React | Provides clean icons for navigation, toolbars and status indicators.
+R6: Frontend & Application Framework | HTML5 Drag & Drop | Allows users to move and arrange classes on the timetable grid.
+R7: Backend & API Layer | Next.js Route Handlers (Node.js) | Provides REST API endpoints to get data, generate and validate timetables, commit changes and export results.
+R8: Backend & API Layer | Python / FastAPI | Runs scheduling algorithms and provides backend services.
+R9: Database & Data Store | In-Memory Store | Provides fast, temporary storage for preloaded academic data such as departments, faculty, rooms and courses.
+R10: Database & Data Store | Supabase / PostgreSQL | Stores academic data, timetable versions and logs in a database for long-term use.
+R11: Algorithmic & Solver Engine | CSP Solver | Finds a valid timetable using smart search techniques such as Backtracking, Forward Checking, MRV and Degree heuristics.
+R12: Algorithmic & Solver Engine | L-T-P & Slot Engine | Calculates lecture, tutorial and practical teaching hours, then creates time slots while considering breaks and buffer periods.
+R13: Testing & Build Tooling | Vitest | Tests the solver, L-T-P calculations, time parsing and drag-and-drop rules.
+R14: Testing & Build Tooling | TypeScript (tsc) | Checks code for type errors and helps keep it reliable.
+R15: Testing & Build Tooling | npm / Node.js | Manages project packages and dependencies, and builds the final application.

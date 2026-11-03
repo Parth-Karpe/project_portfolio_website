@@ -1380,7 +1380,8 @@ function renderRequirementsTable(text, defaultList, type){
 
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
-        staticTeam=(typeof window!=='undefined'&&window.STATIC_TEAMS_DATA&&window.STATIC_TEAMS_DATA[t.id])||null,
+        cleanId=(t.id||'').replace(/^[A-Za-z]-/, ''),
+        staticTeam=(typeof window!=='undefined'&&window.STATIC_TEAMS_DATA&&(window.STATIC_TEAMS_DATA[t.id] || window.STATIC_TEAMS_DATA[cleanId] || window.STATIC_TEAMS_DATA[String(cleanId).padStart(2,'0')] || window.STATIC_TEAMS_DATA[String(parseInt(cleanId, 10))]))||null,
         st0=staticTeam?.stage0||{},
         st1=staticTeam?.stage1||{},
         f0=state.forms?.[0]||{},
@@ -1388,9 +1389,9 @@ portfolio=function(){
         f2=state.forms?.[2]||{},
         f3=state.forms?.[3]||{},
         topic=staticTeam?.theme||t.topic||'Specialization Theme',
-        title=f0.title||f1.title||staticTeam?.title||t.title||'Project Portfolio',
-        guide=state.guide||staticTeam?.guide||t.faculty||'Faculty Guide',
-        repoUrl=safe(f2.repo||state.repo||staticTeam?.repo||t.repo||'https://github.com'),
+        title=staticTeam?.title||f0.title||f1.title||t.title||'Project Portfolio',
+        guide=staticTeam?.guide||state.guide||t.faculty||'Faculty Guide',
+        repoUrl=safe(staticTeam?.repo||f2.repo||state.repo||t.repo||'https://github.com'),
         dk=getDomainKnowledge(t);
 
   const coursesRows = parseTableRows(f0.courses, 'COURSES', st0.coursesTable || dk.courseIntegration);
@@ -1455,17 +1456,17 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>${ICONS['Evidence Library']} Problem Statement</h3>
-          <p class="portfolio-prose">${esc(f0.problem || st0.problem || f1.problem || dk.problem)}</p>
+          <p class="portfolio-prose">${esc(st0.problem || f0.problem || f1.problem || dk.problem)}</p>
           <div class="req-grid" style="margin-top:4px">
             <div class="req-card">
               <span class="req-tag">Target Users</span>
               <strong>Key Stakeholders</strong>
-              <p>${esc(f0.users || st0.targetUsers || f1.users || dk.targetUsers)}</p>
+              <p>${esc(st0.targetUsers || f0.users || f1.users || dk.targetUsers)}</p>
             </div>
             <div class="req-card">
               <span class="req-tag">Baseline Friction</span>
               <strong>Industry &amp; Academic Pain Points</strong>
-              <p>${esc(f0.baseline || st0.baselineFriction || dk.baselineFriction)}</p>
+              <p>${esc(st0.baselineFriction || f0.baseline || dk.baselineFriction)}</p>
             </div>
           </div>
 
@@ -1627,12 +1628,12 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-objectives">
           <h3>${ICONS.check} Objectives</h3>
-          <p class="portfolio-prose">${esc(f0.objectives || st0.objectives || f1.objectives || dk.objectives)}</p>
+          <p class="portfolio-prose">${esc(st0.objectives || f0.objectives || f1.objectives || dk.objectives)}</p>
           <div class="req-grid" style="margin-top:4px">
             <div class="req-card">
               <span class="req-tag">Measurable Target 1</span>
               <strong>Validation Accuracy &amp; Integrity</strong>
-              <p>${esc(f1.success || st0.success1 || dk.success1)}</p>
+              <p>${esc(st0.success1 || f1.success || dk.success1)}</p>
             </div>
             <div class="req-card">
               <span class="req-tag">Measurable Target 2</span>
@@ -1691,6 +1692,15 @@ portfolio=function(){
               <p class="diagram-caption">Figure 0.1: Contextual Use Case Diagram for ${esc(t.title)}.</p>`;
             })()}
           </div>
+          ${st0.asIsWorkflowImage ? `
+            <div style="margin-top:20px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Figure 0.2: AS-IS Process Swimlane Workflow Diagram</h4>
+              <div class="diagram-frame">
+                <img src="${st0.asIsWorkflowImage}" alt="AS-IS Workflow Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
+                <p class="diagram-caption">${esc(st0.asIsWorkflowCaption || ('Figure 0.2: AS-IS Current Manual Booking Swimlane Workflow for '+t.title+' (Gate 0 Source Document).'))}</p>
+              </div>
+            </div>
+          ` : ''}
 
           <!-- Word Table 4 (from Gate 1 Doc): Primary Actors & User Stories Table -->
           ${userStoryRows && userStoryRows.length ? `
@@ -1748,7 +1758,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-arch">
           <h3>${ICONS['Admin Panel']} Architecture</h3>
-          <p class="portfolio-prose">${esc(f1.architecture || st1.archDesc || f2.architecture || dk.archDesc)}</p>
+          <p class="portfolio-prose">${esc(st1.archDesc || f1.architecture || f2.architecture || dk.archDesc)}</p>
           <div class="diagram-frame">
             ${(()=>{
               const customImg1=getStageImage(1);
@@ -1809,9 +1819,9 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-workflow">
           <h3>${ICONS['Faculty Admin']} System Workflow</h3>
-          ${f1.workflow ? `
+          ${(st1.workflowDesc || f1.workflow) ? `
             <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px">
-              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.6;font-size:12.5px">${esc(f1.workflow)}</p>
+              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.6;font-size:12.5px">${esc(st1.workflowDesc || f1.workflow)}</p>
             </div>
           ` : ''}
           <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:10px">
