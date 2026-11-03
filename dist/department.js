@@ -388,14 +388,10 @@ portfolio=function(){
     <div>
       <span class="portfolio-theme-pill">Theme: ${esc(topic)}</span>
       <h1 class="portfolio-hero-title">${esc(title)}</h1>
-      <p style="color:var(--hero-subtle);max-width:760px;font-size:14px;margin:0">
-        From problem discovery to constraint formulation and validated realization. Guided by ${esc(guide)} · Department of CS AI.
-      </p>
       <div class="portfolio-hero-meta">
         <span>Team: <strong>Team ${esc(t.id)}</strong></span>
         <span>Faculty Guide: <strong>${esc(guide)}</strong></span>
         <span>Academic Year: <strong>2026–27</strong></span>
-        <span class="tag ${status(3)==='Approved'?'':status(2)==='Approved'?'':'amber'}">Stage 0: ${esc(status(0))} · Stage 1: ${esc(status(1))} · Stage 2: ${esc(status(2))} · Stage 3: ${esc(status(3))}</span>
         <a href="${repoUrl}" target="_blank" rel="noopener" class="btn secondary" style="margin-left:auto">GitHub Repository ↗</a>
       </div>
     </div>
@@ -452,7 +448,14 @@ portfolio=function(){
               <p>${esc(f0.baseline || dk.baselineFriction)}</p>
             </div>
           </div>
-          ${dk.courseIntegration?`
+          ${f0.courses ? `
+            <div style="margin-top:14px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Foundation Course Integration &amp; Academic Role</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:9px;padding:12px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f0.courses)}</p>
+              </div>
+            </div>
+          ` : dk.courseIntegration ? `
             <div style="margin-top:14px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Foundation Course Integration &amp; Academic Role</h4>
               <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr))">
@@ -468,7 +471,14 @@ portfolio=function(){
               </div>
             </div>
           `:''}
-          ${dk.conceptualEngines?`
+          ${f0.engines ? `
+            <div style="margin-top:14px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Conceptual System Workflow Engines</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:9px;padding:12px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f0.engines)}</p>
+              </div>
+            </div>
+          ` : dk.conceptualEngines ? `
             <div style="margin-top:14px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Conceptual System Workflow Engines</h4>
               <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(260px, 1fr))">
@@ -482,7 +492,14 @@ portfolio=function(){
               </div>
             </div>
           `:''}
-          ${dk.scopeIn?`
+          ${f0.scope ? `
+            <div style="margin-top:14px">
+              <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Broad Project Scope &amp; Boundaries</h4>
+              <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:9px;padding:12px 16px">
+                <p class="portfolio-prose" style="white-space:pre-line;margin:0;font-size:12.5px">${esc(f0.scope)}</p>
+              </div>
+            </div>
+          ` : dk.scopeIn ? `
             <div style="margin-top:14px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Broad Project Scope &amp; Boundaries</h4>
               <div class="req-grid" style="grid-template-columns:repeat(auto-fit, minmax(320px, 1fr))">
@@ -595,7 +612,11 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>${ICONS['Design Journey']} Functional Requirements</h3>
-          ${dk.frList ? `
+          ${f1.functional ? `
+            <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:6px">
+              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.65;font-size:13px">${esc(f1.functional)}</p>
+            </div>
+          ` : dk.frList ? `
             <div class="tablewrap" style="margin-top:6px">
               <table class="test-suite-table">
                 <thead>
@@ -630,7 +651,11 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-nfr">
           <h3>${ICONS.lock} Non-Functional Requirements</h3>
-          ${dk.nfrList ? `
+          ${f1.nonfunctional ? `
+            <div style="background:var(--bg-subtle);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:6px">
+              <p class="portfolio-prose" style="white-space:pre-line;margin:0;line-height:1.65;font-size:13px">${esc(f1.nonfunctional)}</p>
+            </div>
+          ` : dk.nfrList ? `
             <div class="tablewrap" style="margin-top:6px">
               <table class="test-suite-table">
                 <thead>
