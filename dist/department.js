@@ -1510,7 +1510,7 @@ portfolio=function(){
               <table class="test-suite-table">
                 <thead>
                   <tr>
-                    <th style="width:65px">Sl. No.</th>
+                    <th style="width:85px">Sl. Number</th>
                     <th style="width:230px">Foundation Course</th>
                     <th>Concepts Used</th>
                     <th style="width:130px">Role</th>
@@ -2021,36 +2021,36 @@ function department(){
       
     </div>
 
-    <div class="stat-cards-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 6px 0 16px;">
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 14px 20px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:24px; font-weight:800; color:var(--brand); min-width:32px; line-height:1">
+    <div class="stat-cards-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 6px 0 16px;">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 16px 22px; display:flex; align-items:center; gap: 16px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:30px; font-weight:800; color:var(--brand); min-width:42px; line-height:1">
           06
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:13.5px; font-weight:700; color:#000000; line-height:1.2">
-            No. of Themes
+          <div style="font-size:16.5px; font-weight:700; color:#000000; line-height:1.25">
+            Number of Themes
           </div>
         </div>
       </div>
 
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 14px 20px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:24px; font-weight:800; color:var(--brand); min-width:32px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 16px 22px; display:flex; align-items:center; gap: 16px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:30px; font-weight:800; color:var(--brand); min-width:42px; line-height:1">
           ${String(facultyList.length).padStart(2,'0')}
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:13.5px; font-weight:700; color:#000000; line-height:1.2">
-            No. of Faculty Mentors
+          <div style="font-size:16.5px; font-weight:700; color:#000000; line-height:1.25">
+            Number of Faculty Mentors
           </div>
         </div>
       </div>
 
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:10px; padding: 14px 20px; display:flex; align-items:center; gap: 14px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:24px; font-weight:800; color:var(--brand); min-width:32px; line-height:1">
+      <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 16px 22px; display:flex; align-items:center; gap: 16px; box-shadow:var(--shadow-xs);">
+        <div style="font-size:30px; font-weight:800; color:var(--brand); min-width:42px; line-height:1">
           ${String(all.length).padStart(2,'0')}
         </div>
         <div style="flex:1; min-width:0">
-          <div style="font-size:13.5px; font-weight:700; color:#000000; line-height:1.2">
-            No. of Teams
+          <div style="font-size:16.5px; font-weight:700; color:#000000; line-height:1.25">
+            Number of Teams
           </div>
         </div>
       </div>

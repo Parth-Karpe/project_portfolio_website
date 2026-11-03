@@ -2089,23 +2089,21 @@ tbody tr:hover {
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
-  background: var(--surface);
-  border: 1.5px solid var(--line);
+  background: var(--brand);
+  border: 1.5px solid var(--brand);
   border-radius: 12px;
   font-size: 13.5px;
   font-weight: 700;
-  color: #000000;
+  color: #ffffff;
   cursor: pointer;
-  box-shadow: var(--shadow-xs);
+  box-shadow: 0 4px 14px var(--brand-glow);
   transition: all 0.2s ease;
   font-family: inherit;
 }
 .portfolio-stage-tab:hover {
-  border-color: var(--brand);
-  color: var(--brand);
-  background: var(--surface);
+  filter: brightness(1.08);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 6px 18px var(--brand-glow);
 }
 .portfolio-stage-tab .tab-badge {
   font-size: 11px;
@@ -2113,8 +2111,8 @@ tbody tr:hover {
   letter-spacing: 0.6px;
   padding: 3px 9px;
   border-radius: 6px;
-  background: var(--brand-subtle);
-  color: var(--brand);
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
   text-transform: uppercase;
   transition: all 0.2s ease;
 }
