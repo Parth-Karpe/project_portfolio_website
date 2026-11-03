@@ -212,7 +212,18 @@ go = function(p){
   prevGo(p);
 };
 
-function sidebar(){return rolePages[state.role].map(p=>`<button class="${page===p?'active':''}" onclick="go('${p}')" data-title="${esc(p)}" title="${esc(p)}">${iconFor[p]||''}<span class="nav-label">${p}</span></button>${p==='Team Portfolio'?portfolioSubnav():''}`).join('')}
+function sidebar(){
+  const pages = rolePages[state.role].filter(p => {
+    if(p === 'Team Portfolio' && page !== 'Team Portfolio' && state.role === 'HOD') return false;
+    return true;
+  });
+  return pages.map(p => `
+    <button class="${page===p?'active':''}" onclick="go('${p}')" data-title="${esc(p)}" title="${esc(p)}">
+      ${iconFor[p]||''}<span class="nav-label">${p}</span>
+    </button>
+    ${(p==='Team Portfolio' && page==='Team Portfolio') ? portfolioSubnav() : ''}
+  `).join('');
+}
 function getStageImage(n){return (state.media||[]).find(m=>m.stage===n&&m.kind==='image')}
 async function uploadStageImage(n){
   if(!editableStage(n))return;
@@ -354,7 +365,13 @@ render=function(){
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
   const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
-  $('#app').innerHTML=`<div class="shell ${isCol?'sidebar-collapsed':''}"><aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="sidebar-header"><div class="brand" onclick="isSidebarCollapsed()&&toggleSidebar()" style="cursor:pointer" title="ProjectGate AI"><span class="logo">P</span><span class="brand-text">ProjectGate <em>AI</em></span></div><button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar (Ctrl+B)" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg></button></div><div class="school"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CSE(AI)</span></div><div class="tiny" style="margin:0 14px 14px">${state.role==='HOD'?'DEPARTMENT WORKSPACE':state.role==='Admin'?'ADMINISTRATION':'PROJECT WORKSPACE'}</div><nav class="nav" aria-label="Main navigation">${sidebar()}</nav></aside><div><header class="topbar"><div class="topbar-left"><button class="sidebar-open-btn" onclick="toggleSidebar()" title="Toggle sidebar (Ctrl+B)" aria-label="Toggle sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button><div class="crumb">Mini-project portal &nbsp; ${ICONS.chevronRight} &nbsp; <strong style="color:var(--ink)">${esc(page)}</strong></div></div><div class="topright"><button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button></div></header><main class="main">${views[page]()}</main></div></div>${modal||''}`;
+  $('#app').innerHTML=`<div class="shell ${isCol?'sidebar-collapsed':''}"><aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="sidebar-header"><div class="brand" onclick="isSidebarCollapsed()&&toggleSidebar()" style="cursor:pointer" title="ProjectGate AI"><span class="logo">P</span><span class="brand-text">ProjectGate <em>AI</em></span></div><button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar (Ctrl+B)" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg></button></div><div class="school"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CSE(AI)</span></div><div class="tiny" style="margin:0 14px 14px">${state.role==='HOD'?'DEPARTMENT WORKSPACE':state.role==='Admin'?'ADMINISTRATION':'PROJECT WORKSPACE'}</div><nav class="nav" aria-label="Main navigation">${sidebar()}</nav></aside><div><header class="topbar"><div class="topbar-left"><button class="sidebar-open-btn" onclick="toggleSidebar()" title="Toggle sidebar (Ctrl+B)" aria-label="Toggle sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button><div class="crumb">Mini-project portal &nbsp; ${ICONS.chevronRight} &nbsp; <strong style="color:var(--ink)">${esc(page)}</strong></div></div><div class="topright" style="display:flex; align-items:center; gap:10px">
+  <div class="user-role-card" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:#000000; border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Log in as HOD</span>
+  </div>
+  <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
+</div></header><main class="main">${views[page]()}</main></div></div>${modal||''}`;
   const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
   if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();
 }

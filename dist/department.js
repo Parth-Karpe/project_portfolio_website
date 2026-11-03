@@ -1816,7 +1816,7 @@ portfolio=function(){
               ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
             </div>
             <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_doc.png'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+              <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_new.jpeg'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
               <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
             </div>
           ` : ''}
@@ -1981,19 +1981,9 @@ function department(){
 
         <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 18px 22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:var(--shadow-xs)">
           <div>
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px">
-              <span class="tag" style="background:var(--brand-subtle); color:var(--brand); font-weight:800; font-size:12px; padding:4px 10px; border-radius:6px">
-                ${isAll ? 'All Themes' : `Theme ${themeNo}`}
-              </span>
-              <h1 style="font-size:20px; font-weight:800; color:#000000; margin:0">
-                ${esc(title)}
-              </h1>
-            </div>
-            ${!isAll && info.desc ? `
-              <p style="font-size:13px; color:#333333; margin:4px 0 0; line-height:1.5">
-                ${esc(info.desc)}
-              </p>
-            ` : ''}
+            <h1 style="font-size:20px; font-weight:800; color:#000000; margin:0">
+              ${esc(title)}
+            </h1>
           </div>
           <span class="tag" style="background:var(--surface); color:#000000; border:1px solid var(--line); font-weight:700; font-size:13px; padding:5px 14px; border-radius:8px">
             ${count} Projects
@@ -2081,20 +2071,14 @@ function department(){
           return `
             <article class="theme-card-item" onclick="openThemePage(${no})" style="cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; transition:all 0.2s ease; box-shadow:var(--shadow-xs); display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
               <div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
-                  <span class="tag" style="background:var(--brand-subtle); color:var(--brand); font-weight:800; font-size:12px; padding:3px 9px; border-radius:6px">
-                    Theme ${no}
-                  </span>
-                  <span style="font-size:12.5px; font-weight:700; color:#000000">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px">
+                  <h3 style="font-size:15.5px; font-weight:800; color:#000000; margin:0; line-height:1.35">
+                    Theme ${no} : ${esc(info.name)}
+                  </h3>
+                  <span class="tag" style="background:var(--surface); color:#000000; border:1px solid var(--line); font-weight:700; font-size:12px; padding:4px 10px; border-radius:6px; flex-shrink:0">
                     ${count} Projects
                   </span>
                 </div>
-                <h3 style="font-size:15.5px; font-weight:800; color:#000000; margin:0 0 6px; line-height:1.35">
-                  Theme ${no} : ${esc(info.name)}
-                </h3>
-                <p style="font-size:12.5px; color:#444444; margin:0; line-height:1.55">
-                  ${esc(info.desc || '')}
-                </p>
               </div>
               <div style="display:flex; align-items:center; justify-content:flex-end; padding-top:10px; border-top:1px solid var(--line);">
                 <span style="color:var(--brand); font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:4px">

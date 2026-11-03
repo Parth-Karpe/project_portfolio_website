@@ -230,7 +230,7 @@ const team03Data = {
       'Dynamic Programming (DP) runs separately to find the best allocation when multiple pending requests need to be optimized together.',
       'Jain\'s Fairness Index is calculated later to measure how fairly resources are distributed among users.'
     ],
-    algorithmDesignImage: 'assets/team03_algorithmdesign_doc.png',
+    algorithmDesignImage: 'assets/team03_algorithmdesign_new.jpeg',
     algorithmDesignCaption: 'Fig 3. Algorithm Design'
 
     // 4. Security Design: Not provided in document, intentionally left empty per instructions.
