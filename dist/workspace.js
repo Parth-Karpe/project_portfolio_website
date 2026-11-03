@@ -16,7 +16,7 @@ function upgradeState(){
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();
-const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Department'],HOD:['Department','Team Portfolio','Design Journey'],Faculty:['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor']};
+const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Department'],HOD:['Department','Team Portfolio'],Faculty:['Overview','Team Portfolio','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Evidence Library','AI Mentor']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
@@ -65,69 +65,97 @@ function switchPortfolioStage(stageNum, autoScroll = false){
 window.switchPortfolioStage = switchPortfolioStage;
 function portfolioSubnav(){
   return `<div class="subnav portfolio-subnav">
+    <!-- Stage 0 -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-0'?'selected':''}" data-target="stage-0" onclick="scrollToPortfolioTopic('stage-0')">
-      <span class="nav-label">1. Stage 0 : Problem identification</span>
+      <span class="nav-label">• Stage 0 — Problem Statement and Need Identification</span>
     </button>
     <div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-problem'?'selected':''}" data-target="sec-problem" onclick="scrollToPortfolioTopic('sec-problem')">
-        <span class="nav-label">Problem Statement</span>
+        <span class="nav-label">1. Problem Statement</span>
       </button>
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-objectives'?'selected':''}" data-target="sec-objectives" onclick="scrollToPortfolioTopic('sec-objectives')">
-        <span class="nav-label">Objectives</span>
+        <span class="nav-label">2. Project Objectives</span>
       </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-usecase'?'selected':''}" data-target="sec-usecase" onclick="scrollToPortfolioTopic('sec-usecase')">
-        <span class="nav-label">Use Case Diagram</span>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-courses'?'selected':''}" data-target="sec-courses" onclick="scrollToPortfolioTopic('sec-courses')">
+        <span class="nav-label">3. Foundation Course Integration</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-workflow-concept'?'selected':''}" data-target="sec-workflow-concept" onclick="scrollToPortfolioTopic('sec-workflow-concept')">
+        <span class="nav-label">4. Conceptual Workflow</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-scope'?'selected':''}" data-target="sec-scope" onclick="scrollToPortfolioTopic('sec-scope')">
+        <span class="nav-label">5. Project Scope</span>
+      </button>
+      <div style="padding-left:12px;display:flex;flex-direction:column;gap:1px">
+        <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-scope-in'?'selected':''}" data-target="sec-scope-in" onclick="scrollToPortfolioTopic('sec-scope-in')">
+          <span class="nav-label">i) In Scope</span>
+        </button>
+        <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-scope-out'?'selected':''}" data-target="sec-scope-out" onclick="scrollToPortfolioTopic('sec-scope-out')">
+          <span class="nav-label">ii) Out of Scope</span>
+        </button>
+      </div>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-feasibility'?'selected':''}" data-target="sec-feasibility" onclick="scrollToPortfolioTopic('sec-feasibility')">
+        <span class="nav-label">6. Feasibility &amp; Constraints</span>
       </button>
     </div>
 
+    <!-- Stage 1 - Requirement Analysis -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-1'?'selected':''}" data-target="stage-1" onclick="scrollToPortfolioTopic('stage-1')">
-      <span class="nav-label">2. Stage 1 : Requirement Engineering</span>
+      <span class="nav-label">• Stage 1 - Requirement Analysis:-</span>
     </button>
     <div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-fr'?'selected':''}" data-target="sec-fr" onclick="scrollToPortfolioTopic('sec-fr')">
-        <span class="nav-label">Functional Requirements</span>
+        <span class="nav-label">1. Functional Requirements</span>
       </button>
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-nfr'?'selected':''}" data-target="sec-nfr" onclick="scrollToPortfolioTopic('sec-nfr')">
-        <span class="nav-label">Non Functional requirements</span>
+        <span class="nav-label">2. Non - Functional Requirements</span>
       </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
-        <span class="nav-label">Architecture</span>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-usecase'?'selected':''}" data-target="sec-usecase" onclick="scrollToPortfolioTopic('sec-usecase')">
+        <span class="nav-label">3. Use Cases</span>
       </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-workflow'?'selected':''}" data-target="sec-workflow" onclick="scrollToPortfolioTopic('sec-workflow')">
-        <span class="nav-label">System Workflow</span>
-      </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-techstack'?'selected':''}" data-target="sec-techstack" onclick="scrollToPortfolioTopic('sec-techstack')">
-        <span class="nav-label">Tech Stack</span>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-acceptance'?'selected':''}" data-target="sec-acceptance" onclick="scrollToPortfolioTopic('sec-acceptance')">
+        <span class="nav-label">4. Acceptance Criteria</span>
       </button>
     </div>
 
+    <!-- System Design -->
+    <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='sec-system-design'?'selected':''}" data-target="sec-system-design" onclick="scrollToPortfolioTopic('sec-system-design')">
+      <span class="nav-label">• System Design:-</span>
+    </button>
+    <div class="subtopics">
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
+        <span class="nav-label">1. Architecture</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-data-design'?'selected':''}" data-target="sec-data-design" onclick="scrollToPortfolioTopic('sec-data-design')">
+        <span class="nav-label">2. Data Design</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-algo-design'?'selected':''}" data-target="sec-algo-design" onclick="scrollToPortfolioTopic('sec-algo-design')">
+        <span class="nav-label">3. Algorithm Design</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-security-design'?'selected':''}" data-target="sec-security-design" onclick="scrollToPortfolioTopic('sec-security-design')">
+        <span class="nav-label">4. Security Design</span>
+      </button>
+    </div>
+
+    <!-- Implementation and Integration -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-2'?'selected':''}" data-target="stage-2" onclick="scrollToPortfolioTopic('stage-2')">
-      <span class="nav-label">3. Stage 2 : Implementation</span>
+      <span class="nav-label">• Implementation and Integration</span>
     </button>
 
+    <!-- Testing and Validations -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-3'?'selected':''}" data-target="stage-3" onclick="scrollToPortfolioTopic('stage-3')">
-      <span class="nav-label">4. Stage 3 : Testing and Validations</span>
+      <span class="nav-label">• Testing and Validations</span>
     </button>
   </div>`;
 }
 
 function scrollToPortfolioTopic(id){
   activePortfolioTopic = id;
-  const isStage1 = ['stage-1', 'sec-fr', 'sec-nfr', 'sec-arch', 'sec-workflow', 'sec-techstack'].includes(id);
-  const isStage0 = ['stage-0', 'sec-problem', 'sec-objectives', 'sec-usecase'].includes(id);
-  const isStage2 = id === 'stage-2';
-  const isStage3 = id === 'stage-3';
-  const targetStage = isStage1 ? 1 : isStage2 ? 2 : isStage3 ? 3 : 0;
-
   const performScroll = () => {
-    switchPortfolioStage(targetStage, false);
-    setTimeout(() => {
-      const el = document.getElementById(id);
-      if(el){
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        updateActivePortfolioNav(id);
-      }
-    }, 20);
+    const el = document.getElementById(id);
+    if(el){
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      updateActivePortfolioNav(id);
+    }
   };
 
   if(page !== 'Team Portfolio'){
@@ -158,8 +186,9 @@ window.addEventListener('scroll', () => {
   requestAnimationFrame(() => {
     isPortfolioTicking = false;
     const ids = [
-      'stage-0', 'sec-problem', 'sec-objectives', 'sec-usecase',
-      'stage-1', 'sec-fr', 'sec-nfr', 'sec-arch', 'sec-workflow', 'sec-techstack',
+      'stage-0', 'sec-problem', 'sec-objectives', 'sec-courses', 'sec-workflow-concept', 'sec-scope', 'sec-scope-in', 'sec-scope-out', 'sec-feasibility',
+      'stage-1', 'sec-fr', 'sec-nfr', 'sec-usecase', 'sec-acceptance',
+      'sec-system-design', 'sec-arch', 'sec-data-design', 'sec-algo-design', 'sec-security-design',
       'stage-2', 'stage-3'
     ];
     let current = '';
@@ -177,7 +206,7 @@ window.addEventListener('scroll', () => {
   });
 }, { passive: true });
 
-function sidebar(){return rolePages[state.role].map(p=>`<button class="${page===p?'active':''}" onclick="go('${p}')" data-title="${esc(p)}" title="${esc(p)}">${iconFor[p]||''}<span class="nav-label">${p}</span></button>${p==='Team Portfolio'?portfolioSubnav():''}${p==='Design Journey'?`<div class="subnav">${[0,1,2,3].map(n=>`<button class="stage-link ${page===p&&state.stage===n?'selected':''}" onclick="openSection(${n})">${status(n)==='Approved'?ICONS.check:status(n)==='Submitted'?'⏳':status(n)==='Revision requested'?'⚠':'○'} &nbsp; <span class="nav-label">Stage ${n}: ${stageNames[n]}</span></button><div class="subtopics">${(fieldsets[n]||[]).slice(0,3).map(([key,label])=>`<button class="${page===p&&state.stage===n&&selectedSection===key?'selected':''}" onclick="openSection(${n},'${key}')"><span class="nav-label">${label}</span></button>`).join('')}</div>`).join('')}</div>`:''}`).join('')}
+function sidebar(){return rolePages[state.role].map(p=>`<button class="${page===p?'active':''}" onclick="go('${p}')" data-title="${esc(p)}" title="${esc(p)}">${iconFor[p]||''}<span class="nav-label">${p}</span></button>${p==='Team Portfolio'?portfolioSubnav():''}`).join('')}
 function getStageImage(n){return (state.media||[]).find(m=>m.stage===n&&m.kind==='image')}
 async function uploadStageImage(n){
   if(!editableStage(n))return;
