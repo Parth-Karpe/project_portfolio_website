@@ -26,50 +26,35 @@ go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is
 function openSection(n,key=''){if(!rolePages[state.role].includes('Design Journey'))return;state.stage=n;page='Design Journey';selectedSection=key;save();render();if(key)document.getElementById('f-'+key)?.scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo(0,0)}
 
 let activePortfolioTopic = 'stage-0';
-let activePortfolioStage = 0;
+let activePortfolioStage = null;
 window.activePortfolioStage = activePortfolioStage;
 
 function switchPortfolioStage(stageNum, autoScroll = false){
   activePortfolioStage = stageNum;
   window.activePortfolioStage = stageNum;
-
-  // 1. Update tab buttons
-  document.querySelectorAll('.portfolio-stage-tab').forEach(btn => {
-    const isCur = Number(btn.getAttribute('data-tab')) === stageNum;
-    btn.classList.toggle('active', isCur);
+  window.refreshPortfolioStageNav?.(stageNum);
+  document.querySelectorAll('.portfolio-stage-tab').forEach(button=>{
+    const active=Number(button.dataset.tab)===stageNum;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+    if(active) button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');
   });
-
-  // 2. Show / hide stage sections
-  const sec0 = document.getElementById('stage-0');
-  const sec1 = document.getElementById('stage-1');
-  const sec2 = document.getElementById('stage-2');
-  const sec3 = document.getElementById('stage-3');
-
-  if(sec0) sec0.style.display = stageNum === 0 ? '' : 'none';
-  if(sec1) sec1.style.display = stageNum === 1 ? '' : 'none';
-  if(sec2) sec2.style.display = stageNum === 2 ? '' : 'none';
-  if(sec3) sec3.style.display = stageNum === 3 ? '' : 'none';
-
-  // 3. Highlight corresponding stage in sidebar
-  const defaultNavId = stageNum === 0 ? 'stage-0' : stageNum === 1 ? 'stage-1' : stageNum === 2 ? 'stage-2' : 'stage-3';
-  updateActivePortfolioNav(defaultNavId);
-
-  // 4. Smooth scroll to tab area if clicked on tab button
-  if(autoScroll){
-    const tabEl = document.getElementById('portfolio-stage-tabs');
-    if(tabEl){
-      tabEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
+  document.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>{
+    const panelStage=section.id==='sec-system-design'?1:Number(section.id.replace('stage-',''));
+    section.style.removeProperty('display');
+    section.hidden=panelStage!==stageNum;
+  });
+  const first=stageNum===0?'sec-problem':stageNum===1?'sec-fr':`stage-${stageNum}`;
+  updateActivePortfolioNav(first);
+  if(autoScroll) document.getElementById('portfolio-stage-tabs')?.scrollIntoView({
+    behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'
+  });
 }
 window.switchPortfolioStage = switchPortfolioStage;
 function portfolioSubnav(){
   return `<div class="subnav portfolio-subnav">
     <!-- Stage 0 -->
-    <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-0'?'selected':''}" data-target="stage-0" onclick="scrollToPortfolioTopic('stage-0')">
-      <span class="nav-label">• Stage 0 — Problem Statement and Need Identification</span>
-    </button>
-    <div class="subtopics">
+<div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-problem'?'selected':''}" data-target="sec-problem" onclick="scrollToPortfolioTopic('sec-problem')">
         <span class="nav-label">1. Problem Statement</span>
       </button>
@@ -99,10 +84,7 @@ function portfolioSubnav(){
     </div>
 
     <!-- Stage 1 - Requirement Analysis -->
-    <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-1'?'selected':''}" data-target="stage-1" onclick="scrollToPortfolioTopic('stage-1')">
-      <span class="nav-label">• Stage 1 - Requirement Analysis:-</span>
-    </button>
-    <div class="subtopics">
+<div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-fr'?'selected':''}" data-target="sec-fr" onclick="scrollToPortfolioTopic('sec-fr')">
         <span class="nav-label">1. Functional Requirements</span>
       </button>
@@ -119,7 +101,7 @@ function portfolioSubnav(){
 
     <!-- System Design -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='sec-system-design'?'selected':''}" data-target="sec-system-design" onclick="scrollToPortfolioTopic('sec-system-design')">
-      <span class="nav-label">• System Design:-</span>
+      <span class="nav-label">• System Design</span>
     </button>
     <div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
@@ -153,7 +135,12 @@ function scrollToPortfolioTopic(id){
   const performScroll = () => {
     const el = document.getElementById(id);
     if(el){
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const panel=el.closest('.portfolio-section');
+      if(panel){
+        const stage=panel.id==='sec-system-design'?1:Number(panel.id.replace('stage-',''));
+        if(Number.isInteger(stage) && stage!==activePortfolioStage) switchPortfolioStage(stage);
+      }
+      el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
       updateActivePortfolioNav(id);
     }
   };
@@ -173,7 +160,7 @@ function updateActivePortfolioNav(id, fromScroll = false){
     const isTarget = btn.getAttribute('data-target') === id;
     btn.classList.toggle('selected', isTarget);
     if(isTarget && fromScroll){
-      btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      btn.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     }
   });
 }
@@ -196,7 +183,8 @@ window.addEventListener('scroll', () => {
       const el = document.getElementById(id);
       if(!el || el.offsetParent === null) continue;
       const rect = el.getBoundingClientRect();
-      if(rect.top <= 160 && rect.bottom >= 60){
+      const readingOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) + parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stage-height')) + 20;
+      if(rect.top <= readingOffset && rect.bottom >= readingOffset){
         current = id;
       }
     }
@@ -351,6 +339,15 @@ journey=function(){
 overview=function(){if(state.role==='Admin')return adminPanel();if(state.role==='HOD')return department();return originalOverview().replaceAll('Design & develop','Requirements & realization')};
 mentor=function(){let html=originalMentor().replaceAll('Design & develop','Requirements & realization').replace('Demo mode uses deterministic question templates with excerpts from your submission. It is not live AI, RAG, or automated assessment.','Each demo question quotes a specific section of your saved submission and asks about that claim. This is a rule-based coaching demo, not a live language model.').replace('DEMO · TEMPLATE QUESTIONS','DEMO · SUBMISSION-BASED').replace('Demo templates · works offline','Submission coach · offline demo');return html+mentorChat()};
 function currentIdentity(){return state.role==='Faculty'?state.guide:state.role==='Team Lead'?state.members[0].name:state.role==='HOD'?'Head of Department':'Workspace Administrator'}
+function sharedPageHeader(){
+  return `<header class="topbar common-page-header"><div class="topbar-left"><div class="school-top-header"><strong>KLE Technological University</strong><span>Department of CSE(AI)</span></div></div><div class="topright" style="display:flex; align-items:center; gap:10px">
+  <button type="button" class="user-role-card" onclick="switchRole('HOD');go('Department')" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:#000000; border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Log in as HOD</span>
+  </button>
+  <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
+</div></header>`;
+}
 render=function(){
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
   const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
@@ -358,13 +355,7 @@ render=function(){
   const isPortfolio = page === 'Team Portfolio';
   const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (activeTeam()?.theme_no || 1);
 
-  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}">${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CSE(AI)</span></div><div style="margin-bottom:12px"><button class="btn secondary" style="width:100%; justify-content:center; padding:7px 12px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects(${curTheme})">← Back to Theme ${curTheme}</button></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div><header class="topbar"><div class="topbar-left" style="display:flex; align-items:center; gap:14px">${isPortfolio ? `<div class="crumb"><strong style="color:var(--ink); font-size:14px">Project Portfolio</strong></div>` : `<div class="school-top-header" style="display:flex; flex-direction:column"><strong style="font-size:16px; font-weight:800; color:#000000; letter-spacing:0.2px">KLE Technological University</strong><span style="font-size:12.5px; font-weight:600; color:var(--muted)">Department of CSE(AI)</span></div>`}</div><div class="topright" style="display:flex; align-items:center; gap:10px">
-  <div class="user-role-card" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:#000000; border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Log in as HOD</span>
-  </div>
-  <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
-</div></header><main class="main">${views[page]()}</main></div></div>${modal||''}`;
+  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}">${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CSE(AI)</span></div><div style="margin-bottom:12px"><button class="btn secondary" style="width:100%; justify-content:center; padding:7px 12px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects(${curTheme})">← Back to Theme ${curTheme}</button></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div>${sharedPageHeader()}<main class="main">${views[page]()}</main></div></div>${modal||''}`;
   const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
   if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();
 }

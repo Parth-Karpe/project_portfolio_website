@@ -1463,11 +1463,11 @@ portfolio=function(){
 
       <!-- Stage Switcher Tabs (Stage 0, Stage 1) -->
       <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
-        <button type="button" class="portfolio-stage-tab" data-tab="0" onclick="scrollToPortfolioTopic('stage-0')" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
+        <button type="button" class="portfolio-stage-tab" data-tab="0" onclick="switchPortfolioStage(0,true)" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
           <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 0</span>
           <span style="color:#ffffff;">Problem Statement &amp; Need Identification</span>
         </button>
-        <button type="button" class="portfolio-stage-tab" data-tab="1" onclick="scrollToPortfolioTopic('stage-1')" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
+        <button type="button" class="portfolio-stage-tab" data-tab="1" onclick="switchPortfolioStage(1,true)" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
           <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 1</span>
           <span style="color:#ffffff;">Requirement Analysis &amp; System Design</span>
         </button>
@@ -1475,9 +1475,7 @@ portfolio=function(){
 
       <!-- STAGE 0: Problem Statement and Need Identification -->
       <section class="portfolio-section" id="stage-0">
-        <div class="portfolio-section-title">
-          <h2>Stage 0 — Problem Statement and Need Identification</h2>
-        </div>
+        
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
@@ -1652,9 +1650,7 @@ portfolio=function(){
 
       <!-- STAGE 1: Requirement Analysis -->
       <section class="portfolio-section" id="stage-1">
-        <div class="portfolio-section-title">
-          <h2>Stage 1 - Requirement Analysis:-</h2>
-        </div>
+        
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
@@ -1776,7 +1772,7 @@ portfolio=function(){
       <!-- System Design -->
       <section class="portfolio-section" id="sec-system-design">
         <div class="portfolio-section-title">
-          <h2>System Design:-</h2>
+          <h2>System Design</h2>
         </div>
 
         <article class="portfolio-subblock" id="sec-arch">
@@ -2015,14 +2011,12 @@ function department(){
   }
 
   return `
-    <div class="heading" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+    <div class="heading faculty-dashboard-heading" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div>
         <h1 style="font-size:22px; font-weight:800; color:#000000; margin:0; line-height:1.2">
-          Dr. Narayan D.G. -&gt; HOD Mini-Project Dashboard
+          HOD Mini-Project Dashboard
         </h1>
-        <div style="font-size:14px; font-weight:600; color:var(--muted); margin-top:4px">
-          Department of CSE(AI)
-        </div>
+        <p class="faculty-dashboard-lead">Dr. Narayan D.G. &middot; Head of Department</p>
       </div>
       
     </div>
