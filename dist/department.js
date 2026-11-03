@@ -1434,7 +1434,7 @@ portfolio=function(){
             <div>
               <strong style="display:block;font-size:14px;color:var(--ink);line-height:1.25">${esc(m.name)}</strong>
               <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-                <span class="tag ${i===0?'':'gray'}" style="font-size:11px;padding:2px 8px;font-weight:700">${i===0?'Team Lead':esc(m.role||'Team Member')}</span>
+                <span class="tag ${i===0?'':'gray'}" style="font-size:11px;padding:2px 8px;font-weight:700">${i===0?'Team Leader':'Team Member'}</span>
                 <span style="font-size:12px;color:var(--muted)"><b>USN:</b> ${esc(m.usn)}</span>
               </div>
             </div>
@@ -1497,7 +1497,7 @@ portfolio=function(){
                   <tr>
                     <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
                     <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
-                    <td style="color:var(--ink-secondary);font-size:12px">${esc(c.concepts)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
                     <td><span class="tag ${String(c.role).includes('Core')||String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
                   </tr>
                 `).join('')}
@@ -1522,7 +1522,7 @@ portfolio=function(){
                 ${(st0.pipelineTable || pipelineRows || []).map(p=>`
                   <tr>
                     <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
-                    <td style="color:var(--ink-secondary);font-size:12px">${esc(p.processing || p.assessment)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(p.processing || p.assessment)}</td>
                     <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
                     <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
                   </tr>
@@ -1542,7 +1542,7 @@ portfolio=function(){
                 ${(st0.enginesTable || enginesRows || []).map(e=>`
                   <tr>
                     <td style="font-weight:700;color:var(--ink)"><span class="req-tag" style="margin-right:6px">${esc(e.id||'')}</span>${esc(e.name||e.engine)}</td>
-                    <td style="color:var(--ink-secondary);font-size:12px">${esc(e.desc)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1552,7 +1552,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-scope">
           <h3>5. Project Scope</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:14px">
+          <div style="display:flex;flex-direction:column;gap:18px">
             <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
               <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
                 i) In Scope
@@ -1568,7 +1568,7 @@ portfolio=function(){
                   ${(st0.scopeInTable || scopeInRows || []).map(s=>`
                     <tr>
                       <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
-                      <td style="color:var(--ink);font-size:12px">${esc(s.item)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -1590,8 +1590,8 @@ portfolio=function(){
                   ${(st0.scopeOutTable || scopeOutRows || []).map(s=>`
                     <tr>
                       <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
-                      <td style="color:var(--ink);font-size:12px">${esc(s.item)}</td>
-                      <td style="color:var(--muted);font-size:11.5px">${esc(s.reason)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
+                      <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -1614,7 +1614,7 @@ portfolio=function(){
                 ${(st0.feasibilityTable || feasibilityRows || []).map(f=>`
                   <tr>
                     <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
-                    <td style="color:var(--ink-secondary);font-size:12px">${esc(f.assessment)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1700,7 +1700,7 @@ portfolio=function(){
                     <td><span class="req-tag">${esc(u.id)}</span></td>
                     <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
                     <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
-                    <td style="font-size:11.5px;color:var(--ink-secondary)">${esc(u.mainFlow)}</td>
+                    <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
                     <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
                   </tr>
                 `).join('')}
@@ -1709,7 +1709,7 @@ portfolio=function(){
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
             <img src="${st1.useCaseImage || 'assets/team03_usecase_diagram_doc.png'}" alt="Fig : Use case diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig : Use case diagram</p>
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig : Use case diagram</p>
           </div>
         </article>
 
@@ -1729,7 +1729,7 @@ portfolio=function(){
                   <tr>
                     <td><span class="req-tag">${esc(tc.req)}</span></td>
                     <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
-                    <td style="font-size:12px;color:var(--ink-secondary)">${esc(tc.method)}</td>
+                    <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1751,7 +1751,7 @@ portfolio=function(){
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
             <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig 1. Architecture Diagram</p>
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 1. Architecture Diagram</p>
           </div>
         </article>
 
@@ -1762,7 +1762,7 @@ portfolio=function(){
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
             <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig 2. Data Design</p>
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 2. Data Design</p>
           </div>
         </article>
 
@@ -1773,7 +1773,7 @@ portfolio=function(){
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
             <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_doc.png'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink-secondary)">Fig 3. Algorithm Design</p>
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
           </div>
         </article>
 

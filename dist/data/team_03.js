@@ -22,15 +22,15 @@ const team03Data = {
     {
       name: 'Nupur Bagave',
       usn: '01FE24BCI029',
-      role: 'Operating Systems (OS) Engine Owner',
+      role: 'Team Leader',
       skills: 'Operating Systems · Concurrency · Mutual Exclusion',
-      contribution: 'Scheduling, queue management, synchronization, and concurrent shared-resource coordination (Engine E1).',
+      contribution: 'Scheduling, queue management, synchronization, and concurrent shared-resource coordination.',
       github: 'https://github.com'
     },
     {
       name: 'Vedant Khot',
       usn: '01FE24BCI028',
-      role: 'Web Technologies Engine Owner',
+      role: 'Team Member',
       skills: 'Web Technologies · Client-Server Communication · REST',
       contribution: 'User interaction, role-based workflows, dashboards, and system communication (Engine E4).',
       github: 'https://github.com'
@@ -38,7 +38,7 @@ const team03Data = {
     {
       name: 'Sachi Aratti',
       usn: '01FE24BCI003',
-      role: 'Data Structures & Algorithms (DSA) Engine Owner',
+      role: 'Team Member',
       skills: 'Data Structures & Algorithms · Interval Trees · Ranking',
       contribution: 'Efficient search, conflict detection, ranking, allocation decision logic, and alternative recommendation (Engine E2).',
       github: 'https://github.com'
@@ -46,7 +46,7 @@ const team03Data = {
     {
       name: 'Parth Karpe',
       usn: '01FE24BCI062',
-      role: 'Database Management Systems (DBMS) Engine Owner',
+      role: 'Team Member',
       skills: 'Database Management Systems · Relational Modeling · ACID',
       contribution: 'Persistent, consistent, and traceable academic, resource, request, allocation, and audit data management (Engine E3).',
       github: 'https://github.com'

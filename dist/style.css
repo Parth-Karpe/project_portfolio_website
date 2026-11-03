@@ -475,7 +475,7 @@ p {
   border-radius: 10px;
   font-size: 12px;
   line-height: 1.55;
-  color: var(--ink-secondary);
+  color: #000000;
 }
 
 .tiny {
@@ -559,7 +559,7 @@ p {
 
 .nav .subnav .stage-link {
   font-weight: 700;
-  color: var(--ink-secondary);
+  color: #000000;
   margin-top: 4px;
   font-size: 12.5px;
 }
@@ -1166,7 +1166,7 @@ label {
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: var(--ink-secondary);
+  color: #000000;
   margin: 16px 0 6px;
 }
 
@@ -1229,7 +1229,7 @@ input[type="file"] {
   border-radius: 10px;
   font-size: 12.5px;
   line-height: 1.6;
-  color: var(--ink-secondary);
+  color: #000000;
   margin-bottom: 20px;
 }
 
@@ -1397,7 +1397,7 @@ input[type="file"] {
 }
 .bubble p {
   white-space: pre-wrap;
-  color: var(--ink-secondary);
+  color: #000000;
   font-size: 13.5px;
   line-height: 1.6;
   margin: 6px 0;
@@ -1496,7 +1496,7 @@ input[type="file"] {
 .field-feedback p {
   font-size: 12.5px;
   margin: 4px 0 0;
-  color: var(--ink-secondary);
+  color: #000000;
 }
 
 /* ==========================================================================
@@ -1834,7 +1834,7 @@ tbody tr:hover {
 }
 .card.mentor p {
   font-size: 13px;
-  color: var(--ink-secondary);
+  color: #000000;
 }
 
 .evidence-section {
@@ -2094,7 +2094,7 @@ tbody tr:hover {
   border-radius: 12px;
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--ink-secondary);
+  color: #000000;
   cursor: pointer;
   box-shadow: var(--shadow-xs);
   transition: all 0.2s ease;
@@ -2190,7 +2190,7 @@ tbody tr:hover {
 .portfolio-prose {
   font-size: 13.5px;
   line-height: 1.7;
-  color: var(--ink-secondary);
+  color: #000000;
   background: var(--bg-subtle);
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -2450,7 +2450,7 @@ tbody tr:hover {
 }
 .portfolio-subnav .stage-link {
   font-weight: 700;
-  color: var(--ink-secondary);
+  color: #000000;
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.35;
@@ -2496,4 +2496,25 @@ tbody tr:hover {
   max-height: 18px !important;
   display: block !important;
   flex-shrink: 0 !important;
+}
+
+
+/* Portfolio Content - Font Color Black */
+.portfolio-content {
+  color: #000000 !important;
+}
+.portfolio-content p,
+.portfolio-content .portfolio-prose,
+.portfolio-content .portfolio-subblock,
+.portfolio-content .portfolio-subblock p,
+.portfolio-content .portfolio-subblock li,
+.portfolio-content .portfolio-subblock td,
+.portfolio-content .test-suite-table td,
+.portfolio-content .test-suite-table th,
+.portfolio-content .tablewrap td,
+.portfolio-content .tablewrap th,
+.portfolio-content .diagram-caption,
+.portfolio-content .req-card p,
+.portfolio-content .req-card strong {
+  color: #000000 !important;
 }
