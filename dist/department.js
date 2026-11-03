@@ -1408,7 +1408,7 @@ portfolio=function(){
   ];
   const userStoryRows = st0.userStoryTable || dk.userStoryTable || (dk.ucList||[]).map((u,i)=>({id:String(i+1).padStart(2,'0'),actor:dk.ucActor||'User',desc:u,mainFlow:'Input → Process → Output',exceptionFlow:'Validation error triggered'}));
 
-  return heading('Project Portfolio', 'Comprehensive One-Page Technical Showcase · CS (AI) AY 2026–27')+`
+  return `
 <div class="portfolio-container">
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
@@ -1423,26 +1423,19 @@ portfolio=function(){
       </div>
     </div>
 
-    <!-- Team Members Details (No inputs/textboxes) -->
+    <!-- Team Members Details (Name, Role, USN only) -->
     <div class="portfolio-members-grid">
       ${(staticTeam?.members||t.members).map((m,i)=>`
-        <article class="portfolio-member-card">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <article class="portfolio-member-card" style="padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:12px">
             ${avatar(m)}
             <div>
-              <strong style="display:block;font-size:13.5px;color:var(--ink)">${esc(m.name)}</strong>
-              <span class="tag ${i===0?'':'gray'}" style="font-size:10.5px;padding:2px 7px">${i===0?'Team Lead':esc(m.role||'Team Member')}</span>
+              <strong style="display:block;font-size:14px;color:var(--ink);line-height:1.25">${esc(m.name)}</strong>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+                <span class="tag ${i===0?'':'gray'}" style="font-size:11px;padding:2px 8px;font-weight:700">${i===0?'Team Lead':esc(m.role||'Team Member')}</span>
+                <span style="font-size:12px;color:var(--muted)"><b>USN:</b> ${esc(m.usn)}</span>
+              </div>
             </div>
-          </div>
-          <div style="font-size:11.5px;color:var(--muted);margin-bottom:8px">
-            <b>USN:</b> ${esc(m.usn)}
-          </div>
-          <p style="font-size:12px;color:var(--ink-secondary);margin:0 0 8px;line-height:1.45;flex-grow:1">
-            ${esc(m.contribution||(i===0?'Lead architecture modeling, design, and integration.':i===1?'Core algorithm formulation and optimization.':i===2?'API backend validation and data modeling.':'Testing, benchmarking, and evidence documentation.'))}
-          </p>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:auto">
-            <span class="req-tag" style="font-size:10px">${esc(m.skills||(i===0?'Full-stack':i===1?'Algorithms':i===2?'Backend & DB':'Testing & QA'))}</span>
-            <a href="${safe(m.github||'https://github.com')}" target="_blank" rel="noopener" class="textbtn" style="font-size:11px">GitHub ↗</a>
           </div>
         </article>
       `).join('')}
