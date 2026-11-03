@@ -9,31 +9,166 @@ function upgradeState(){
   if(!['Admin','HOD','Faculty','Team Lead','Faculty Admin'].includes(state.role))state.role='Team Lead';
   state.guide=state.guide||'Amit K';state.messages=state.messages||[];state.mentorMessages=state.mentorMessages||[];
   state.media=state.media||[];state.questions=state.questions||[];
-  state.forms[2].functional??='FR1: Import faculty, rooms and courses. FR2: Generate a conflict-free timetable. FR3: Let the coordinator review and export the timetable.';
-  state.forms[2].nonfunctional??='NFR1: No hard-constraint conflicts. NFR2: Target schedule generation within 30 seconds on the evaluation dataset. NFR3: Only authorized coordinators can modify scheduling inputs. Targets are illustrative and not yet validated.';
+  state.forms=state.forms||{};
+  [0,1,2,3].forEach(s=>{state.forms[s]=state.forms[s]||{}});
+  if(state.forms[2]&&!state.forms[2].implementation)state.forms[2].implementation='Constraint satisfaction modeling and heuristics.';
+  if(state.forms[1]&&!state.forms[1].functional)state.forms[1].functional='FR-01: Ingestion. FR-02: Algorithmic processing. FR-03: Export.';
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();
 const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Department'],HOD:['Overview','Department','Team Portfolio','Design Journey','Faculty Review','Discussion'],Faculty:['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor','Faculty Review','Discussion'],'Team Lead':['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor','Faculty Review','Discussion']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
-const stageNames={1:'Discover & define',2:'Requirements & realization'};
+Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
-function editableStage(n=state.stage){return isAdmin()&&(n===1||state.unlocked)&&!['Submitted','Approved'].includes(status(n))}
+function editableStage(n=state.stage){return isAdmin()&&!['Submitted','Approved'].includes(status(n))}
 function switchRole(role){if(!rolePages[role])return;state.role=role;modal=null;selectedSection='';if(!rolePages[role].includes(page))page=role==='HOD'?'Department':role==='Admin'?'Admin Panel':'Overview';save();render()}
 go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is not available to your current role.');page=p;selectedSection='';modal=null;render();window.scrollTo(0,0)};
 function openSection(n,key=''){if(!rolePages[state.role].includes('Design Journey'))return;state.stage=n;page='Design Journey';selectedSection=key;save();render();if(key)document.getElementById('f-'+key)?.scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo(0,0)}
-function sidebar(){return rolePages[state.role].map(p=>`<button class="${page===p?'active':''}" onclick="go('${p}')">${iconFor[p]||''}<span>${p}</span></button>${p==='Design Journey'?`<div class="subnav">${[1,2].map(n=>`<button class="stage-link ${page===p&&state.stage===n?'selected':''}" onclick="openSection(${n})">${n===2&&!state.unlocked?ICONS.lock:ICONS.check} &nbsp; ${stageNames[n]}</button><div class="subtopics">${(n===1?[['problem','Problem discovery'],['research','Research & objectives'],['solution','Proposed solution']]:[['functional','Functional requirements'],['nonfunctional','Non-functional requirements'],['architecture','System architecture'],['testing','Validation & evidence']]).map(([key,label])=>`<button class="${page===p&&state.stage===n&&selectedSection===key?'selected':''}" onclick="openSection(${n},'${key}')">${label}</button>`).join('')}</div>`).join('')}</div>`:''}`).join('')}
+function sidebar(){return rolePages[state.role].map(p=>`<button class="${page===p?'active':''}" onclick="go('${p}')" data-title="${esc(p)}" title="${esc(p)}">${iconFor[p]||''}<span class="nav-label">${p}</span></button>${p==='Design Journey'?`<div class="subnav">${[0,1,2,3].map(n=>`<button class="stage-link ${page===p&&state.stage===n?'selected':''}" onclick="openSection(${n})">${status(n)==='Approved'?ICONS.check:status(n)==='Submitted'?'⏳':status(n)==='Revision requested'?'⚠':'○'} &nbsp; <span class="nav-label">Stage ${n}: ${stageNames[n]}</span></button><div class="subtopics">${(fieldsets[n]||[]).slice(0,3).map(([key,label])=>`<button class="${page===p&&state.stage===n&&selectedSection===key?'selected':''}" onclick="openSection(${n},'${key}')"><span class="nav-label">${label}</span></button>`).join('')}</div>`).join('')}</div>`:''}`).join('')}
+function getStageImage(n){return (state.media||[]).find(m=>m.stage===n&&m.kind==='image')}
+async function uploadStageImage(n){
+  if(!editableStage(n))return;
+  const file=$('#stage-file-'+n)?.files?.[0];
+  const cap=($('#stage-caption-'+n)?.value||'').trim()||`Figure ${n}.1: Stage ${n} Diagram`;
+  if(!file)return toast('Please select an image file to upload (PNG, JPG, or WebP).');
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type))return toast('Please choose a PNG, JPG, or WebP image.');
+  if(file.size>15*1024*1024)return toast('Image size exceeds 15 MB limit.');
+  const id=crypto.randomUUID();
+  try{
+    await putMedia(id,file);
+    const old=state.media.find(m=>m.stage===n&&m.kind==='image');
+    if(old){await deleteMediaBlob(old.id).catch(()=>{});state.media=state.media.filter(m=>m.id!==old.id)}
+    state.media.push({id,stage:n,kind:'image',caption:cap,name:file.name,size:file.size,created:new Date().toLocaleString()});
+    log(`Stage ${n} diagram image attached: ${file.name}`);
+    save();render();toast(`Stage ${n} diagram uploaded and saved!`);
+  }catch(e){toast('Could not save image: '+(e.message||e))}
+}
+async function removeStageImage(id){
+  const m=state.media.find(x=>x.id===id);
+  if(!m||!editableStage(m.stage))return;
+  try{
+    await deleteMediaBlob(id).catch(()=>{});
+    state.media=state.media.filter(x=>x.id!==id);
+    log(`Stage ${m.stage} diagram removed`);
+    save();render();toast('Stage diagram removed.');
+  }catch(e){toast('Could not remove image.')}
+}
 const originalJourney=journey,originalMentor=mentor,originalOverview=overview;
-journey=function(){return originalJourney().replaceAll('Design & develop','Requirements & realization').replaceAll('Design &amp; develop','Requirements &amp; realization').replaceAll('design & develop','requirements & realization')+evidenceSection(state.stage)};
+journey=function(){
+  const n=state.stage??0,editable=editableStage(n),curStatus=status(n),curForm=state.forms[n]||{},fields=fieldsets[n]||[],stageImg=getStageImage(n),tTitle=state.forms[0]?.title||state.forms[1]?.title||'Mini-Project';
+  return heading('Stage '+n+' · '+stageNames[n],'Structured academic stage form aligned with Gate '+n+' department templates.')+`
+  <div class="tabs">
+    ${[0,1,2,3].map(s=>`<button class="${n===s?'active':''}" onclick="state.stage=${s};selectedSection='';render()">${status(s)==='Approved'?'✓':status(s)==='Submitted'?'⏳':('0'+s)} · ${stageNames[s]}</button>`).join('')}
+  </div>
+  <div class="notice">
+    <strong>Stage ${n}: ${stageNames[n]}</strong> · ${editable?'Student / Team Lead mode: fill out the sections, attach your diagram, save drafts, and submit for faculty review.':'Read-only mode: Submission is '+curStatus.toLowerCase()+'. Switch to Team Lead to edit drafts or Faculty to review.'}
+  </div>
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Stage ${n} · ${stageNames[n]}</h2>
+        <p>Team ${esc(state.activeTeamId||'08')} · ${esc(tTitle)}</p>
+      </div>
+      <span class="tag ${curStatus==='Approved'?'':curStatus==='Submitted'?'amber':'gray'}">${esc(curStatus)}</span>
+    </div>
+    <form id="stageform">
+      <fieldset style="border:0;padding:0;margin:0" ${editable?'':'disabled'}>
+        <div class="fields">
+          ${fields.map(([k,l])=>`
+            <div class="${k==='title'||k==='problem'||k==='functional'||k==='nonfunctional'||k==='architecture'||k==='testing'||k==='test_results'?'full':''}">
+              <label for="f-${k}">${l} <span style="color:var(--brand)">*</span></label>
+              ${k==='title'?`
+                <input id="f-${k}" name="${k}" required value="${esc(curForm[k]||'')}" placeholder="Enter ${l.toLowerCase()}…">
+              `:`
+                <textarea id="f-${k}" name="${k}" required placeholder="Detail your ${l.toLowerCase()} based on project templates…">${esc(curForm[k]||'')}</textarea>
+              `}
+            </div>
+          `).join('')}
+        </div>
+      </fieldset>
+
+      <div class="stage-media-card" style="margin-top:24px;padding:20px;background:var(--bg-subtle);border:1px solid var(--line);border-radius:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+          <div>
+            <h3 style="margin:0;font-size:14px;color:var(--ink);display:flex;align-items:center;gap:8px">
+              ${ICONS['Evidence Library']} Stage ${n} Diagram &amp; Visual Evidence
+            </h3>
+            <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">
+              ${n===0?'Upload Context or Use Case Diagram (Gate 0).':n===1?'Upload System Architecture or Workflow Pipeline Diagram (Gate 1).':n===2?'Upload Implementation Diagram, Component Flow or Screenshot (Gate 2).':'Upload Automated Test Suite Matrix, Benchmark Chart or Evidence (Gate 3).'}
+            </p>
+          </div>
+          <span class="tag ${stageImg?'':'gray'}">${stageImg?'1 Diagram Attached':'No Image Uploaded'}</span>
+        </div>
+
+        ${stageImg?`
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;gap:18px;align-items:center;margin-top:10px">
+            <div style="width:160px;height:110px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <img data-media="${stageImg.id}" alt="${esc(stageImg.caption)}" style="max-width:100%;max-height:100%;object-fit:contain">
+            </div>
+            <div style="flex:1">
+              <strong style="color:var(--ink);font-size:13px;display:block">${esc(stageImg.name||'Diagram Image')}</strong>
+              <p style="margin:4px 0;font-size:12px;color:var(--ink-secondary)">${esc(stageImg.caption)}</p>
+              <small style="color:var(--muted);font-size:11px">Uploaded: ${esc(stageImg.created)} · Automatically embedded into One-Page Portfolio</small>
+              ${editable?`
+                <div style="margin-top:8px">
+                  <button type="button" class="textbtn" style="color:#ef4444" onclick="removeStageImage('${stageImg.id}')">Remove Image ✕</button>
+                </div>
+              `:''}
+            </div>
+          </div>
+        `:editable?`
+          <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+            <div>
+              <label for="stage-file-${n}" style="display:block;font-size:11.5px;font-weight:600;margin-bottom:4px">Select Image File (PNG, JPG, WebP)</label>
+              <input type="file" id="stage-file-${n}" accept="image/png,image/jpeg,image/webp" style="margin:0">
+            </div>
+            <div>
+              <label for="stage-caption-${n}" style="display:block;font-size:11.5px;font-weight:600;margin-bottom:4px">Figure Caption / Description</label>
+              <input type="text" id="stage-caption-${n}" placeholder="e.g. Figure ${n}.1: System Diagram for Stage ${n}" style="margin:0">
+            </div>
+            <div>
+              <button type="button" class="btn secondary" onclick="uploadStageImage(${n})">Upload Image ↗</button>
+            </div>
+          </div>
+          <p class="mini" style="margin-top:8px">Diagrams uploaded here will automatically be embedded into the corresponding Stage ${n} section in the Team Portfolio.</p>
+        `:`
+          <p class="mini" style="margin:8px 0 0">No custom diagram uploaded for this stage.</p>
+        `}
+      </div>
+
+      <div class="actions">
+        ${editable?`
+          <button class="btn secondary" type="button" onclick="saveStage(false)">Save draft</button>
+          <button class="btn" type="submit">Submit for faculty review →</button>
+        `:''}
+        <button type="button" class="btn secondary" onclick="go('Team Portfolio')">View in Team Portfolio ↗</button>
+        <button type="button" class="btn secondary" onclick="go('AI Mentor')">✧ Practice viva</button>
+        ${isFaculty()?'<button type="button" class="btn" onclick="go(\'Faculty Review\')">Review submission →</button>':''}
+      </div>
+      <p class="mini" id="savehint">Drafts are saved locally in this browser. Everything is preserved across restarts.</p>
+    </form>
+  </section>
+
+  ${state.reviews?.[n]?`
+    <section class="card" style="border-left:4px solid var(--brand)">
+      <div class="card-head">
+        <h2>Stage ${n} Faculty Feedback</h2>
+        <span class="tag">Score: ${esc(state.reviews[n].score)}/10</span>
+      </div>
+      <p style="color:var(--ink);font-size:13.5px;line-height:1.6">${esc(state.reviews[n].feedback)}</p>
+    </section>
+  `:''}`;
+};
 overview=function(){if(state.role==='Admin')return adminPanel();if(state.role==='HOD')return department();return originalOverview().replaceAll('Design & develop','Requirements & realization')};
 mentor=function(){let html=originalMentor().replaceAll('Design & develop','Requirements & realization').replace('Demo mode uses deterministic question templates with excerpts from your submission. It is not live AI, RAG, or automated assessment.','Each demo question quotes a specific section of your saved submission and asks about that claim. This is a rule-based coaching demo, not a live language model.').replace('DEMO · TEMPLATE QUESTIONS','DEMO · SUBMISSION-BASED').replace('Demo templates · works offline','Submission coach · offline demo');return html+mentorChat()};
 function currentIdentity(){return state.role==='Faculty'?state.guide:state.role==='Team Lead'?state.members[0].name:state.role==='HOD'?'Head of Department':'Workspace Administrator'}
 render=function(){
   if(!rolePages[state.role].includes(page))page='Overview';
   const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
-  $('#app').innerHTML=`<div class="shell"><aside class="sidebar"><div class="brand"><span class="logo">P</span>ProjectGate <em>AI</em></div><div class="school"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CS AI</span></div><div class="tiny" style="margin:0 14px 14px">${state.role==='HOD'?'DEPARTMENT WORKSPACE':state.role==='Admin'?'ADMINISTRATION':'PROJECT WORKSPACE'}</div><nav class="nav" aria-label="Main navigation">${sidebar()}</nav><div class="sidebottom"><div class="demo-label"><span class="status-dot"></span><div><strong>LOCAL DEMO</strong><br>Role previews · CS AI</div></div><div class="profile">${avatar(m)}<div><strong>${esc(m.name)}</strong><small>${esc(state.role)} panel</small></div></div></div></aside><div><header class="topbar"><div class="crumb">Mini-project portal &nbsp; ${ICONS.chevronRight} &nbsp; <strong style="color:var(--ink)">${esc(page)}</strong></div><div class="topright"><button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button><span class="tag gray">AY 2026–27</span><label class="mini" for="role" style="margin:0">Demo panel</label><select id="role" aria-label="Demo role" onchange="switchRole(this.value)">${Object.keys(rolePages).map(r=>`<option ${state.role===r?'selected':''} value="${r}">${r==='HOD'?"HOD's":r} panel</option>`).join('')}</select></div></header><main class="main">${views[page]()}<footer class="foot"><span>AI-Powered Interactive Mini-Project Portfolio & Mentoring System</span><span>ProjectGate AI · Local MVP &nbsp; <button class="textbtn" onclick="resetDemo()">Reset demo</button></span></footer></main></div></div>${modal||''}`;
-  const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
-  if(['Design Journey','Evidence Library','Faculty Review'].includes(page))hydrateMedia();
+  const isCol=isSidebarCollapsed();
+  $('#app').innerHTML=`<div class="shell ${isCol?'sidebar-collapsed':''}"><aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="sidebar-header"><div class="brand" onclick="isSidebarCollapsed()&&toggleSidebar()" style="cursor:pointer" title="ProjectGate AI"><span class="logo">P</span><span class="brand-text">ProjectGate <em>AI</em></span></div><button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar (Ctrl+B)" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg></button></div><div class="school"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CS AI</span></div><div class="tiny" style="margin:0 14px 14px">${state.role==='HOD'?'DEPARTMENT WORKSPACE':state.role==='Admin'?'ADMINISTRATION':'PROJECT WORKSPACE'}</div><nav class="nav" aria-label="Main navigation">${sidebar()}</nav><div class="sidebottom"><div class="demo-label"><span class="status-dot"></span><div class="demo-label-text"><strong>LOCAL DEMO</strong><br>Role previews · CS AI</div></div><div class="profile" title="${esc(m.name)} (${esc(state.role)} panel)">${avatar(m)}<div class="profile-info"><strong>${esc(m.name)}</strong><small>${esc(state.role)} panel</small></div></div></div></aside><div><header class="topbar"><div class="topbar-left"><button class="sidebar-open-btn" onclick="toggleSidebar()" title="Toggle sidebar (Ctrl+B)" aria-label="Toggle sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button><div class="crumb">Mini-project portal &nbsp; ${ICONS.chevronRight} &nbsp; <strong style="color:var(--ink)">${esc(page)}</strong></div></div><div class="topright"><button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button><span class="tag gray">AY 2026–27</span><label class="mini" for="role" style="margin:0">Demo panel</label><select id="role" aria-label="Demo role" onchange="switchRole(this.value)">${Object.keys(rolePages).map(r=>`<option ${state.role===r?'selected':''} value="${r}">${r==='HOD'?"HOD's":r} panel</option>`).join('')}</select></div></header><main class="main">${views[page]()}<footer class="foot"><span>AI-Powered Interactive Mini-Project Portfolio & Mentoring System</span><span>ProjectGate AI · Local MVP &nbsp; <button class="textbtn" onclick="resetDemo()">Reset demo</button></span></footer></main></div></div>${modal||''}`;
+  const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
+  if(['Team Portfolio','Design Journey','Evidence Library','Faculty Review'].includes(page))hydrateMedia();
 }
 function adminPanel(){return heading('CS AI Administration','Loading department workspace…')}
 const originalReview=review;
