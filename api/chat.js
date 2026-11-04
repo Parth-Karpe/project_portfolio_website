@@ -24,14 +24,16 @@ async function handler(req, res) {
 
   const body = req.body || {};
   const { prompt, systemInstruction } = body;
-  if (!prompt) {
-    return res.status(400).json({ error: 'Missing prompt parameter' });
+  if (!prompt || String(prompt).length > 1000) {
+    return res.status(prompt ? 200 : 400).json(prompt
+      ? { useFallback: true, error: 'Prompt is longer than 1000 characters.' }
+      : { error: 'Missing prompt parameter' });
   }
 
   const requestedProvider = body.provider || 'auto'; // 'auto', 'gemini', 'ollama', 'vercel_api'
   const clientGeminiKey = (body.geminiKey || '').trim();
   const geminiApiKey = clientGeminiKey || process.env.GEMINI_API_KEY || '';
-  const geminiModel = (body.geminiModel || 'gemini-1.5-flash').trim();
+  const geminiModel = (body.geminiModel || 'gemini-2.5-flash').trim();
 
   const clientOllamaToken = (body.ollamaToken || '').trim();
   const ollamaToken = clientOllamaToken || process.env.OLLAMA_API_KEY || '';
@@ -80,18 +82,24 @@ async function handler(req, res) {
     };
   }
 
+  function geminiModelCandidates(requested) {
+    const names = [requested, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const unique = [];
+    for (const name of names) {
+      const model = (name || '').trim();
+      if (model && !unique.includes(model)) unique.push(model);
+    }
+    return unique;
+  }
+
   // Helper: call Google Gemini from server-side
   async function callGemini() {
     if (!geminiApiKey) throw new Error('No Gemini API key available');
-    const targetModel = geminiModel || 'gemini-1.5-flash';
-    const candidateUrls = [
-      `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${geminiApiKey}`,
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`
-    ];
-
+    const models = geminiModelCandidates(geminiModel || 'gemini-2.5-flash');
     let lastErr = null;
-    for (const url of candidateUrls) {
+
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
       try {
         const geminiRes = await fetch(url, {
           method: 'POST',
@@ -103,7 +111,7 @@ async function handler(req, res) {
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
               temperature: 0.2,
-              maxOutputTokens: 900
+              maxOutputTokens: 4096
             }
           })
         });
@@ -114,15 +122,19 @@ async function handler(req, res) {
           if (text) {
             return {
               text,
-              provider: `Google Gemini (${targetModel})`
+              provider: `Google Gemini (${model})`
             };
           }
-        } else {
-          const errData = await geminiRes.json().catch(() => ({}));
-          lastErr = new Error(errData.error?.message || `HTTP ${geminiRes.status}`);
-          if (geminiRes.status === 404) continue;
-          break;
+          lastErr = new Error('Gemini returned an empty response');
+          continue;
         }
+
+        const errData = await geminiRes.json().catch(() => ({}));
+        const message = errData.error?.message || `HTTP ${geminiRes.status}`;
+        lastErr = new Error(message);
+        const missingModel = geminiRes.status === 404 || /not found|not supported|no longer available/i.test(message);
+        if (missingModel) continue;
+        break;
       } catch (e) {
         lastErr = e;
       }

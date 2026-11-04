@@ -142,6 +142,7 @@
     nav.querySelectorAll(':scope > .stage-link').forEach(button=>{
       const children=button.nextElementSibling?.classList.contains('subtopics')?button.nextElementSibling:null;
       const details=document.createElement('details'); details.className='faculty-accordion'; details.dataset.stage=button.dataset.target;
+      details.open = true;
       const summary=document.createElement('summary'); summary.textContent=cleanHeading(button.textContent);
       summary.className=button.className; summary.dataset.target=button.dataset.target;
       if(button.id) summary.id=button.id;
@@ -171,7 +172,7 @@
   }
   function setActiveStage(stageId) {
     document.querySelectorAll('.portfolio-stage-tab').forEach(button=>{
-      const active=button.dataset.target===(stageId==='sec-system-design'?'stage-1':stageId);button.classList.toggle('active',active);
+      const active=button.dataset.target===stageId;button.classList.toggle('active',active);
       if(active) button.setAttribute('aria-current','step'); else button.removeAttribute('aria-current');
     });
     document.querySelectorAll('.faculty-accordion').forEach(details=>{

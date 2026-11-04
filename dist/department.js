@@ -502,11 +502,11 @@ function seedTeams(){
   },
   {
     "id": "B-12",
-    "faculty": "Ms.Sadaf Anjum Savanur",
+    "faculty": "Ms. Sadaf Anjum Savanur",
     "topic": "Theme 4: Networked Systems and Tools",
     "theme_no": 4,
     "theme_name": "Networked Systems and Tools",
-    "title": "HTTP Proxy Server with Caching",
+    "title": "HTTP Proxy Server with In-Memory Caching",
     "members": [
       {
         "name": "Adarsh MR",
@@ -934,7 +934,7 @@ function ensureDepartment(){
     state.excelVersion=4;
     state.activeTeamId=state.teams.some(t=>t.id===state.activeTeamId)?state.activeTeamId:'A-03';
     state.workspaces=state.workspaces||{};
-    state.facultyAccount=state.facultyAccount||'Mr.Amit Kachavimath';
+    state.facultyAccount=state.facultyAccount||'Mr. Amit Kachavimath';
     state.teams.forEach(t=>{
       t.department='CSE(AI)';t.hod=state.department.hod;t.facultyAdmin=state.department.facultyAdmin;
       if(!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
@@ -985,7 +985,7 @@ function ensureDepartment(){
     }
   };
 
-  const t08=state.teams?.find(t=>t.id==='08');
+  const t08=state.teams?.find(t=>t.id==='A-08'||t.id==='08');
   if(t08){
     t08.faculty='Mrs. Sneha Varur';t08.topic='Data Engineering & Quality Engines';t08.title='Large-Scale Dataset Profiling & Data Quality Engine';
     t08.members=[{name:'Anupriya Savant',usn:'01FE24BCI046',role:'Team Lead · Full-stack & Profiling Engine',skills:'Full-Stack · Schema Profiling',contribution:'Lead architecture modeling, ingestion pipeline, and full-stack integration.'},{name:'Pavitra Jalibenchi',usn:'01FE24BCI049',role:'Core Member · Anomaly & Duplicate Detection',skills:'DAA · Hash Deduplication',contribution:'Duplicate row detection algorithms and data consistency constraint rules.'},{name:'Anushree Angadi',usn:'01FE24BCI050',role:'Core Member · Statistical Analysis & Outliers',skills:'Probability & Stats · IQR Outliers',contribution:'Descriptive statistics, distribution modeling, and IQR outlier screening.'},{name:'Sahana Awaradi',usn:'01FE24BCI030',role:'Core Member · Revalidation & Reporting',skills:'Data Integrity · PDF/Excel Export',contribution:'Copy-on-write remediation, revalidation pipeline, and multi-format report exports.'}];
@@ -1004,7 +1004,7 @@ function ensureDepartment(){
   const t03=state.teams?.find(t=>t.id==='A-03'||t.id==='03');
   if(t03){
     t03.title = 'Smart Campus Lab and Resource Optimizer';
-    t03.faculty = 'Mr.Amit Kachavimath';
+    t03.faculty = 'Mr. Amit Kachavimath';
     if(typeof STATIC_TEAMS !== 'undefined' && STATIC_TEAMS['03']){
       t03.title = STATIC_TEAMS['03'].title || t03.title;
       t03.faculty = STATIC_TEAMS['03'].faculty || t03.faculty;
@@ -1017,6 +1017,124 @@ function ensureDepartment(){
     if(state.activeTeamId === t03.id && state.forms && state.forms[1]){
       state.forms[1].title = t03.title; if(state.forms[0]) state.forms[0].title = t03.title;
     }
+  }
+  const t04=state.teams?.find(t=>t.id==='B-04'||t.title==='Multi-Process Search Engine with Persistent Index');
+  if(t04){
+    t04.title = 'Multi-Process Search Engine with Persistent Index';
+    t04.faculty = 'Ms.Umadevi F M';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-04'] || STATIC_TEAMS_DATA['04'])){
+      const s04 = STATIC_TEAMS_DATA['B-04'] || STATIC_TEAMS_DATA['04'];
+      t04.members = s04.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t04.id]) state.workspaces[t04.id] = newTeamWorkspace(t04);
+    state.workspaces[t04.id].guide = t04.faculty;
+    state.workspaces[t04.id].members = t04.members;
+  }
+  const t07=state.teams?.find(t=>t.id==='B-07'||t.title==='Java Compiler & Bytecode Generation Engine'||t.title==='Java Compiler and Bytecode Generation Engine');
+  if(t07){
+    t07.title = 'Java Compiler and Bytecode Generation Engine';
+    t07.faculty = 'Ms.N D Kulenavar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-07'] || STATIC_TEAMS_DATA['07'])){
+      const s07 = STATIC_TEAMS_DATA['B-07'] || STATIC_TEAMS_DATA['07'];
+      t07.members = s07.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t07.id]) state.workspaces[t07.id] = newTeamWorkspace(t07);
+    state.workspaces[t07.id].guide = t07.faculty;
+    state.workspaces[t07.id].members = t07.members;
+  }
+  const ta07=state.teams?.find(t=>t.id==='A-07'||t.title.includes('Network Traffic Monitoring'));
+  if(ta07){
+    ta07.title = 'Network Traffic Monitoring & Protocol Analysis Tool';
+    ta07.faculty = 'Ms. Pooja P Shettar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && STATIC_TEAMS_DATA['A-07']){
+      const sa07 = STATIC_TEAMS_DATA['A-07'];
+      ta07.members = sa07.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[ta07.id]) state.workspaces[ta07.id] = newTeamWorkspace(ta07);
+    state.workspaces[ta07.id].guide = ta07.faculty;
+    state.workspaces[ta07.id].members = ta07.members;
+  }
+  const t14=state.teams?.find(t=>t.id==='A-14'||t.title.includes('Mini Kernel')||t.title.includes('Mini -kernel'));
+  if(t14){
+    t14.title = 'Mini -kernel with process, memory and file management';
+    t14.faculty = 'Ms. Arundati Aralimatti';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['A-14'] || STATIC_TEAMS_DATA['14'])){
+      const s14 = STATIC_TEAMS_DATA['A-14'] || STATIC_TEAMS_DATA['14'];
+      t14.members = s14.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t14.id]) state.workspaces[t14.id] = newTeamWorkspace(t14);
+    state.workspaces[t14.id].guide = t14.faculty;
+    state.workspaces[t14.id].members = t14.members;
+  }
+  const t06=state.teams?.find(t=>t.id==='A-06'||t.title.includes('Constraint-Based'));
+  if(t06){
+    t06.title = 'Constraint-Based Academic Timetable Scheduling';
+    t06.faculty = 'Mr. Mallikarjun Akki';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['A-06'] || STATIC_TEAMS_DATA['06'])){
+      const s06 = STATIC_TEAMS_DATA['A-06'] || STATIC_TEAMS_DATA['06'];
+      t06.members = s06.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t06.id]) state.workspaces[t06.id] = newTeamWorkspace(t06);
+    state.workspaces[t06.id].guide = t06.faculty;
+    state.workspaces[t06.id].members = t06.members;
+  }
+
+  const t12=state.teams?.find(t=>t.id==='B-12'||t.title.includes('HTTP Proxy Server'));
+  if(t12){
+    t12.title = 'HTTP Proxy Server with In-Memory Caching';
+    t12.faculty = 'Ms. Sadaf Anjum Savanur';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-12'] || STATIC_TEAMS_DATA['12'])){
+      const s12 = STATIC_TEAMS_DATA['B-12'] || STATIC_TEAMS_DATA['12'];
+      t12.members = s12.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t12.id]) state.workspaces[t12.id] = newTeamWorkspace(t12);
+    state.workspaces[t12.id].guide = t12.faculty;
+    state.workspaces[t12.id].members = t12.members;
+  }
+  const t13=state.teams?.find(t=>t.id==='B-13'||t.title.includes('Resilient Multi-Peer'));
+  if(t13){
+    t13.title = 'Resilient Multi-Peer File Distribution & Recovery Engine';
+    t13.faculty = 'Ms. Pooja P Shettar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-13'] || STATIC_TEAMS_DATA['13'])){
+      const s13 = STATIC_TEAMS_DATA['B-13'] || STATIC_TEAMS_DATA['13'];
+      t13.members = s13.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t13.id]) state.workspaces[t13.id] = newTeamWorkspace(t13);
+    state.workspaces[t13.id].guide = t13.faculty;
+    state.workspaces[t13.id].members = t13.members;
+  }
+  const t01=state.teams?.find(t=>t.id==='A-01'||t.title.includes('Mini RDBMS'));
+  if(t01){
+    t01.title = 'Mini RDBMS Engine with Query Processing & Transaction Support';
+    t01.faculty = 'Ms. Jyothi Patil';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['A-01'] || STATIC_TEAMS_DATA['01'])){
+      const s01 = STATIC_TEAMS_DATA['A-01'] || STATIC_TEAMS_DATA['01'];
+      t01.members = s01.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t01.id]) state.workspaces[t01.id] = newTeamWorkspace(t01);
+    state.workspaces[t01.id].guide = t01.faculty;
+    state.workspaces[t01.id].members = t01.members;
+  }
+  const t05=state.teams?.find(t=>t.id==='B-05'||t.title.includes('Persistent Key-Value'));
+  if(t05){
+    t05.title = 'Persistent Key-Value Storage Engine';
+    t05.faculty = 'Ms. Shrushti Gani';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-05'] || STATIC_TEAMS_DATA['05'])){
+      const s05 = STATIC_TEAMS_DATA['B-05'] || STATIC_TEAMS_DATA['05'];
+      t05.members = s05.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t05.id]) state.workspaces[t05.id] = newTeamWorkspace(t05);
+    state.workspaces[t05.id].guide = t05.faculty;
+    state.workspaces[t05.id].members = t05.members;
   }
 
   [state,...Object.values(state.workspaces||{})].forEach(w=>{
@@ -1374,7 +1492,7 @@ function renderRequirementsTable(text, defaultList, type){
             <tr id="portfolio-fr-${esc(fr.id)}">
               <td><span class="req-tag">${esc(fr.id)}</span></td>
               <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-              <td><span class="tag ${fr.prio==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.prio)}</span></td>
+              <td><span class="requirement-meta-text">${esc(fr.prio)}</span></td>
               <td style="font-size:11.5px;color:var(--muted)">${esc(fr.source||'Automated Profiling')}</td>
             </tr>
           `).join('')}
@@ -1397,7 +1515,7 @@ function renderRequirementsTable(text, defaultList, type){
             <tr id="portfolio-nfr-${esc(nfr.id)}">
               <td><span class="req-tag">${esc(nfr.id)}</span></td>
               <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
-              <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||'Reliability')}</span></td>
+              <td><span class="requirement-meta-text">${esc(nfr.cat||'Reliability')}</span></td>
               <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'Defined benchmark threshold')}</td>
             </tr>
           `).join('')}
@@ -1409,18 +1527,24 @@ function renderRequirementsTable(text, defaultList, type){
 
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
+        staticTeam = (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (
+          window.STATIC_TEAMS_DATA[t.id] ||
+          (t.id === 'A-03' ? (window.STATIC_TEAMS_DATA['A-03'] || window.STATIC_TEAMS_DATA['03']) : null) ||
+          Object.values(window.STATIC_TEAMS_DATA).find(st => st && (st.id === t.id || (st.title && t.title && st.title.toLowerCase().trim() === t.title.toLowerCase().trim())))
+        )) || null,
+        hasData = Boolean(staticTeam),
         isSmartCampus = (t.id === 'A-03' || t.title === 'Smart Campus Lab and Resource Optimizer' || t.title === 'Smart Campus Lab & Resource Optimizer'),
-        staticTeam = (isSmartCampus && typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (window.STATIC_TEAMS_DATA['03'] || window.STATIC_TEAMS_DATA['A-03'])) || null,
-        st0 = isSmartCampus ? (staticTeam?.stage0 || {}) : {},
-        st1 = isSmartCampus ? (staticTeam?.stage1 || {}) : {},
-        sys = isSmartCampus ? (staticTeam?.systemDesign || {}) : {},
-        f0 = isSmartCampus ? (state.forms?.[0] || {}) : {},
-        f1 = isSmartCampus ? (state.forms?.[1] || {}) : {},
-        f2 = isSmartCampus ? (state.forms?.[2] || {}) : {},
-        f3 = isSmartCampus ? (state.forms?.[3] || {}) : {},
-        topic = isSmartCampus ? (staticTeam?.theme || t.topic || 'Specialization Theme') : (t.topic || 'Specialization Theme'),
-        title = isSmartCampus ? (staticTeam?.title || t.title) : (t.title || 'Project Portfolio'),
-        guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide'),
+        st0 = staticTeam?.stage0 || {},
+        st1 = staticTeam?.stage1 || {},
+        sys = staticTeam?.systemDesign || {},
+        f0 = hasData ? (state.forms?.[0] || {}) : {},
+        f1 = hasData ? (state.forms?.[1] || {}) : {},
+        f2 = hasData ? (state.forms?.[2] || {}) : {},
+        f3 = hasData ? (state.forms?.[3] || {}) : {},
+        topic = (staticTeam?.theme || t.topic || 'Specialization Theme'),
+        themeName = (t.theme_name || (staticTeam?.theme) || topic || '').replace(/^Theme\s*\d+\s*:\s*/i, ''),
+        title = (staticTeam?.title || t.title || 'Project Portfolio'),
+        guide = (staticTeam?.guide || state.guide || t.faculty || 'Faculty Mentor'),
         repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
@@ -1458,15 +1582,22 @@ portfolio=function(){
   <div class="portfolio-layout">
     <main class="portfolio-content">
 
-      <!-- Stage Switcher Tabs (Stage 0, Stage 1) -->
+      <!-- Stage Switcher Tabs -->
       <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
-        <button type="button" class="portfolio-stage-tab" data-tab="0" onclick="switchPortfolioStage(0,true)" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
-          <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 0</span>
-          <span style="color:#ffffff;">Problem Statement &amp; Need Identification</span>
+        <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||'0')==='0'?'active':''}" data-tab="0" data-target="stage-0" onclick="switchPortfolioStage('0',true)">
+          Stage 0 – Problem Definition and Scope
         </button>
-        <button type="button" class="portfolio-stage-tab" data-tab="1" onclick="switchPortfolioStage(1,true)" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
-          <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 1</span>
-          <span style="color:#ffffff;">Requirement Analysis &amp; System Design</span>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='1'?'active':''}" data-tab="1" data-target="stage-1" onclick="switchPortfolioStage('1',true)">
+          Stage 1 - Requirement Analysis
+        </button>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='system-design'?'active':''}" data-tab="system-design" data-target="sec-system-design" onclick="switchPortfolioStage('system-design',true)">
+          Stage 2 - System Design
+        </button>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='2'?'active':''}" data-tab="2" data-target="stage-2" onclick="switchPortfolioStage('2',true)">
+          Stage 3 - Implementation and Integration
+        </button>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='3'?'active':''}" data-tab="3" data-target="stage-3" onclick="switchPortfolioStage('3',true)">
+          Stage 4 - Testing and Validations
         </button>
       </div>
 
@@ -1476,12 +1607,12 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
-          ${isSmartCampus ? `<p class="portfolio-prose">${esc(st0.problem || '')}</p>` : ''}
+          ${hasData && st0.problem ? `<p class="portfolio-prose" style="white-space:pre-line">${esc((st0.problem || '').trim())}</p>` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-objectives">
           <h3>2. Project Objectives</h3>
-          ${isSmartCampus ? `
+          ${hasData && st0.objectives ? `
             <div class="portfolio-prose">
               <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
                 ${(Array.isArray(st0.objectives) ? st0.objectives : (st0.objectives ? [st0.objectives] : [])).map(o=>`<li>${esc(o)}</li>`).join('')}
@@ -1492,156 +1623,125 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-courses">
           <h3>3. Foundation Course Integration</h3>
-          ${isSmartCampus ? `
-            <div class="tablewrap">
-              <table class="test-suite-table" id="table-courses">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table" id="table-courses">
+              <thead>
+                <tr>
+                  <th style="width:75px">Sl. Number</th>
+                  <th style="width:230px">Foundation Course</th>
+                  <th>Concepts Used</th>
+                  <th style="width:110px">Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st0.coursesTable) || []).map(c=>`
                   <tr>
-                    <th style="width:85px">Sl. Number</th>
-                    <th style="width:230px">Foundation Course</th>
-                    <th>Concepts Used</th>
-                    <th style="width:130px">Role</th>
+                    <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
+                    <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
+                    <td><span class="course-role-text">${esc(c.role)}</span></td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st0.coursesTable || []).map(c=>`
-                    <tr>
-                      <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
-                      <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
-                      <td><span class="tag ${String(c.role).includes('Core')||String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-workflow-concept">
           <h3>4. Conceptual Workflow</h3>
-          ${isSmartCampus ? `
-            <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
-              <img src="assets/team03_conceptual_flow.jpg" alt="Conceptual Flow - Smart Campus Lab & Resource Optimizer" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
+          ${hasData && st0.conceptualFlowImage ? `
+            <div class="portfolio-diagram-card" id="portfolio-diagram-asis" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
+              <img src="${esc(st0.conceptualFlowImage)}" alt="${esc(st0.conceptualFlowCaption || ('Conceptual Flow - ' + title))}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
+              ${st0.conceptualFlowCaption ? `<p style="margin:10px 0 0;font-size:12px;font-weight:600;color:var(--muted)">${esc(st0.conceptualFlowCaption)}</p>` : ''}
             </div>
+          ` : ''}
 
-            <div class="tablewrap" style="margin-bottom:12px">
-              <table class="test-suite-table" id="table-pipeline">
-                <thead>
-                  <tr>
-                    <th>Input</th>
-                    <th>Processing</th>
-                    <th>User action</th>
-                    <th>Output</th>
+          ${hasData && st0.enginesTable && st0.enginesTable.length ? `
+          <div class="tablewrap">
+            <table class="test-suite-table" id="table-engines">
+              <thead>
+                <tr>
+                  <th style="min-width:380px;width:40%">Engine</th>
+                  <th style="width:60%">Conceptual responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st0.enginesTable || []).map(e=>`
+                  <tr id="portfolio-engine-${esc(e.id||'')}">
+                    <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag engine-outline-id" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
+                    <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st0.pipelineTable || []).map(p=>`
-                    <tr>
-                      <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(p.processing || p.assessment)}</td>
-                      <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
-                      <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            <div class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
-                  <tr>
-                    <th style="min-width:380px;width:40%">Engine</th>
-                    <th style="width:60%">Conceptual responsibility</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${(st0.enginesTable || []).map(e=>`
-                    <tr id="portfolio-engine-${esc(e.id||'')}">
-                      <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
-                      <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
           ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-scope">
           <h3>5. Project Scope</h3>
-          ${isSmartCampus ? `
-            <div id="table-scope" style="display:flex;flex-direction:column;gap:18px">
-              <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
-                <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
-                  i) In Scope
-                </div>
-                <table class="test-suite-table">
-                  <thead>
-                    <tr>
-                      <th style="width:40px">#</th>
-                      <th>In-Scope Item</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${(st0.scopeInTable || []).map(s=>`
-                      <tr>
-                        <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
-                        <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-              <div id="sec-scope-out" class="tablewrap" style="scroll-margin-top:100px">
-                <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
-                  ii) Out of Scope
-                </div>
-                <table class="test-suite-table">
-                  <thead>
-                    <tr>
-                      <th style="width:40px">#</th>
-                      <th>Out-of-Scope Item</th>
-                      <th>Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${(st0.scopeOutTable || []).map(s=>`
-                      <tr>
-                        <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
-                        <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
-                        <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ` : ''}
-        </article>
-
-        <article class="portfolio-subblock" id="sec-feasibility">
-          <h3>6. Feasibility &amp; Constraints</h3>
-          ${isSmartCampus ? `
-            <div class="tablewrap">
-              <table class="test-suite-table" id="table-feasibility">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
+              <table class="test-suite-table" id="table-scope">
                 <thead>
                   <tr>
-                    <th style="width:230px">Aspect</th>
-                    <th>Assessment</th>
+                    <th style="width:40px">#</th>
+                    <th>In Scope</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${(st0.feasibilityTable || []).map(f=>`
+                  ${((hasData && st0.scopeInTable) || []).map(s=>`
                     <tr>
-                      <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
+                      <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
               </table>
             </div>
-          ` : ''}
+            <div id="sec-scope-out" class="tablewrap" style="scroll-margin-top:100px">
+              <table class="test-suite-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px">#</th>
+                    <th>Out-of-Scope</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${((hasData && st0.scopeOutTable) || []).map(s=>`
+                    <tr>
+                      <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
+                      <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <article class="portfolio-subblock" id="sec-feasibility">
+          <h3>6. Feasibility &amp; Constraints</h3>
+          <div class="tablewrap">
+            <table class="test-suite-table" id="table-feasibility">
+              <thead>
+                <tr>
+                  <th style="width:200px">Aspect</th>
+                  <th>Assessment</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st0.feasibilityTable) || []).map(f=>`
+                  <tr>
+                    <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
       </section>
 
@@ -1651,182 +1751,182 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
-          ${isSmartCampus ? `
-            <div class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
-                  <tr>
-                    <th style="width:85px">FR ID</th>
-                    <th>Description</th>
-                    <th style="width:140px">Priority</th>
-                    <th style="width:280px">Source Need (from S0)</th>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:80px">FR ID</th>
+                  <th>Description</th>
+                  <th style="width:110px">Priority</th>
+                  <th style="width:160px">Source Need (from S0)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.frTable) || []).map(fr=>`
+                  <tr id="portfolio-fr-${esc(fr.id)}">
+                    <td><span class="req-tag">${esc(fr.id)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
+                    <td><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
+                    <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.frTable || []).map(fr=>`
-                    <tr id="portfolio-fr-${esc(fr.id)}">
-                      <td><span class="req-tag">${esc(fr.id)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-                      <td><span class="tag ${fr.priority==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.priority||'Mandatory')}</span></td>
-                      <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-nfr">
           <h3>2. Non - Functional Requirements</h3>
-          ${isSmartCampus ? `
-            <div class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
-                  <tr>
-                    <th style="width:95px">NFR ID</th>
-                    <th>Description</th>
-                    <th style="width:140px">Category</th>
-                    <th style="width:260px">Measurable Target</th>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:95px">NFR ID</th>
+                  <th>Description</th>
+                  <th style="width:140px">Category</th>
+                  <th style="width:260px">Measurable Target</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.nfrTable) || []).map(nfr=>`
+                  <tr id="portfolio-nfr-${esc(nfr.id)}">
+                    <td><span class="req-tag">${esc(nfr.id)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
+                    <td><span class="requirement-meta-text">${esc(nfr.cat||nfr.category||'')}</span></td>
+                    <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.nfrTable || []).map(nfr=>`
-                    <tr id="portfolio-nfr-${esc(nfr.id)}">
-                      <td><span class="req-tag">${esc(nfr.id)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
-                      <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||nfr.category||'')}</span></td>
-                      <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-usecase">
           <h3>3. Use Cases</h3>
-          ${isSmartCampus ? `
-            <div class="tablewrap" style="margin-bottom:14px">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap" style="margin-bottom:14px">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:50px">ID</th>
+                  <th style="width:110px">Actor</th>
+                  <th style="width:220px">Description / User Story</th>
+                  <th>Main Flow</th>
+                  <th>Exception Flow</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.userStoryTable) || []).map(u=>`
                   <tr>
-                    <th style="width:50px">ID</th>
-                    <th style="width:170px">Actor</th>
-                    <th style="width:220px">Description / User Story</th>
-                    <th>Main Flow</th>
-                    <th>Exception Flow</th>
+                    <td><span class="req-tag">${esc(u.id)}</span></td>
+                    <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
+                    <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
+                    <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
+                    <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.userStoryTable || []).map(u=>`
-                    <tr>
-                      <td><span class="req-tag">${esc(u.id)}</span></td>
-                      <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
-                      <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
-                      <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
-                      <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            <div class="diagram-frame" id="portfolio-diagram-usecase" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${st1.useCaseImage || 'assets/team03_usecase_diagram_doc.png'}" alt="Fig : Use case diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig : Use case diagram</p>
-            </div>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${hasData && st1.useCaseImage ? `
+          <div class="diagram-frame" id="portfolio-diagram-usecase" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${esc(st1.useCaseImage)}" alt="${esc(st1.useCaseCaption || 'Fig : Use case diagram')}" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">${esc(st1.useCaseCaption || 'Fig : Use case diagram')}</p>
+          </div>
           ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-acceptance">
           <h3>4. Acceptance Criteria</h3>
-          ${isSmartCampus ? `
-            <div class="tablewrap">
-              <table class="test-suite-table" id="table-testsuite">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table" id="table-testsuite">
+              <thead>
+                <tr>
+                  <th style="width:110px">Requirement ID</th>
+                  <th>Acceptance Criteria</th>
+                  <th style="width:240px">Test / Verification Method</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.acceptanceTable) || []).map(tc=>`
                   <tr>
-                    <th style="width:110px">Requirement ID</th>
-                    <th>Acceptance Criteria</th>
-                    <th style="width:340px">Test / Verification Method</th>
+                    <td><span class="req-tag">${esc(tc.req)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
+                    <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.acceptanceTable || []).map(tc=>`
-                    <tr>
-                      <td><span class="req-tag">${esc(tc.req)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
-                      <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
       </section>
 
       <!-- System Design -->
       <section class="portfolio-section" id="sec-system-design">
         <div class="portfolio-section-title">
-          <h2>System Design</h2>
+          <h2>Stage 2 - System Design</h2>
         </div>
 
+        ${hasData && sys && sys.architecturePoints && sys.architecturePoints.length ? `
         <article class="portfolio-subblock" id="sec-arch">
           <h3>1. Architecture</h3>
-          ${isSmartCampus ? `
-            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-              ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-            </div>
-            <div class="diagram-frame" id="portfolio-diagram-arch" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 1. Architecture Diagram</p>
-            </div>
-          ` : ''}
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 1. Architecture Diagram</p>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-data-design">
           <h3>2. Data Design</h3>
-          ${isSmartCampus ? `
-            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-              ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-            </div>
-            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 2. Data Design</p>
-            </div>
-          ` : ''}
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 2. Data Design</p>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-algo-design">
           <h3>3. Algorithm Design</h3>
-          ${isSmartCampus ? `
-            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-              ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-            </div>
-            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_new.jpeg'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
-            </div>
-          ` : ''}
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_new.jpeg'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-security-design">
           <h3>4. Security Design</h3>
         </article>
+        ` : `
+        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
+        </div>
+        `}
       </section>
 
       <!-- Implementation and Integration -->
       <section class="portfolio-section" id="stage-2">
         <div class="portfolio-section-title">
-          <h2>Implementation and Integration</h2>
+          <h2>Stage 3 - Implementation and Integration</h2>
+        </div>
+        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
         </div>
       </section>
 
       <!-- Testing and Validations -->
       <section class="portfolio-section" id="stage-3">
         <div class="portfolio-section-title">
-          <h2>Testing and Validations</h2>
+          <h2>Stage 4 - Testing and Validations</h2>
+        </div>
+        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
         </div>
       </section>
     </main>
@@ -1844,6 +1944,8 @@ portfolio=function(){
 function openTeamPortfolio(id){
   const next = state.teams.find(t => t.id === id);
   window.lastViewedTheme = (selectedTheme !== null && selectedTheme !== undefined) ? selectedTheme : (next?.theme_no || 1);
+  activePortfolioStage = '0';
+  window.activePortfolioStage = '0';
   switchTeam(id);
   go('Team Portfolio');
   window.scrollTo(0, 0);
@@ -1910,12 +2012,37 @@ function formatTeamMembers(members){
   </div>`;
 }
 
+function getThemePriority(team, themeNo){
+  const id = team.id || '';
+  const title = (team.title || '').toLowerCase();
+  const th = Number(themeNo);
+  
+  if (th === 2) {
+    if (id === 'A-08' || id === '08' || title.includes('profiling') || title.includes('data quality')) return 1;
+  } else if (th === 3) {
+    if (id === 'B-01' || title.includes('incremental build') || (title.includes('incremental') && title.includes('dependency resolution'))) return 1;
+    if (id === 'A-14' || id === '14' || title.includes('mini kernel') || title.includes('mini -kernel')) return 2;
+    if (id === 'B-07' || id === '07' || title.includes('java compiler')) return 3;
+  } else if (th === 4) {
+    if (id === 'B-13' || id === '13' || title.includes('resilient multi-peer') || title.includes('peer file distribution')) return 1;
+    if (id === 'A-07' || id === 'a07' || (title.includes('network traffic') && title.includes('protocol analysis'))) return 2;
+    if (id === 'B-12' || id === '12' || title.includes('http proxy')) return 3;
+  }
+  return 999;
+}
+
 function hodProjectRowsForTheme(tab){
   let list = state.teams || [];
   if(tab !== 'all'){
     list = list.filter(t => t.theme_no === Number(tab) || (t.topic||'').startsWith(`Theme ${tab}:`));
   }
-  list = list.slice().sort((a,b) => (a.excel_order || 0) - (b.excel_order || 0));
+  const thNum = Number(tab);
+  list = list.slice().sort((a,b) => {
+    const pA = getThemePriority(a, thNum || a.theme_no);
+    const pB = getThemePriority(b, thNum || b.theme_no);
+    if(pA !== pB) return pA - pB;
+    return (a.excel_order || 0) - (b.excel_order || 0);
+  });
 
   if(!list.length){
     return '<tr><td colspan="4" style="text-align:center;padding:24px;color:#000000;font-size:13.5px">No projects found in this theme.</td></tr>';

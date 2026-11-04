@@ -30,23 +30,34 @@ let activePortfolioStage = null;
 window.activePortfolioStage = activePortfolioStage;
 
 function switchPortfolioStage(stageNum, autoScroll = false){
+  stageNum = String(stageNum);
   activePortfolioStage = stageNum;
   window.activePortfolioStage = stageNum;
   window.refreshPortfolioStageNav?.(stageNum);
   document.querySelectorAll('.portfolio-stage-tab').forEach(button=>{
-    const active=Number(button.dataset.tab)===stageNum;
-    button.classList.toggle('active',active);
-    button.setAttribute('aria-pressed',String(active));
-    if(active) button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');
+    const active = String(button.dataset.tab) === stageNum;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+    if(active) button.setAttribute('aria-current', 'step'); else button.removeAttribute('aria-current');
   });
   document.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>{
+    let panelStage;
+    if(section.id === 'stage-0') panelStage = '0';
+    else if(section.id === 'stage-1') panelStage = '1';
+    else if(section.id === 'sec-system-design') panelStage = 'system-design';
+    else if(section.id === 'stage-2') panelStage = '2';
+    else if(section.id === 'stage-3') panelStage = '3';
     section.style.removeProperty('display');
-    section.hidden=false;
+    section.hidden = panelStage !== stageNum;
   });
-  const first=stageNum===0?'stage-0':stageNum===1?'stage-1':`stage-${stageNum}`;
+  const first = stageNum === '0' ? 'sec-problem'
+    : stageNum === '1' ? 'sec-fr'
+    : stageNum === 'system-design' ? 'sec-arch'
+    : stageNum === '2' ? 'stage-2'
+    : 'stage-3';
   updateActivePortfolioNav(first);
-  if(autoScroll) document.getElementById(first)?.scrollIntoView({
-    behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'
+  if(autoScroll) document.getElementById('portfolio-stage-tabs')?.scrollIntoView({
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'
   });
 }
 window.switchPortfolioStage = switchPortfolioStage;
@@ -100,7 +111,7 @@ function portfolioSubnav(){
 
     <!-- System Design -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='sec-system-design'?'selected':''}" data-target="sec-system-design" onclick="scrollToPortfolioTopic('sec-system-design')">
-      <span class="nav-label">• System Design</span>
+      <span class="nav-label">Stage 2 - System Design</span>
     </button>
     <div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
@@ -119,12 +130,12 @@ function portfolioSubnav(){
 
     <!-- Implementation and Integration -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-2'?'selected':''}" data-target="stage-2" onclick="scrollToPortfolioTopic('stage-2')">
-      <span class="nav-label">• Implementation and Integration</span>
+      <span class="nav-label">Stage 3 - Implementation and Integration</span>
     </button>
 
     <!-- Testing and Validations -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-3'?'selected':''}" data-target="stage-3" onclick="scrollToPortfolioTopic('stage-3')">
-      <span class="nav-label">• Testing and Validations</span>
+      <span class="nav-label">Stage 4 - Testing and Validations</span>
     </button>
   </div>`;
 }
@@ -136,8 +147,13 @@ function scrollToPortfolioTopic(id){
     if(el){
       const panel=el.closest('.portfolio-section');
       if(panel){
-        const stage=panel.id==='sec-system-design'?1:Number(panel.id.replace('stage-',''));
-        if(Number.isInteger(stage) && stage!==activePortfolioStage) switchPortfolioStage(stage);
+        let stage;
+        if(panel.id === 'stage-0') stage = '0';
+        else if(panel.id === 'stage-1') stage = '1';
+        else if(panel.id === 'sec-system-design') stage = 'system-design';
+        else if(panel.id === 'stage-2') stage = '2';
+        else if(panel.id === 'stage-3') stage = '3';
+        if(stage && String(stage) !== String(activePortfolioStage)) switchPortfolioStage(stage);
       }
       el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
       updateActivePortfolioNav(id);
