@@ -2179,7 +2179,7 @@ function department(){
     </div>
 
     <div class="stat-cards-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:6px 0 16px;">
-      ${[['Themes',6],['Faculty Mentors',facultyList.length],['Teams',all.length]].map(([label,count])=>`
+      ${[['Themes',6],['Faculty Mentors',16],['Teams',all.length]].map(([label,count])=>`
         <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 22px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow-xs);">
           <div class="projector-stat-label" style="font-weight:700; line-height:1.25">${label} -</div>
           <div class="projector-stat-number" style="font-weight:800; color:var(--brand); line-height:1">${count}</div>
