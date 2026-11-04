@@ -334,11 +334,32 @@
     return { answer, citations };
   }
 
+  // Helper: Network fetch with strict timeout to prevent indefinite loading
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 4500){
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timer);
+      return res;
+    } catch(err){
+      clearTimeout(timer);
+      throw err;
+    }
+  }
+
   // ==========================================
   // 4. CLOUD & LOCAL LLM CLIENTS
   // ==========================================
   async function queryLLM(query, retrievedChunks, kb){
     const settings = getLLMSettings();
+
+    // 0. Instant offline extractive mode if selected
+    if(settings.provider === 'extractive'){
+      const fallback = synthesizeExtractiveAnswer(query, retrievedChunks, kb);
+      fallback.provider = 'Smart Extractive RAG (Zero-Compute)';
+      return fallback;
+    }
 
     // Prepare grounded system instruction
     const systemPrompt = `You are the AI technical pair programmer and viva assistant for the project "${kb.title}" (Team ${kb.teamId}) under Theme "${kb.theme}".
@@ -351,17 +372,18 @@ Rules:
 VERIFIED CONTEXT FROM PORTFOLIO:
 ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join('\n\n')}`;
 
-    // 1. Try Vercel Serverless Function `/api/chat`
+    // 1. Try Vercel Serverless Function `/api/chat` (if hosted on Vercel)
     if(settings.provider === 'auto' || settings.provider === 'vercel_api'){
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetchWithTimeout('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: query,
             systemInstruction: systemPrompt
           })
-        });
+        }, 2500);
+
         if(response.ok){
           const data = await response.json();
           if(data && data.text && !data.useFallback){
@@ -373,28 +395,25 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           }
         }
       } catch(e) {
-        // Vercel serverless function not present (e.g. running local python http.server) -> proceed to next option
+        // Vercel serverless function not present (e.g. running local python or static host) -> proceed
       }
     }
 
     // 2. Direct Google Gemini API (if user entered client key in settings)
     const geminiKey = settings.geminiKey;
     if(geminiKey && (settings.provider === 'auto' || settings.provider === 'gemini')){
-      const targetModel = (settings.geminiModel || 'gemini-3.8-flash').trim();
+      const targetModel = (settings.geminiModel || 'gemini-1.5-flash').trim();
       let lastError = null;
 
       const candidateEndpoints = [
         { url: `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${geminiKey}`, label: targetModel },
-        { url: `https://generativelanguage.googleapis.com/v1/models/${targetModel}:generateContent?key=${geminiKey}`, label: `${targetModel} (v1)` },
-        { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, label: 'Gemini 2.0 Flash' },
-        { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`, label: 'Gemini 2.5 Flash' },
-        { url: `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, label: 'Gemini 2.0 Flash (v1)' },
-        { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, label: 'Gemini 1.5 Flash' }
+        { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, label: 'gemini-1.5-flash' },
+        { url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, label: 'gemini-1.5-flash (v1)' }
       ];
 
       for (const cand of candidateEndpoints) {
         try {
-          const response = await fetch(cand.url, {
+          const response = await fetchWithTimeout(cand.url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -403,7 +422,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
               }],
               generationConfig: { temperature: 0.2, maxOutputTokens: 900 }
             })
-          });
+          }, 5000);
 
           if(response.ok){
             const data = await response.json();
@@ -431,16 +450,22 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         }
       }
 
-      if(lastError){
-        console.warn('Gemini calls failed, proceeding to Ollama Cloud fallback:', lastError);
+      if(lastError && settings.provider === 'gemini'){
+        console.warn('Gemini calls failed:', lastError);
       }
     }
 
     // 3. Ollama Cloud / Local Fallback
-    // Automatically runs if provider is 'auto', 'ollama', or if Gemini API call failed
+    // Only attempt Ollama if:
+    // a) Explicitly selected as provider ('ollama')
+    // OR b) In 'auto' mode AND either an Ollama token is supplied (for ollama.com) OR a local/custom URL is supplied
     const rawOllamaUrl = settings.ollamaUrl || 'https://ollama.com/api';
     const cleanUrl = rawOllamaUrl.replace(/\/+$/, '');
-    if(cleanUrl && (settings.provider === 'auto' || settings.provider === 'ollama' || settings.provider === 'gemini')){
+    const isCloudOllama = cleanUrl.includes('ollama.com');
+    const shouldAttemptOllama = settings.provider === 'ollama' || 
+      (settings.provider === 'auto' && (!isCloudOllama || Boolean(settings.ollamaToken)));
+
+    if(cleanUrl && shouldAttemptOllama){
       try {
         const headers = { 'Content-Type': 'application/json' };
         if(settings.ollamaToken){
@@ -452,7 +477,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         // Try /api/chat first (standard for Ollama Cloud models like gpt-oss:20b)
         try {
           const chatEndpoint = cleanUrl.endsWith('/api') ? `${cleanUrl}/chat` : cleanUrl.includes('/api/') ? cleanUrl : `${cleanUrl}/api/chat`;
-          const chatRes = await fetch(chatEndpoint, {
+          const chatRes = await fetchWithTimeout(chatEndpoint, {
             method: 'POST',
             headers,
             body: JSON.stringify({
@@ -463,7 +488,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
               ],
               stream: false
             })
-          });
+          }, 5000);
+
           if(chatRes.ok){
             const data = await chatRes.json();
             answerText = data.message?.content || data.response;
@@ -474,36 +500,40 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
         // Fallback to /api/generate if /api/chat did not succeed
         if(!answerText){
-          const genEndpoint = cleanUrl.endsWith('/api') ? `${cleanUrl}/generate` : cleanUrl.includes('/api/') ? cleanUrl : `${cleanUrl}/api/generate`;
-          const genRes = await fetch(genEndpoint, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              model: oModel,
-              prompt: `${systemPrompt}\n\nUSER QUESTION: ${query}\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].\nANSWER:`,
-              stream: false
-            })
-          });
-          if(genRes.ok){
-            const data = await genRes.json();
-            answerText = data.response || data.message?.content;
+          try {
+            const genEndpoint = cleanUrl.endsWith('/api') ? `${cleanUrl}/generate` : cleanUrl.includes('/api/') ? cleanUrl : `${cleanUrl}/api/generate`;
+            const genRes = await fetchWithTimeout(genEndpoint, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({
+                model: oModel,
+                prompt: `${systemPrompt}\n\nUSER QUESTION: ${query}\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].\nANSWER:`,
+                stream: false
+              })
+            }, 5000);
+
+            if(genRes.ok){
+              const data = await genRes.json();
+              answerText = data.response || data.message?.content;
+            }
+          } catch(e){
+            console.warn('Ollama generate endpoint attempt failed:', e);
           }
         }
 
         if(answerText){
-          const isCloud = cleanUrl.includes('ollama.com') || (!cleanUrl.includes('localhost') && !cleanUrl.includes('127.0.0.1'));
           return {
             answer: answerText,
             citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
-            provider: `${isCloud ? 'Ollama Cloud' : 'Local Ollama'} (${oModel})`
+            provider: `${isCloudOllama ? 'Ollama Cloud' : 'Local Ollama'} (${oModel})`
           };
         }
       } catch(e) {
-        console.warn('Ollama Cloud connection attempt failed:', e);
+        console.warn('Ollama connection attempt failed:', e);
       }
     }
 
-    // 4. Default Smart Extractive RAG Synthesizer (Instant & Zero-Compute)
+    // 4. Instant Default: Smart Extractive RAG Synthesizer (Instant & Zero-Compute)
     const fallback = synthesizeExtractiveAnswer(query, retrievedChunks, kb);
     fallback.provider = 'Smart Extractive RAG (Zero-Compute)';
     return fallback;
