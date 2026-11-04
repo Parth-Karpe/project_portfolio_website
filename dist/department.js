@@ -1018,6 +1018,19 @@ function ensureDepartment(){
       state.forms[1].title = t03.title; if(state.forms[0]) state.forms[0].title = t03.title;
     }
   }
+  const t04=state.teams?.find(t=>t.id==='B-04'||t.title==='Multi-Process Search Engine with Persistent Index');
+  if(t04){
+    t04.title = 'Multi-Process Search Engine with Persistent Index';
+    t04.faculty = 'Ms.Umadevi F M';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-04'] || STATIC_TEAMS_DATA['04'])){
+      const s04 = STATIC_TEAMS_DATA['B-04'] || STATIC_TEAMS_DATA['04'];
+      t04.members = s04.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t04.id]) state.workspaces[t04.id] = newTeamWorkspace(t04);
+    state.workspaces[t04.id].guide = t04.faculty;
+    state.workspaces[t04.id].members = t04.members;
+  }
 
   [state,...Object.values(state.workspaces||{})].forEach(w=>{
     w.media=w.media||[];w.messages=w.messages||[];w.mentorMessages=w.mentorMessages||[];w.reviews=w.reviews||{};w.questions=w.questions||[];w.answers=w.answers||{};w.activities=w.activities||[];
@@ -1409,19 +1422,26 @@ function renderRequirementsTable(text, defaultList, type){
 
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
+        cleanId = (t.id || '').replace(/^[AB]-/, ''),
+        staticTeam = (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (
+          window.STATIC_TEAMS_DATA[t.id] ||
+          window.STATIC_TEAMS_DATA[cleanId] ||
+          window.STATIC_TEAMS_DATA[cleanId.padStart(2, '0')] ||
+          Object.values(window.STATIC_TEAMS_DATA).find(st => st.title === t.title || st.id === t.id)
+        )) || null,
+        hasData = Boolean(staticTeam),
         isSmartCampus = (t.id === 'A-03' || t.title === 'Smart Campus Lab and Resource Optimizer' || t.title === 'Smart Campus Lab & Resource Optimizer'),
-        staticTeam = (isSmartCampus && typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (window.STATIC_TEAMS_DATA['03'] || window.STATIC_TEAMS_DATA['A-03'])) || null,
-        st0 = isSmartCampus ? (staticTeam?.stage0 || {}) : {},
-        st1 = isSmartCampus ? (staticTeam?.stage1 || {}) : {},
-        sys = isSmartCampus ? (staticTeam?.systemDesign || {}) : {},
-        f0 = isSmartCampus ? (state.forms?.[0] || {}) : {},
-        f1 = isSmartCampus ? (state.forms?.[1] || {}) : {},
-        f2 = isSmartCampus ? (state.forms?.[2] || {}) : {},
-        f3 = isSmartCampus ? (state.forms?.[3] || {}) : {},
-        topic = isSmartCampus ? (staticTeam?.theme || t.topic || 'Specialization Theme') : (t.topic || 'Specialization Theme'),
+        st0 = staticTeam?.stage0 || {},
+        st1 = staticTeam?.stage1 || {},
+        sys = staticTeam?.systemDesign || {},
+        f0 = hasData ? (state.forms?.[0] || {}) : {},
+        f1 = hasData ? (state.forms?.[1] || {}) : {},
+        f2 = hasData ? (state.forms?.[2] || {}) : {},
+        f3 = hasData ? (state.forms?.[3] || {}) : {},
+        topic = (staticTeam?.theme || t.topic || 'Specialization Theme'),
         themeName = (t.theme_name || (staticTeam?.theme) || topic || '').replace(/^Theme\s*\d+\s*:\s*/i, ''),
-        title = isSmartCampus ? (staticTeam?.title || t.title) : (t.title || 'Project Portfolio'),
-        guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide'),
+        title = (staticTeam?.title || t.title || 'Project Portfolio'),
+        guide = (staticTeam?.guide || state.guide || t.faculty || 'Faculty Guide'),
         repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
@@ -1490,12 +1510,12 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
-          ${isSmartCampus ? `<p class="portfolio-prose">${esc(st0.problem || '')}</p>` : ''}
+          ${hasData && st0.problem ? `<p class="portfolio-prose" style="white-space:pre-line">${esc(st0.problem || '')}</p>` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-objectives">
           <h3>2. Project Objectives</h3>
-          ${isSmartCampus ? `
+          ${hasData && st0.objectives ? `
             <div class="portfolio-prose">
               <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">
                 ${(Array.isArray(st0.objectives) ? st0.objectives : (st0.objectives ? [st0.objectives] : [])).map(o=>`<li>${esc(o)}</li>`).join('')}
@@ -1506,7 +1526,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-courses">
           <h3>3. Foundation Course Integration</h3>
-          ${isSmartCampus ? `
+          ${hasData && st0.coursesTable ? `
             <div class="tablewrap">
               <table class="test-suite-table">
                 <thead>
@@ -1534,11 +1554,15 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-workflow-concept">
           <h3>4. Conceptual Workflow</h3>
-          ${isSmartCampus ? `
+          ${hasData && (st0.conceptualFlowImage || (st0.pipelineTable && st0.pipelineTable.length)) ? `
+            ${st0.conceptualFlowImage ? `
             <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
-              <img src="assets/team03_conceptual_flow.jpg" alt="Conceptual Flow - Smart Campus Lab & Resource Optimizer" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
+              <img src="${esc(st0.conceptualFlowImage)}" alt="${esc(st0.conceptualFlowCaption || ('Conceptual Flow - ' + title))}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
+              ${st0.conceptualFlowCaption ? `<p style="margin:10px 0 0;font-size:12px;font-weight:600;color:var(--muted)">${esc(st0.conceptualFlowCaption)}</p>` : ''}
             </div>
+            ` : ''}
 
+            ${(st0.pipelineTable && st0.pipelineTable.length) ? `
             <div class="tablewrap" style="margin-bottom:12px">
               <table class="test-suite-table">
                 <thead>
@@ -1561,6 +1585,8 @@ portfolio=function(){
                 </tbody>
               </table>
             </div>
+            ` : ''}
+            ${(st0.enginesTable && st0.enginesTable.length) ? `
             <div class="tablewrap">
               <table class="test-suite-table">
                 <thead>
@@ -1579,12 +1605,13 @@ portfolio=function(){
                 </tbody>
               </table>
             </div>
+            ` : ''}
           ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-scope">
           <h3>5. Project Scope</h3>
-          ${isSmartCampus ? `
+          ${hasData && (st0.scopeInTable || st0.scopeOutTable) ? `
             <div style="display:flex;flex-direction:column;gap:18px">
               <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
                 <table class="test-suite-table">
@@ -1630,7 +1657,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-feasibility">
           <h3>6. Feasibility &amp; Constraints</h3>
-          ${isSmartCampus ? `
+          ${hasData && st0.feasibilityTable ? `
             <div class="tablewrap">
               <table class="test-suite-table">
                 <thead>
@@ -1659,7 +1686,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
-          ${isSmartCampus ? `
+          ${hasData && st1.frTable ? `
             <div class="tablewrap">
               <table class="test-suite-table">
                 <thead>
@@ -1687,7 +1714,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-nfr">
           <h3>2. Non - Functional Requirements</h3>
-          ${isSmartCampus ? `
+          ${hasData && st1.nfrTable ? `
             <div class="tablewrap">
               <table class="test-suite-table">
                 <thead>
@@ -1715,7 +1742,8 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-usecase">
           <h3>3. Use Cases</h3>
-          ${isSmartCampus ? `
+          ${hasData && (st1.userStoryTable || st1.useCaseImage) ? `
+            ${st1.userStoryTable ? `
             <div class="tablewrap" style="margin-bottom:14px">
               <table class="test-suite-table">
                 <thead>
@@ -1740,16 +1768,19 @@ portfolio=function(){
                 </tbody>
               </table>
             </div>
+            ` : ''}
+            ${st1.useCaseImage ? `
             <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${st1.useCaseImage || 'assets/team03_usecase_diagram_doc.png'}" alt="Fig : Use case diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig : Use case diagram</p>
+              <img src="${esc(st1.useCaseImage)}" alt="${esc(st1.useCaseCaption || 'Fig : Use case diagram')}" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">${esc(st1.useCaseCaption || 'Fig : Use case diagram')}</p>
             </div>
+            ` : ''}
           ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-acceptance">
           <h3>4. Acceptance Criteria</h3>
-          ${isSmartCampus ? `
+          ${hasData && st1.acceptanceTable ? `
             <div class="tablewrap">
               <table class="test-suite-table">
                 <thead>
@@ -1780,48 +1811,48 @@ portfolio=function(){
           <h2>System Design</h2>
         </div>
 
+        ${hasData && sys && sys.architecturePoints && sys.architecturePoints.length ? `
         <article class="portfolio-subblock" id="sec-arch">
           <h3>1. Architecture</h3>
-          ${isSmartCampus ? `
-            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-              ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-            </div>
-            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 1. Architecture Diagram</p>
-            </div>
-          ` : ''}
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 1. Architecture Diagram</p>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-data-design">
           <h3>2. Data Design</h3>
-          ${isSmartCampus ? `
-            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-              ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-            </div>
-            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 2. Data Design</p>
-            </div>
-          ` : ''}
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 2. Data Design</p>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-algo-design">
           <h3>3. Algorithm Design</h3>
-          ${isSmartCampus ? `
-            <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
-              ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
-            </div>
-            <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_new.jpeg'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
-            </div>
-          ` : ''}
+          <div class="portfolio-prose" style="display:flex;flex-direction:column;gap:6px">
+            ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
+          </div>
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_new.jpeg'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">Fig 3. Algorithm Design</p>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-security-design">
           <h3>4. Security Design</h3>
         </article>
+        ` : `
+        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
+        </div>
+        `}
       </section>
 
       <!-- Implementation and Integration -->
