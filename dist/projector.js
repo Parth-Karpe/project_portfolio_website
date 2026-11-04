@@ -160,6 +160,7 @@
     nav.querySelectorAll(':scope > .stage-link').forEach(button=>{
       const children=button.nextElementSibling?.classList.contains('subtopics')?button.nextElementSibling:null;
       const details=document.createElement('details');details.className='faculty-accordion';details.dataset.stage=button.dataset.target;
+      details.open=true;
       const summary=document.createElement('summary');summary.className='stage-link portfolio-subnav-btn';summary.dataset.target=button.dataset.target;
       button.before(details);details.append(summary);summary.append(...button.childNodes);
       if(children) details.append(children);
@@ -197,23 +198,51 @@
     [...nav.children].forEach(group=>{
       const links=group.matches('[data-target]')?[group]:[...group.querySelectorAll('[data-target]')];
       const belongs=links.some(link=>{
-        const section=document.getElementById(link.dataset.target)?.closest('.portfolio-section');
-        const owner=section?.id==='sec-system-design'?1:Number(section?.id?.replace('stage-',''));
-        return owner===stage;
+        const targetId = link.dataset.target;
+        if(String(stage) === '0') {
+          return ['sec-problem','sec-objectives','sec-courses','sec-workflow-concept','sec-scope','sec-scope-in','sec-scope-out','sec-feasibility','stage-0'].includes(targetId);
+        }
+        if(String(stage) === '1') {
+          return ['sec-fr','sec-nfr','sec-usecase','sec-acceptance','stage-1'].includes(targetId);
+        }
+        if(String(stage) === 'system-design') {
+          return ['sec-arch','sec-data-design','sec-algo-design','sec-security-design','sec-system-design'].includes(targetId);
+        }
+        if(String(stage) === '2') {
+          return ['stage-2'].includes(targetId);
+        }
+        if(String(stage) === '3') {
+          return ['stage-3'].includes(targetId);
+        }
+        return false;
       });
       if(!belongs) group.remove();
     });
     host.replaceChildren(nav);
     panel.inert=false;layout.classList.add('projector-nav-open');
-    app.querySelectorAll('.portfolio-stage-tab').forEach(tab=>tab.setAttribute('aria-expanded',String(Number(tab.dataset.tab)===stage)));
+    app.querySelectorAll('.portfolio-stage-tab').forEach(tab=>tab.setAttribute('aria-expanded',String(String(tab.dataset.tab)===String(stage))));
     sidebarPresentation(app);
   };
   function stagePresentation(app) {
     const tabs=[...app.querySelectorAll('.portfolio-stage-tab')];
     if(!tabs.length) return;
     tabs.forEach(tab=>{
-      setText(tab,`STAGE ${tab.dataset.tab}`);
-      tab.dataset.target=`stage-${tab.dataset.tab}`;
+      if(tab.dataset.tab === '0') {
+        setText(tab, 'STAGE 0');
+        tab.dataset.target = 'stage-0';
+      } else if(tab.dataset.tab === '1') {
+        setText(tab, 'STAGE 1');
+        tab.dataset.target = 'stage-1';
+      } else if(tab.dataset.tab === 'system-design') {
+        setText(tab, 'System Design');
+        tab.dataset.target = 'sec-system-design';
+      } else if(tab.dataset.tab === '2') {
+        setText(tab, 'Implementation and Integration');
+        tab.dataset.target = 'stage-2';
+      } else if(tab.dataset.tab === '3') {
+        setText(tab, 'Testing and Validations');
+        tab.dataset.target = 'stage-3';
+      }
     });
     const content=app.querySelector('.portfolio-content');
     tabs.forEach(tab=>{tab.setAttribute('aria-controls','app-sidebar');});
@@ -221,7 +250,8 @@
       content.dataset.stageInitialized='true';
       app.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>section.hidden=true);
       const panel=app.querySelector('#app-sidebar');if(panel) panel.inert=true;
-      if(window.activePortfolioStage!==null) switchPortfolioStage(window.activePortfolioStage);
+      const initialStage = (window.activePortfolioStage !== null && window.activePortfolioStage !== undefined) ? window.activePortfolioStage : '0';
+      switchPortfolioStage(initialStage);
     }
   }
   function imagesPresentation(app) {

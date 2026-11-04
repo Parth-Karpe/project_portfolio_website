@@ -1461,15 +1461,27 @@ portfolio=function(){
   <div class="portfolio-layout">
     <main class="portfolio-content">
 
-      <!-- Stage Switcher Tabs (Stage 0, Stage 1) -->
+      <!-- Stage Switcher Tabs -->
       <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
-        <button type="button" class="portfolio-stage-tab" data-tab="0" onclick="switchPortfolioStage(0,true)" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
-          <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 0</span>
-          <span style="color:#ffffff;">Problem Statement &amp; Need Identification</span>
+        <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||'0')==='0'?'active':''}" data-tab="0" data-target="stage-0" onclick="switchPortfolioStage('0',true)">
+          <span class="tab-badge">STAGE 0</span>
+          <span>Problem Statement &amp; Need Identification</span>
         </button>
-        <button type="button" class="portfolio-stage-tab" data-tab="1" onclick="switchPortfolioStage(1,true)" style="background:var(--brand); color:#ffffff; border:1.5px solid var(--brand); box-shadow:0 4px 14px var(--brand-glow);">
-          <span class="tab-badge" style="background:rgba(255,255,255,0.22); color:#ffffff;">Stage 1</span>
-          <span style="color:#ffffff;">Requirement Analysis &amp; System Design</span>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='1'?'active':''}" data-tab="1" data-target="stage-1" onclick="switchPortfolioStage('1',true)">
+          <span class="tab-badge">STAGE 1</span>
+          <span>Requirement Analysis</span>
+        </button>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='system-design'?'active':''}" data-tab="system-design" data-target="sec-system-design" onclick="switchPortfolioStage('system-design',true)">
+          <span class="tab-badge">DESIGN</span>
+          <span>System Design</span>
+        </button>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='2'?'active':''}" data-tab="2" data-target="stage-2" onclick="switchPortfolioStage('2',true)">
+          <span class="tab-badge">STAGE 2</span>
+          <span>Implementation and Integration</span>
+        </button>
+        <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='3'?'active':''}" data-tab="3" data-target="stage-3" onclick="switchPortfolioStage('3',true)">
+          <span class="tab-badge">STAGE 3</span>
+          <span>Testing and Validations</span>
         </button>
       </div>
 
@@ -1824,12 +1836,18 @@ portfolio=function(){
         <div class="portfolio-section-title">
           <h2>Implementation and Integration</h2>
         </div>
+        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
+        </div>
       </section>
 
       <!-- Testing and Validations -->
       <section class="portfolio-section" id="stage-3">
         <div class="portfolio-section-title">
           <h2>Testing and Validations</h2>
+        </div>
+        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
         </div>
       </section>
     </main>
@@ -1840,6 +1858,8 @@ portfolio=function(){
 function openTeamPortfolio(id){
   const next = state.teams.find(t => t.id === id);
   window.lastViewedTheme = (selectedTheme !== null && selectedTheme !== undefined) ? selectedTheme : (next?.theme_no || 1);
+  activePortfolioStage = '0';
+  window.activePortfolioStage = '0';
   switchTeam(id);
   go('Team Portfolio');
   window.scrollTo(0, 0);
