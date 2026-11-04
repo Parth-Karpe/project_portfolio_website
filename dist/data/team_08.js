@@ -49,7 +49,7 @@ const team08Data = {
     }
   ],
   "stage0": {
-    "problem": "Structured datasets can contain missing values, duplicate records, inconsistent types, invalid values, and statistically unusual observations. The proposed project brings dataset profiling and data-quality assessment into a single workflow so users can inspect a dataset, identify quality issues, select supported corrections, and revalidate the results. The presentations describe an upload-to-report workflow and emphasize preserving the original dataset while applying corrections to a separate copy.\n\nThe project draws on DBMS, Data Structures and Algorithm Analysis, Probability and Statistics, Machine Learning concepts, Operating Systems, and Web Technologies.",
+    "problem": "Structured datasets can contain missing values, duplicate records, inconsistent types, invalid values, and statistically unusual observations. The proposed project brings dataset profiling and data-quality assessment into a single workflow so users can inspect a dataset, identify quality issues, select supported corrections, and revalidate the results. The presentations describe an upload-to-report workflow and emphasize preserving the original dataset while applying corrections to a separate copy.",
     "objectives": [
       "To accept supported structured/tabular datasets and generate a structural profile.",
       "To identify missing values, duplicate rows, data-type inconsistencies, and rule violations.",

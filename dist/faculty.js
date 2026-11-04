@@ -2,17 +2,52 @@
 (() => {
   const prefersReducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   let headerObserver, returnFocus, framePending = false;
-  const topButton = document.createElement('button');
-  topButton.type='button'; topButton.className='faculty-top'; topButton.textContent='↑';
-  topButton.setAttribute('aria-label','Back to top'); topButton.title='Back to top'; topButton.hidden=true;
-  topButton.onclick=()=>window.scrollTo({top:0,behavior:prefersReducedMotion()?'auto':'smooth'});
+  const nextStageButton = document.createElement('button');
+  nextStageButton.type='button'; nextStageButton.className='faculty-top faculty-next-stage'; nextStageButton.textContent='Next stage';
+  nextStageButton.setAttribute('aria-label','Go to next stage'); nextStageButton.title='Next stage'; nextStageButton.hidden=true;
+
+  function getNextPortfolioStage(cur) {
+    if (cur === '0') return '1';
+    if (cur === '1') return 'system-design';
+    if (cur === 'system-design') return '2';
+    if (cur === '2') return '3';
+    return null;
+  }
+
+  function updateFloatingNextButton() {
+    const isPortfolio = typeof page !== 'undefined' ? page === 'Team Portfolio' : Boolean(document.querySelector('.portfolio-container'));
+    if (!isPortfolio) {
+      nextStageButton.hidden = true;
+      document.body.classList.remove('has-floating-next');
+      return;
+    }
+    const curStage = String(window.activePortfolioStage || '0');
+    const nextStage = getNextPortfolioStage(curStage);
+    if (nextStage) {
+      nextStageButton.hidden = false;
+      nextStageButton.dataset.targetStage = nextStage;
+      document.body.classList.add('has-floating-next');
+    } else {
+      nextStageButton.hidden = true;
+      document.body.classList.remove('has-floating-next');
+    }
+  }
+  window.updateFloatingNextButton = updateFloatingNextButton;
+
+  nextStageButton.onclick = () => {
+    const target = nextStageButton.dataset.targetStage;
+    if (target && typeof window.switchPortfolioStage === 'function') {
+      window.switchPortfolioStage(target, true);
+      updateFloatingNextButton();
+    }
+  };
   const backdrop = document.createElement('button');
   backdrop.type='button'; backdrop.className='faculty-backdrop'; backdrop.hidden=true;
   backdrop.setAttribute('aria-label','Close section navigation');
   const viewer = document.createElement('dialog');
   viewer.className='faculty-lightbox'; viewer.setAttribute('aria-label','Diagram viewer');
   viewer.innerHTML='<div class="faculty-lightbox-controls"><button type="button" data-zoom aria-pressed="false">Full size</button><button type="button" data-close aria-label="Close diagram">×</button></div><div class="faculty-image-viewport"><img alt=""></div>';
-  document.body.append(topButton,backdrop,viewer);
+  document.body.append(nextStageButton,backdrop,viewer);
 
   function closeDrawer(restoreFocus=false) {
     document.body.classList.remove('faculty-drawer-open'); backdrop.hidden=true;
@@ -182,7 +217,7 @@
     });
   }
   function syncReading() {
-    topButton.hidden=scrollY<400;
+    updateFloatingNextButton();
     const sections=[...document.querySelectorAll('.portfolio-section')].filter(section=>!section.hidden && section.offsetParent!==null); if(!sections.length) return;
     const styles=getComputedStyle(document.documentElement);
     const offset=parseFloat(styles.getPropertyValue('--header-height'))+parseFloat(styles.getPropertyValue('--stage-height'))+20;
@@ -228,6 +263,7 @@
     const header=app.querySelector('.topbar');
     if(header) {headerObserver=new ResizeObserver(()=>document.documentElement.style.setProperty('--header-height',`${header.getBoundingClientRect().height}px`));headerObserver.observe(header);}
     syncReading();
+    updateFloatingNextButton();
   }
   window.addEventListener('scroll',()=>{
     if(framePending) return;framePending=true;

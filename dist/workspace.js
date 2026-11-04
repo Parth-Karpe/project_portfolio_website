@@ -59,6 +59,7 @@ function switchPortfolioStage(stageNum, autoScroll = false){
   if(autoScroll) document.getElementById('portfolio-stage-tabs')?.scrollIntoView({
     behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'
   });
+  if(typeof window.updateFloatingNextButton === 'function') window.updateFloatingNextButton();
 }
 window.switchPortfolioStage = switchPortfolioStage;
 function portfolioSubnav(){

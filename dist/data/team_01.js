@@ -49,7 +49,7 @@ const team01Data = {
     }
   ],
   "stage0": {
-    "problem": "In real-world applications, databases handle data creation, queries, modifications and security, but internal processes such as query processing, optimization, concurrency control and crash recovery often remain a black box to students. The proposed Mini RDBMS Engine with Query Processing & Transaction Support aims to demonstrate these processes by implementing a SQL-like query processor, semantic validation, indexing, query execution and transaction management with commit, rollback and simulated crash recovery. The project integrates concepts from Principles of Compiler Design (lexical analysis and parsing), Design & Analysis of Algorithms (indexing and searching), Operating System Principles (locking and concurrency control), and Database Management Systems (relational models, constraints and ACID properties).",
+    "problem": "In real-world applications, databases handle data creation, queries, modifications and security, but internal processes such as query processing, optimization, concurrency control and crash recovery often remain a black box to students. The proposed Mini RDBMS Engine with Query Processing & Transaction Support aims to demonstrate these processes by implementing a SQL-like query processor, semantic validation, indexing, query execution and transaction management with commit, rollback and simulated crash recovery.",
     "objectives": [
       "To implement a lexer, parser and semantic checker that convert SQL text into a validated parse tree and reject invalid queries with clear, position-aware error messages.",
       "To design a storage engine that supports DML commands on the stored tables.",

@@ -95,8 +95,12 @@ body .topbar { position:sticky; top:0; z-index:40; height:auto; min-height:80px;
 .topbar .topright { flex-shrink:0; }
 body .user-role-card { min-height:44px; font-size:1rem!important; color:var(--black)!important; }
 body .theme-toggle-btn { width:44px; min-width:44px; height:44px; }
-.faculty-top { position:fixed; bottom:24px; right:24px; width:44px; height:44px; z-index:60; background:var(--blue); color:var(--on-blue); border:0; border-radius:8px; }
-.faculty-top[hidden],.faculty-backdrop[hidden] { display:none; }
+.faculty-top, .faculty-next-stage { position:fixed; bottom:24px; right:24px; height:42px; padding:0 18px; min-width:104px; border-radius:999px; background:var(--blue, #1d4ed8); color:#ffffff!important; font-size:14px; font-weight:700; border:0; box-shadow:0 4px 14px rgba(0,0,0,0.22); cursor:pointer; z-index:9998; display:inline-flex; align-items:center; justify-content:center; gap:6px; white-space:nowrap; transition:transform 0.15s ease,box-shadow 0.15s ease; }
+.faculty-top:hover, .faculty-next-stage:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,0.3); }
+.faculty-top[hidden], .faculty-next-stage[hidden], .faculty-backdrop[hidden] { display:none!important; }
+body.has-floating-next #portfolio-chat-container .portfolio-chat-fab,
+body.has-floating-next .portfolio-chat-fab,
+body:has(.faculty-top:not([hidden])) .portfolio-chat-fab { right:156px!important; }
 .faculty-menu { display:none; }
 .faculty-lightbox { position:fixed; inset:0; width:100vw; height:100dvh; max-width:none; max-height:none; padding:64px 16px 16px; margin:0; border:0; background:var(--backdrop); color:var(--white); }
 .faculty-lightbox::backdrop { background:var(--backdrop); }

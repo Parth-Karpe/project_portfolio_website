@@ -49,7 +49,7 @@ const team05Data = {
     }
   ],
   "stage0": {
-    "problem": "The proposed project is a Persistent Key-Value Storage System for storing and retrieving data using key-value pairs. Unlike temporary storage, the system aims to preserve stored data even after the application is closed or restarted. It provides a practical understanding of data storage, retrieval, and persistence.\n\nThe project also gives an opportunity to integrate foundational Computer Science concepts from Data Structures, Operating Systems, Software Engineering, DAA, and Web Technology.",
+    "problem": "The proposed project is a Persistent Key-Value Storage System for storing and retrieving data using key-value pairs. Unlike temporary storage, the system aims to preserve stored data even after the application is closed or restarted. It provides a practical understanding of data storage, retrieval, and persistence.",
     "objectives": [
       "To apply fundamental Computer Science concepts related to data organization, storage, retrieval, and persistence in developing the proposed system.",
       "To incorporate command parsing and validation for correctly interpreting user commands before performing key-value operations.",
