@@ -6,9 +6,7 @@
     timer=setTimeout(applyPresentation,50);
   });
   const observe = () => observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','open']});
-  const labelChanges = new Map([
-    ['Number of Themes','Themes'],['Number of Faculty Mentors','Faculty mentors'],['Number of Teams','Teams']
-  ]);
+  const labelChanges = new Map();
   function addClass(element,name) { if(element && !element.classList.contains(name)) element.classList.add(name); }
   function setText(element,text) { if(element && element.textContent.trim()!==text) element.textContent=text; }
   function stripHeadingMarkers(element) {
