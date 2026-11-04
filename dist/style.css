@@ -2667,31 +2667,74 @@ tbody tr:hover {
 
 .chat-bubble {
   padding: 10px 14px;
-  border-radius: 14px;
-  font-size: 12.5px;
-  line-height: 1.5;
+  border-radius: 12px;
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
   word-break: break-word;
 }
 
 .chat-bubble-wrap.user .chat-bubble {
   background: var(--brand);
-  color: #fff;
+  color: #fff !important;
   border-bottom-right-radius: 4px;
+}
+
+.chat-bubble-wrap.user .chat-bubble * {
+  color: #fff !important;
 }
 
 .chat-bubble-wrap.assistant .chat-bubble {
   background: var(--bg-subtle);
-  color: var(--ink);
+  color: var(--ink) !important;
   border: 1px solid var(--line);
   border-bottom-left-radius: 4px;
+}
+
+/* Enforce uniform font size across all children in chat bubble */
+.chat-bubble,
+.chat-bubble p,
+.chat-bubble div,
+.chat-bubble span,
+.chat-bubble li,
+.chat-bubble ul,
+.chat-bubble ol {
+  font-size: 12.5px !important;
+  line-height: 1.55 !important;
+}
+
+.chat-bubble strong,
+.chat-bubble b {
+  font-size: 12.5px !important;
+  font-weight: 700;
+}
+
+.chat-bubble .chat-italic-note {
+  display: block;
+  font-style: italic;
+  font-size: 11px !important;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.4 !important;
+}
+
+.chat-spacer {
+  height: 8px;
+}
+
+.chat-bullet-break {
+  height: 4px;
 }
 
 .chat-bubble-meta {
   margin-top: 6px;
   padding-top: 4px;
   border-top: 1px solid var(--line);
-  font-size: 10px;
+  font-size: 10.5px !important;
   color: var(--muted);
+}
+
+.chat-bubble-meta small {
+  font-size: 10.5px !important;
 }
 
 /* Typing Indicator */
@@ -2776,29 +2819,30 @@ tbody tr:hover {
   cursor: not-allowed;
 }
 
-/* Citation Pills */
+/* Citation Pills - Harmonized with 12.5px font size */
 .citation-pill {
   display: inline-block;
   vertical-align: baseline;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 11.5px !important;
   font-weight: 700;
+  line-height: 1.25 !important;
   color: var(--brand);
   background: var(--brand-subtle);
   border: 1px solid var(--brand);
-  border-radius: 5px;
+  border-radius: 4px;
   padding: 1px 6px;
   margin: 0 2px;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
 }
 
 .citation-pill:hover {
   background: var(--brand);
-  color: #fff;
+  color: #fff !important;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
 }
 
 .citation-pill.static {

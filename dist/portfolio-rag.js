@@ -189,9 +189,9 @@
         id: `fr-${fr.id}`,
         elementId: `portfolio-fr-${fr.id}`,
         type: 'Functional Requirement',
-        label: `${fr.id}: ${fr.desc}`,
+        label: fr.id,
         citation: `[${fr.id}]`,
-        text: `Functional Requirement ${fr.id}: ${fr.desc} Priority: ${fr.priority || 'Mandatory'}. Source Need: ${fr.sourceNeed || 'Gate 0 Need'}.`
+        text: `${fr.desc} Priority: ${fr.priority || 'Mandatory'}. Source Need: ${fr.sourceNeed || 'Gate 0 Need'}.`
       });
     });
 
@@ -201,9 +201,9 @@
         id: `nfr-${nfr.id}`,
         elementId: `portfolio-nfr-${nfr.id}`,
         type: 'Non-Functional Requirement',
-        label: `${nfr.id}: ${nfr.desc}`,
+        label: nfr.id,
         citation: `[${nfr.id}]`,
-        text: `Non-Functional Requirement ${nfr.id} (${nfr.cat || 'Quality'}): ${nfr.desc} Measurable Target: ${nfr.target || 'Defined benchmark'}.`
+        text: `(${nfr.cat || nfr.category || 'Quality'}): ${nfr.desc} Measurable Target: ${nfr.target || 'Defined benchmark'}.`
       });
     });
 
@@ -326,7 +326,7 @@
     }));
 
     const bullets = retrievedChunks.map(c => {
-      return `• **${c.label}** ${c.citation}:\n  ${c.text}`;
+      return `• **${c.label}** ${c.citation}:\n${c.text}`;
     }).join('\n\n');
 
     const answer = `Based on the verified portfolio submission for **${kb.title}** (Team ${kb.teamId}):\n\n${bullets}\n\n*Click on any citation pill above to jump directly to that section in the portfolio.*`;
@@ -568,11 +568,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       return `<span class="citation-pill static">${match}</span>`;
     });
 
-    // Simple markdown format: bold and bullet lists
+    // Markdown formatting: bold, italic footnote, and clean spacing
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    formatted = formatted.replace(/\n\n/g, '<br><br>');
-    formatted = formatted.replace(/\n• /g, '<br>• ');
-    formatted = formatted.replace(/\n- /g, '<br>• ');
+    formatted = formatted.replace(/\*([^\*\n]+)\*/g, '<span class="chat-italic-note">$1</span>');
+    formatted = formatted.replace(/\n\n/g, '<div class="chat-spacer"></div>');
+    formatted = formatted.replace(/\n[•\-] /g, '<div class="chat-bullet-break"></div>• ');
+    formatted = formatted.replace(/\n/g, '<br>');
 
     return formatted;
   }
