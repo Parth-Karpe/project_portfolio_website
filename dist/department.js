@@ -1582,7 +1582,7 @@ portfolio=function(){
       <span class="portfolio-theme-pill">Theme: ${esc(themeName)}</span>
       <h1 class="portfolio-hero-title">${esc(title)}</h1>
       <div class="portfolio-hero-meta">
-        <span>Team: <strong>Team ${esc(t.id)}</strong></span>
+        <span>Team:<strong>${esc((t.id || '').replace(/^Team\s*/i, ''))}</strong></span>
         <span>Faculty Mentor: <strong>${esc(guide)}</strong></span>
         <span>Academic Year: <strong>2026–27</strong></span>
       </div>
