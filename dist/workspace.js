@@ -30,24 +30,34 @@ let activePortfolioStage = null;
 window.activePortfolioStage = activePortfolioStage;
 
 function switchPortfolioStage(stageNum, autoScroll = false){
+  stageNum = String(stageNum);
   activePortfolioStage = stageNum;
   window.activePortfolioStage = stageNum;
   window.refreshPortfolioStageNav?.(stageNum);
   document.querySelectorAll('.portfolio-stage-tab').forEach(button=>{
-    const active=Number(button.dataset.tab)===stageNum;
-    button.classList.toggle('active',active);
-    button.setAttribute('aria-pressed',String(active));
-    if(active) button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');
+    const active = String(button.dataset.tab) === stageNum;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+    if(active) button.setAttribute('aria-current', 'step'); else button.removeAttribute('aria-current');
   });
   document.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>{
-    const panelStage=section.id==='sec-system-design'?1:Number(section.id.replace('stage-',''));
+    let panelStage;
+    if(section.id === 'stage-0') panelStage = '0';
+    else if(section.id === 'stage-1') panelStage = '1';
+    else if(section.id === 'sec-system-design') panelStage = 'system-design';
+    else if(section.id === 'stage-2') panelStage = '2';
+    else if(section.id === 'stage-3') panelStage = '3';
     section.style.removeProperty('display');
-    section.hidden=panelStage!==stageNum;
+    section.hidden = panelStage !== stageNum;
   });
-  const first=stageNum===0?'sec-problem':stageNum===1?'sec-fr':`stage-${stageNum}`;
+  const first = stageNum === '0' ? 'sec-problem'
+    : stageNum === '1' ? 'sec-fr'
+    : stageNum === 'system-design' ? 'sec-arch'
+    : stageNum === '2' ? 'stage-2'
+    : 'stage-3';
   updateActivePortfolioNav(first);
   if(autoScroll) document.getElementById('portfolio-stage-tabs')?.scrollIntoView({
-    behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'
   });
 }
 window.switchPortfolioStage = switchPortfolioStage;
@@ -137,8 +147,13 @@ function scrollToPortfolioTopic(id){
     if(el){
       const panel=el.closest('.portfolio-section');
       if(panel){
-        const stage=panel.id==='sec-system-design'?1:Number(panel.id.replace('stage-',''));
-        if(Number.isInteger(stage) && stage!==activePortfolioStage) switchPortfolioStage(stage);
+        let stage;
+        if(panel.id === 'stage-0') stage = '0';
+        else if(panel.id === 'stage-1') stage = '1';
+        else if(panel.id === 'sec-system-design') stage = 'system-design';
+        else if(panel.id === 'stage-2') stage = '2';
+        else if(panel.id === 'stage-3') stage = '3';
+        if(stage && String(stage) !== String(activePortfolioStage)) switchPortfolioStage(stage);
       }
       el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
       updateActivePortfolioNav(id);
@@ -343,7 +358,7 @@ function sharedPageHeader(){
   return `<header class="topbar common-page-header"><div class="topbar-left"><div class="school-top-header"><strong>KLE Technological University</strong><span>Department of CSE(AI)</span></div></div><div class="topright" style="display:flex; align-items:center; gap:10px">
   <button type="button" class="user-role-card" onclick="switchRole('HOD');go('Department')" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:#000000; border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Log in as HOD</span>
+    <span>Dr. Narayan D G</span>
   </button>
   <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
 </div></header>`;
