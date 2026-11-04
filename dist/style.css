@@ -3528,3 +3528,221 @@ html body #portfolio-chat-container .chat-settings-footer .btn {
 html body #portfolio-chat-container .chat-settings-group :is(input, select, label) {
   font-size: 13px !important;
 }
+
+#portfolio-chat-container .portfolio-chat-fab[hidden] {
+  display: none !important;
+}
+
+.mentor-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: calc(100vh - 150px);
+}
+body:has(.mentor-dashboard) #portfolio-chat-drawer,
+body:has(.mentor-dashboard) #portfolio-chat-fab {
+  display: none !important;
+}
+.mentor-layout {
+  min-height: calc(100vh - 230px);
+}
+.mentor-stage {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 230px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+}
+.mentor-work-messages {
+  flex: 1;
+  min-height: 460px;
+  overflow: auto;
+  padding: 8px 0 16px;
+}
+.mentor-work-messages .quiz-body,
+.mentor-work-messages .chat-bubble-content {
+  max-height: none;
+}
+.mentor-work-messages .chat-bubble-wrap,
+.mentor-work-messages .quiz-container,
+.mentor-work-messages .mentor-descriptive {
+  max-width: 100%;
+  width: 100%;
+}
+html body .mentor-dashboard .mentor-work-form textarea,
+html body .mentor-dashboard #mentor-revise-input {
+  width: 100%;
+  min-height: 96px;
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg, var(--surface));
+  color: var(--ink);
+}
+.mentor-work-form {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.mentor-descriptive-q,
+.mentor-revise-list li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px 0;
+}
+.mentor-descriptive-q h3 {
+  margin: 0 0 6px;
+  font-size: 16px !important;
+}
+.mentor-grade.supported,
+.mentor-revise-list .supported em { color: #166534; }
+.mentor-grade.missed,
+.mentor-revise-list .missed em { color: #9f1239; }
+.mentor-source { margin: 6px 0 0; color: var(--ink); }
+.mentor-revise-list { list-style: none; padding: 0; margin: 14px 0 0; }
+.mentor-revise-list li { display: flex; flex-direction: column; gap: 4px; }
+.mentor-wait { padding: 24px; font-size: 16px; }
+.mentor-dashboard-top {
+  display: flex;
+}
+html body .mentor-dashboard .mentor-back,
+html body .mentor-dashboard .mentor-stage-pill,
+html body .mentor-dashboard .mentor-menu-btn,
+html body .mentor-dashboard .mentor-quiz-btn {
+  min-height: 0 !important;
+  height: auto;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  border-radius: 999px;
+}
+html body .mentor-dashboard .mentor-back {
+  background: var(--surface) !important;
+  color: var(--blue) !important;
+  border: 1px solid var(--line) !important;
+  padding: 8px 14px;
+}
+.mentor-stage-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+html body .mentor-dashboard .mentor-stage-pill {
+  background: var(--surface) !important;
+  color: var(--navy, var(--ink)) !important;
+  border: 1.5px solid var(--line) !important;
+  padding: 8px 16px;
+}
+html body .mentor-dashboard .mentor-stage-pill.active {
+  background: var(--blue) !important;
+  color: var(--on-blue, #fff) !important;
+  border-color: var(--blue) !important;
+}
+.mentor-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  min-height: calc(100vh - 230px);
+}
+.mentor-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+html body .mentor-dashboard .mentor-menu-btn {
+  text-align: left;
+  background: transparent !important;
+  color: var(--ink) !important;
+  border: 1px solid transparent !important;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+html body .mentor-dashboard .mentor-menu-btn.active {
+  background: var(--tint, #dce8ff) !important;
+  color: var(--blue) !important;
+  border-color: var(--line) !important;
+}
+html body .mentor-dashboard .mentor-menu-btn.is-soon,
+html body .mentor-dashboard .mentor-quiz-btn.is-soon {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.mentor-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+}
+.mentor-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.mentor-panel-head h2 {
+  margin: 0;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+}
+.mentor-stage-badge {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue);
+  background: var(--surface);
+}
+.mentor-panel-note {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px !important;
+}
+.mentor-dimension-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.mentor-dimension-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--bg, var(--surface));
+}
+.mentor-dimension-card h3 {
+  margin: 0 0 12px;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+.mentor-dimension-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+html body .mentor-dashboard .mentor-quiz-btn {
+  background: var(--surface) !important;
+  color: var(--blue) !important;
+  border: 1px solid var(--blue) !important;
+  padding: 6px 10px;
+}
+html body .mentor-dashboard .mentor-quiz-btn:not(.is-soon):hover {
+  background: var(--blue) !important;
+  color: #fff !important;
+}
+@media (max-width: 900px) {
+  .mentor-layout,
+  .mentor-dimension-grid {
+    grid-template-columns: 1fr;
+  }
+}

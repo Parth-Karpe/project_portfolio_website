@@ -16,13 +16,14 @@ function upgradeState(){
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();
-const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Department'],HOD:['Department','Team Portfolio'],Faculty:['Overview','Team Portfolio','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Evidence Library','AI Mentor']};
+const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department'],HOD:['Department','Team Portfolio','Mentor Dashboard'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
 function editableStage(n=state.stage){return isAdmin()&&!['Submitted','Approved'].includes(status(n))}
-function switchRole(role){if(!rolePages[role])return;state.role=role;modal=null;selectedSection='';if(!rolePages[role].includes(page))page=role==='HOD'?'Department':role==='Admin'?'Admin Panel':'Overview';if(page!=='Team Portfolio'&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();save();render()}
-go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is not available to your current role.');if(p!=='Team Portfolio'&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();page=p;selectedSection='';modal=null;render();window.scrollTo(0,0)};
+function keepsPortfolioChat(p){return p==='Team Portfolio'||p==='Mentor Dashboard'}
+function switchRole(role){if(!rolePages[role])return;state.role=role;modal=null;selectedSection='';if(!rolePages[role].includes(page))page=role==='HOD'?'Department':role==='Admin'?'Admin Panel':'Overview';if(!keepsPortfolioChat(page)&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();save();render()}
+go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is not available to your current role.');if(!keepsPortfolioChat(p)&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();if(p==='Mentor Dashboard'){window.mentorDashboardStage=String(window.activePortfolioStage||activePortfolioStage||'0');window.mentorDashboardPanel='persona'}page=p;selectedSection='';modal=null;render();window.scrollTo(0,0)};
 function openSection(n,key=''){if(!rolePages[state.role].includes('Design Journey'))return;state.stage=n;page='Design Journey';selectedSection=key;save();render();if(key)document.getElementById('f-'+key)?.scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo(0,0)}
 
 let activePortfolioTopic = 'stage-0';
@@ -363,7 +364,7 @@ function sharedPageHeader(){
 }
 render=function(){
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
-  const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
+  const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Mentor Dashboard':mentorDashboard,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
   const isPortfolio = page === 'Team Portfolio';
   const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (activeTeam()?.theme_no || 1);

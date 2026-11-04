@@ -1658,13 +1658,43 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   // 9. UI RENDERING & THREAD-ONLY RE-RENDERS
   // ==========================================
   // Only re-renders #portfolio-chat-messages thread (Fix BUG-6: preserves textarea input and settings state)
+  function activeMentorThread(){
+    if(typeof page !== 'undefined' && page === 'Mentor Dashboard'){
+      return document.getElementById('mentor-work-messages');
+    }
+    return document.getElementById('portfolio-chat-messages');
+  }
+
+  function mentorComposer(){
+    if(typeof page !== 'undefined' && page === 'Mentor Dashboard'){
+      return document.getElementById('mentor-work-input');
+    }
+    return document.getElementById('portfolio-chat-input');
+  }
+
+  function syncMentorDrawer(){
+    const drawer = document.getElementById('portfolio-chat-drawer');
+    if(!drawer) return;
+    if(typeof page !== 'undefined' && page === 'Mentor Dashboard'){
+      isChatOpen = false;
+      drawer.classList.remove('open');
+      return;
+    }
+    drawer.className = chatDrawerClass();
+  }
+
   function updateChatMessagesThread(){
-    const thread = document.getElementById('portfolio-chat-messages');
+    const thread = activeMentorThread();
     if(!thread) return;
 
     const kb = buildTeamKnowledgeBase(activeChatTeamId);
 
     if(chatMessages.length === 0){
+      if(isGenerating && page === 'Mentor Dashboard'){
+        thread.innerHTML = '<div class="mentor-wait">Preparing this from the portfolio…</div>';
+        syncMentorDrawer();
+        return;
+      }
       thread.innerHTML = `
         <div class="chat-empty-state">
           <div class="chat-empty-icon">🎓</div>
@@ -1678,8 +1708,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           </div>
         </div>
       `;
-      const drawer = document.getElementById('portfolio-chat-drawer');
-      if(drawer) drawer.className = chatDrawerClass();
+      syncMentorDrawer();
       return;
     }
 
@@ -1689,6 +1718,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         html += renderQuizCardHtml(msg.quiz, kb);
       } else if(msg.type === 'eval'){
         html += renderEvalCardHtml(msg.eval, kb);
+      } else if(msg.type === 'descriptive'){
+        html += renderDescriptiveCardHtml(msg.descriptive);
       } else {
         html += `
           <div class="chat-bubble-wrap ${msg.role === 'user' ? 'user' : 'assistant'}">
@@ -1715,8 +1746,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     thread.innerHTML = html;
     thread.scrollTop = thread.scrollHeight;
-    const drawer = document.getElementById('portfolio-chat-drawer');
-    if(drawer) drawer.className = chatDrawerClass();
+    syncMentorDrawer();
   }
 
   function renderQuizCardHtml(quiz, kb){
@@ -1858,8 +1888,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(!drawer){
       container.innerHTML = `
         <!-- Floating Action Button (FAB) -->
-        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.togglePortfolioChat()" title="AI Mentor" aria-label="AI Mentor">
-          <span class="chat-fab-text">${isChatOpen ? 'Close' : 'AI Mentor'}</span>
+        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="go('Mentor Dashboard')" title="AI Mentor" aria-label="AI Mentor" ${typeof page!=='undefined'&&page!=='Team Portfolio'?'hidden':''}>
+          <span class="chat-fab-text">AI Mentor</span>
         </button>
 
         <!-- Expandable Chat Drawer -->
@@ -2045,7 +2075,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   window.submitQuickPrompt = function(promptText){
     if(isGenerating) return;
-    const input = document.getElementById('portfolio-chat-input');
+    const input = mentorComposer();
     if(input) input.value = promptText;
     window.handleChatSubmit();
   };
@@ -2056,7 +2086,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(forceNewSeed){
       seed = Math.floor(Date.now() / 1000) % 100000;
     }
-    isChatOpen = true;
+    isChatOpen = page === 'Mentor Dashboard' ? false : true;
     isGenerating = true;
     updateChatMessagesThread();
 
@@ -2112,13 +2142,14 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   // Main chat submission handler
   window.handleChatSubmit = async function(){
-    const input = document.getElementById('portfolio-chat-input');
+    const input = mentorComposer();
     if(!input || isGenerating) return;
     const rawQuery = input.value.trim();
     if(!rawQuery) return;
 
     input.value = '';
-    isChatOpen = true;
+    if(page === 'Mentor Dashboard') isChatOpen = false;
+    else isChatOpen = true;
 
     // Push User message
     chatMessages.push({
@@ -2279,12 +2310,26 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   };
 
   // Mount / Unmount API for Department router
+  function mentorChatAllowed(){
+    return typeof page === 'undefined' || page === 'Team Portfolio' || page === 'Mentor Dashboard';
+  }
+
+  function syncMentorFab(){
+    const fab = document.getElementById('portfolio-chat-fab');
+    if(!fab) return;
+    const show = typeof page === 'undefined' || page === 'Team Portfolio';
+    fab.hidden = !show;
+    fab.setAttribute('aria-hidden', show ? 'false' : 'true');
+  }
+
   window.mountPortfolioChat = function(teamId){
-    if(typeof page !== 'undefined' && page !== 'Team Portfolio') return;
+    if(!mentorChatAllowed()) return;
     if(!teamId) return;
     const drawer = document.getElementById('portfolio-chat-drawer');
     if(drawer && String(activeChatTeamId) === String(teamId)){
       refreshChatIdentity(buildTeamKnowledgeBase(teamId));
+      drawer.className = chatDrawerClass();
+      syncMentorFab();
       return;
     }
     const changed = activeChatTeamId && String(activeChatTeamId) !== String(teamId);
@@ -2294,7 +2339,104 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     const hasCard = chatMessages.some(msg => msg.type === 'quiz' || msg.type === 'eval');
     if(activeQuizState && !hasCard) pushQuizCard(activeQuizState);
     renderChatDrawer();
+    syncMentorFab();
   };
+
+  window.openAskMentor = function(){
+    window.mentorDashboardPanel = 'work';
+    isChatOpen = false;
+    const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
+    if(teamId) window.mountPortfolioChat(teamId);
+    if(page === 'Mentor Dashboard' && typeof render === 'function') render();
+    updateChatMessagesThread();
+    const input = document.getElementById('mentor-work-input');
+    if(input) input.focus();
+  };
+
+  window.startMentorMcq = function(){
+    const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
+    if(teamId) window.mountPortfolioChat(teamId);
+    window.mentorDashboardPanel = 'work';
+    isChatOpen = false;
+    if(page === 'Mentor Dashboard' && typeof render === 'function') render();
+    if(typeof window.startVivaQuizForActiveTeam === 'function') window.startVivaQuizForActiveTeam(false);
+  };
+
+  function portfolioOverlap(answer, source){
+    const words = tokenize(answer).map(stemWord).filter(token => token.length > 2);
+    const documented = new Set(tokenize(source).map(stemWord));
+    if(!words.length || !documented.size) return 0;
+    return words.filter(token => documented.has(token)).length / words.length;
+  }
+
+  function buildDescriptiveQuiz(kb, dimension){
+    const questions = [];
+    const objectives = Array.isArray(kb.st0?.objectives) ? kb.st0.objectives : [];
+    if(objectives[0]) questions.push({ prompt: 'Explain this project objective in your own words.', source: objectives[0], citation: '[Stage 0: Objectives]', draft: '' });
+    const requirement = (kb.st1?.frTable || [])[0];
+    if(requirement) questions.push({ prompt: `What does ${requirement.id} require?`, source: requirement.desc, citation: `[${requirement.id}]`, draft: '' });
+    const engine = (kb.st0?.enginesTable || [])[0];
+    if(engine) questions.push({ prompt: `What is ${engine.name || engine.engine || engine.id} responsible for?`, source: engine.desc, citation: `[Engine ${engine.id}]`, draft: '' });
+    if(!questions.length && kb.st0?.problem) questions.push({ prompt: 'State the problem this project addresses.', source: kb.st0.problem, citation: '[Stage 0: Problem Statement]', draft: '' });
+    return { teamId: kb.teamId, dimension: dimension || 'Portfolio', questions };
+  }
+
+  function renderDescriptiveCardHtml(quiz){
+    const questions = (quiz.questions || []).map((question, index) => {
+      const grade = question.supported === true
+        ? `<p class="mentor-grade supported">This matches the portfolio. ${esc(question.citation)}</p><p class="mentor-source">${esc(question.source)}</p>`
+        : question.supported === false
+          ? `<p class="mentor-grade missed">The portfolio does not state this. The documented line is:</p><p class="mentor-source">${esc(question.citation)} ${esc(question.source)}</p>`
+          : '';
+      return `<article class="mentor-descriptive-q"><h3>Q${index + 1}</h3><p>${esc(question.prompt)}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
+    }).join('');
+    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Answers are checked against the documented portfolio lines.</div></div>${questions || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>'}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div></div>`;
+  }
+
+  window.startMentorDescriptive = function(dimension){
+    const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
+    if(teamId) window.mountPortfolioChat(teamId);
+    const kb = buildTeamKnowledgeBase(teamId);
+    chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: buildDescriptiveQuiz(kb, dimension) }];
+    window.mentorDashboardPanel = 'work';
+    isChatOpen = false;
+    if(page === 'Mentor Dashboard' && typeof render === 'function') render();
+    updateChatMessagesThread();
+  };
+
+  window.gradeDescriptiveQuiz = function(){
+    const message = chatMessages.find(item => item.type === 'descriptive');
+    if(!message) return;
+    document.querySelectorAll('[data-descriptive-answer]').forEach(field => {
+      const question = message.descriptive.questions[Number(field.dataset.descriptiveAnswer)];
+      if(!question) return;
+      question.draft = field.value.trim();
+      question.supported = question.draft ? portfolioOverlap(question.draft, question.source) >= 0.4 : false;
+    });
+    updateChatMessagesThread();
+  };
+
+  window.reviseMentorDraft = function(){
+    const field = document.getElementById('mentor-revise-input');
+    const text = field ? field.value.trim() : '';
+    window.mentorReviseDraft = field ? field.value : '';
+    if(!text){
+      window.mentorReviseNotes = [];
+      return;
+    }
+    const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
+    const kb = buildTeamKnowledgeBase(teamId);
+    window.mentorReviseNotes = text.split(/(?<=[.!?])\s+/).map(sentence => sentence.trim()).filter(Boolean).map(sentence => {
+      const chunks = retrieveRelevantChunks(sentence, kb, 1);
+      const source = chunks[0];
+      const supported = !!(source && portfolioOverlap(sentence, source.text) >= 0.4);
+      return { sentence, supported, citation: supported ? source.citation : '' };
+    });
+    window.mentorDashboardPanel = 'revise';
+    if(typeof render === 'function') render();
+  };
+
+  window.paintMentorWork = function(){ updateChatMessagesThread(); };
 
   window.unmountPortfolioChat = function(){
     const container = document.getElementById('portfolio-chat-container');
