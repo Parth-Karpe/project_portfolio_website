@@ -1031,6 +1031,19 @@ function ensureDepartment(){
     state.workspaces[t04.id].guide = t04.faculty;
     state.workspaces[t04.id].members = t04.members;
   }
+  const tb01=state.teams?.find(t=>t.id==='B-01'||t.title.includes('Incremental Build'));
+  if(tb01){
+    tb01.title = 'Incremental Build & Dependency Resolution Tool';
+    tb01.faculty = 'Mr. Dheerajkumar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && STATIC_TEAMS_DATA['B-01']){
+      const sb01 = STATIC_TEAMS_DATA['B-01'];
+      tb01.members = sb01.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[tb01.id]) state.workspaces[tb01.id] = newTeamWorkspace(tb01);
+    state.workspaces[tb01.id].guide = tb01.faculty;
+    state.workspaces[tb01.id].members = tb01.members;
+  }
   const t07=state.teams?.find(t=>t.id==='B-07'||t.title==='Java Compiler & Bytecode Generation Engine'||t.title==='Java Compiler and Bytecode Generation Engine');
   if(t07){
     t07.title = 'Java Compiler and Bytecode Generation Engine';
