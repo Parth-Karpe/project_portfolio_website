@@ -1151,7 +1151,7 @@ save=function(){ensureDepartment();syncTeam();return saveLocalState()};
 function facultyNames(){return [...new Set([...state.teams.map(t=>t.faculty),...state.facultyDirectory.map(f=>f.name)])].sort()}
 function visibleTeams(){return state.role==='Faculty'?state.teams.filter(t=>t.faculty===state.facultyAccount):state.role==='Team Lead'?state.teams.filter(t=>t.id===state.activeTeamId):state.teams}
 function switchTeam(id){const next=state.teams.find(t=>t.id===id);if(!next||state.role==='Faculty'&&next.faculty!==state.facultyAccount)return toast('This team is not assigned to the selected faculty account.');save();const w=state.workspaces[id]||newTeamWorkspace(next);workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.activeTeamId=id;state.guide=next.faculty;state.members=state.members.map((m,i)=>({...m,name:next.members[i].name,usn:next.members[i].usn}));state.forms[1].title=next.title;selectedSection='';modal=null;save();render();window.scrollTo(0,0)}
-rolePages['Faculty Admin']=['Overview','Department','Team Portfolio','Design Journey'];
+rolePages['Faculty Admin']=['Overview','Department','Team Portfolio'];
 iconFor['Faculty Admin']='♙';
 currentIdentity=function(){if(state.role==='Faculty Admin')return state.department.facultyAdmin;if(state.role==='Faculty')return state.facultyAccount;if(state.role==='HOD')return state.department.hod;if(state.role==='Admin')return 'CS (AI) Administrator';return state.members[0].name};
 const changeRole=switchRole;
@@ -1162,9 +1162,9 @@ decide=function(approve){if(state.role!=='Faculty'||activeTeam()?.faculty!==stat
 const decideSend=sendDiscussion;
 sendDiscussion=function(){if(state.role==='Faculty'&&activeTeam()?.faculty!==state.facultyAccount)return;decideSend()};
 function accountStrip(){
-  if(state.role==='HOD'||page==='Department') return '';const available=state.role==='Faculty'?visibleTeams():state.teams;return `<div class="account-strip"><div class="account-controls">${state.role==='Faculty'?`<label for="faculty-account">Demo faculty account</label><select id="faculty-account" onchange="selectFaculty(this.value)">${facultyNames().map(n=>`<option ${n===state.facultyAccount?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}<label for="team-account">${state.role==='Team Lead'?'Demo team account':'Active team'}</label><select id="team-account" onchange="switchTeam(this.value)">${available.map(t=>`<option value="${esc(t.id)}" ${t.id===state.activeTeamId?'selected':''}>Team ${esc(t.id)} · ${esc(t.members[0].name)}</option>`).join('')}</select></div></div>`}
+  if(state.role==='HOD'||page==='Department') return '';const available=state.role==='Faculty'?visibleTeams():state.teams;return `<div class="account-strip"><div><span class="tag">CS AI</span> <span class="mini">HOD: <strong>${esc(state.department.hod)}</strong> &nbsp;·&nbsp; Faculty Admin: <strong>${esc(state.department.facultyAdmin)}</strong></span></div><div class="account-controls">${state.role==='Faculty'?`<label for="faculty-account">Demo faculty account</label><select id="faculty-account" onchange="selectFaculty(this.value)">${facultyNames().map(n=>`<option ${n===state.facultyAccount?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}<label for="team-account">${state.role==='Team Lead'?'Demo team account':'Active team'}</label><select id="team-account" onchange="switchTeam(this.value)">${available.map(t=>`<option value="${esc(t.id)}" ${t.id===state.activeTeamId?'selected':''}>Team ${esc(t.id)} · ${esc(t.members[0].name)}</option>`).join('')}</select></div></div>`}
 const renderWorkspace=render;
-render=function(){ensureDepartment();if(page==='Faculty Admin')page='Overview';if(page!=='Team Portfolio'&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();renderWorkspace();const main=$('.main');if(state.role==='Faculty'&&!visibleTeams().length){main.innerHTML=accountStrip()+heading('No teams assigned','This faculty account has no team allocation. Ask Admin or Faculty Admin to allocate a guide.');return}let html=main.innerHTML;if(['Design Journey'].includes(page)||page==='Overview'&&['Team Lead','Faculty'].includes(state.role))html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('Intelligent systems and optimization',esc(activeTeam().topic));main.innerHTML=html;if(state.role!=='HOD'&&page!=='Department') main.insertAdjacentHTML('afterbegin',accountStrip());const f=$('#stageform');if(f){f.onsubmit=e=>{e.preventDefault();saveStage(true)};f.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia()};
+render=function(){ensureDepartment();if(page==='Faculty Admin')page='Overview';renderWorkspace();const main=$('.main');if(state.role==='Faculty'&&!visibleTeams().length){main.innerHTML=accountStrip()+heading('No teams assigned','This faculty account has no team allocation. Ask Admin or Faculty Admin to allocate a guide.');return}let html=main.innerHTML;if(['Design Journey'].includes(page)||page==='Overview'&&['Team Lead','Faculty'].includes(state.role))html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));main.innerHTML=html;if(state.role!=='HOD'&&page!=='Department') main.insertAdjacentHTML('afterbegin',accountStrip());const f=$('#stageform');if(f){f.onsubmit=e=>{e.preventDefault();saveStage(true)};f.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();if(typeof mountPortfolioChat==='function'&&activeTeam()?.id)mountPortfolioChat(activeTeam().id)};
 const teamOverview=overview;
 overview=function(){if(state.role==='Faculty Admin')return facultyAdminPanel();return teamOverview()};
 function getDomainKnowledge(t){
@@ -1553,24 +1553,25 @@ portfolio=function(){
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
     <div>
-      <span class="portfolio-theme-pill">${esc(/^theme\b/i.test(topic) ? topic : 'Theme: ' + topic)}</span>
+      <span class="portfolio-theme-pill">Theme: ${esc(themeName)}</span>
       <h1 class="portfolio-hero-title">${esc(title)}</h1>
       <div class="portfolio-hero-meta">
-        <span class="meta-chip"><small>Team</small><strong>${esc(t.id)}</strong></span>
-        <span class="meta-chip"><small>Faculty guide</small><strong>${esc(guide)}</strong></span>
-        <span class="meta-chip"><small>Academic year</small><strong>2026–27</strong></span>
-        ${isSmartCampus ? `<a href="${repoUrl}" target="_blank" rel="noopener" class="btn secondary">GitHub Repository ↗</a>` : ''}
+        <span>Team: <strong>Team ${esc(t.id)}</strong></span>
+        <span>Faculty Mentor: <strong>${esc(guide)}</strong></span>
+        <span>Academic Year: <strong>2026–27</strong></span>
       </div>
     </div>
 
+    <!-- Team Members Details (Name, Role, USN only) -->
     <div class="portfolio-members-grid">
       ${(staticTeam?.members||t.members||[]).map((m,i)=>`
-        <article class="portfolio-member-card">
-          <div class="member-top">
-            ${avatar(m)}
+        <article class="portfolio-member-card" style="padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:12px">
             <div>
-              <strong>${esc(m.name)}</strong>
-              ${m.role?`<span class="tag">${esc(m.role)}</span>`:''}
+              <strong style="display:block;font-size:14px;color:var(--ink);line-height:1.25">${esc(m.name)}</strong>
+              <div style="margin-top:4px">
+                <span style="font-size:12.5px;color:var(--muted)"><b>USN:</b> ${esc(m.usn)}</span>
+              </div>
             </div>
           </div>
         </article>
@@ -2092,80 +2093,105 @@ function downloadHODProjectCSVTemplate(){
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-function hodProjectCards(tab){
-  let list = state.teams || [];
-  if(tab !== 'all'){
-    list = list.filter(t => t.theme_no === Number(tab) || (t.topic||'').startsWith(`Theme ${tab}:`));
-  }
-  list = list.slice().sort((a,b) => (a.excel_order || 0) - (b.excel_order || 0));
-  if(!list.length){
-    return '<div class="faculty-placeholder">No projects found in this theme.</div>';
-  }
-  const tones = ['sky','mint','peach','rose'];
-  return list.map(t => {
-    const search = [t.title, t.faculty, t.id, ...(t.members||[]).map(m => `${m.name||''} ${m.usn||''}`)].join(' ').toLowerCase();
-    const initials = name => String(name||'?').split(/\s+/).filter(Boolean).slice(0,2).map(part => part[0]).join('').toUpperCase();
-    const students = (t.members||[]).map((m,i) => `<span class="student-chip"><span class="avatar tone-${tones[i%4]}">${esc(initials(m.name))}</span>${esc(m.name)}</span>`).join('');
-    const w = teamStatus(t);
-    let stageNo = 1;
-    let stageLabel = w.status1 || 'Draft';
-    if (w.status2 === 'Approved' || w.status2 === 'Submitted' || /revision/i.test(w.status2 || '')) { stageNo = 2; stageLabel = w.status2; }
-    else if (w.status1 === 'Approved' && w.status2 === 'Draft') { stageNo = 2; stageLabel = 'Draft'; }
-    else if (w.status2 === 'Locked') { stageNo = 1; stageLabel = w.status1 || 'Draft'; }
-    const tone = /approved/i.test(stageLabel) ? 'mint' : /(revision|submitted)/i.test(stageLabel) ? 'peach' : 'gray';
-    return `<article class="project-card" data-search="${esc(search)}">
-      <div class="project-card-top"><h3>${esc(t.title)}</h3><span class="tag status-${tone}">Stage ${stageNo} · ${esc(stageLabel)}</span></div>
-      <span class="tag">Team ${esc(t.id)}</span>
-      <div class="guide-row"><span class="avatar tone-sky">${esc(initials(t.faculty))}</span><span><strong>${esc(t.faculty)}</strong><small>Faculty guide</small></span></div>
-      <div class="student-row">${students}</div>
-      <button class="btn" onclick="openTeamPortfolio('${esc(t.id)}')">Open project portfolio</button>
-    </article>`;
-  }).join('');
-}
-function filterProjectCards(value){
-  const query = String(value||'').trim().toLowerCase();
-  let shown = 0;
-  document.querySelectorAll('#project-card-grid .project-card').forEach(card => {
-    const hit = !query || (card.getAttribute('data-search')||'').includes(query);
-    card.hidden = !hit;
-    if(hit) shown += 1;
-  });
-  const empty = document.getElementById('project-card-empty');
-  if(empty) empty.hidden = shown !== 0;
-}
 function department(){
   const all = state.teams || [];
   const facultyList = facultyNames();
-  const themeNo = selectedTheme === null || selectedTheme === undefined ? 'all' : selectedTheme;
-  const isAll = themeNo === 'all';
-  const info = THEME_INFO[themeNo] || {};
-  const title = isAll ? 'All themes' : ('Theme ' + themeNo + ': ' + (info.name || ''));
-  const count = getThemeTabCount(themeNo);
-  const tones = ['mint','lilac','peach','sky','rose','butter'];
-  const chips = '<button type="button" class="theme-chip ' + (isAll ? 'active' : '') + '" onclick="openThemePage(\'all\')">All</button>' + [1,2,3,4,5,6].map(no => '<button type="button" class="theme-chip tone-' + tones[no-1] + (Number(themeNo)===no ? ' active' : '') + '" onclick="openThemePage(' + no + ')">Theme ' + no + '</button>').join('');
+
+  if(selectedTheme !== null){
+    const themeNo = selectedTheme;
+    const isAll = themeNo === 'all';
+    const info = THEME_INFO[themeNo] || {};
+    const title = isAll ? 'All Themes : Complete CSE(AI) Project Directory' : `Theme ${themeNo} : ${info.name || ''}`;
+    const count = getThemeTabCount(themeNo);
+
+    return `
+      <div style="margin-bottom: 14px;">
+        <button class="btn secondary" style="padding:7px 15px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px; margin-bottom:12px; cursor:pointer" onclick="backToThemes()">
+          ← Back to Themes
+        </button>
+
+        <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 18px 22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:var(--shadow-xs)">
+          <div>
+            <h1 style="font-size:20px; font-weight:800; color:#000000; margin:0">
+              ${esc(title)}
+            </h1>
+          </div>
+          <span class="tag" style="background:var(--surface); color:#000000; border:1px solid var(--line); font-weight:700; font-size:13px; padding:5px 14px; border-radius:8px">
+            ${count} Projects
+          </span>
+        </div>
+      </div>
+
+      <section class="card" style="padding: 12px 18px; margin-bottom: 8px; border-radius: 12px;">
+        <div class="tablewrap" style="max-height: calc(100vh - 220px); overflow-y: auto;">
+          <table class="roster compact-roster" id="hod-projects-table" style="width:100%">
+            <thead style="position: sticky; top: 0; z-index: 10; background:var(--surface)">
+              <tr>
+                <th style="padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Project Title</th>
+                <th style="width:220px; padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Faculty Mentor</th>
+                <th style="width:300px; padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Team Members</th>
+                <th style="width:160px; text-align:center; padding: 12px 16px; font-size: 13px; color:#000000">Project Portfolio</th>
+              </tr>
+            </thead>
+            <tbody id="hod-project-rows">
+              ${hodProjectRowsForTheme(themeNo)}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+
   return `
-    <div class="heading faculty-dashboard-heading page-heading">
+    <div class="heading faculty-dashboard-heading" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div>
-        <h1>Good day, Dr. Narayan D.G.</h1>
-        <p class="faculty-dashboard-lead">Head of Department · CSE (AI) mini-project cohort</p>
+        <h1 style="font-size:22px; font-weight:800; color:#000000; margin:0; line-height:1.2">
+          HOD Mini-Project Dashboard
+        </h1>
+        <p class="faculty-dashboard-lead">Dr. Narayan D.G. &middot; Head of Department</p>
       </div>
-      <button type="button" class="btn secondary" onclick="downloadHODProjectCSVTemplate()">Download CSV template</button>
+      
     </div>
-    <div class="stat-cards-grid stats">
-      <div class="stat pastel-mint"><strong>06</strong><span>Themes</span><small>Specialisation themes in this cohort</small></div>
-      <div class="stat pastel-lilac"><strong>${String(facultyList.length).padStart(2,'0')}</strong><span>Faculty mentors</span><small>Guides assigned across the department</small></div>
-      <div class="stat pastel-peach"><strong>${String(all.length).padStart(2,'0')}</strong><span>Teams</span><small>Student teams in the current roster</small></div>
+
+    <div class="stat-cards-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:6px 0 16px;">
+      ${[['Themes',6],['Faculty Mentors',facultyList.length],['Teams',all.length]].map(([label,count])=>`
+        <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 22px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow-xs);">
+          <div class="projector-stat-label" style="font-weight:700; line-height:1.25">${label} -</div>
+          <div class="projector-stat-number" style="font-weight:800; color:var(--brand); line-height:1">${count}</div>
+        </div>
+      `).join('')}
     </div>
-    <div class="theme-chips" role="tablist" aria-label="Project themes">${chips}</div>
-    <section class="card project-listing">
-      <div class="card-head">
-        <h2>${esc(title)}</h2>
-        <span class="tag" id="project-count-pill">${count} projects</span>
+
+    <section class="card" style="padding: 20px 22px; margin-bottom: 8px; border-radius: 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+        <h2 style="font-size:17px; font-weight:800; color:#000000; margin:0">
+          Project Themes
+        </h2>
+        
       </div>
-      <label for="project-search">Search projects</label>
-      <input id="project-search" type="search" placeholder="Search by title, guide or student" oninput="filterProjectCards(this.value)">
-      <div class="project-card-grid" id="project-card-grid">${hodProjectCards(themeNo)}</div>
-      <div class="search-empty" id="project-card-empty" hidden><p>No projects match.</p><button type="button" class="textbtn" onclick="document.getElementById('project-search').value='';filterProjectCards('')">Clear search</button></div>
+
+      <div class="theme-cards-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;">
+        ${[1, 2, 3, 4, 5, 6].map(no => {
+          const info = THEME_INFO[no];
+          const count = getThemeTabCount(no);
+          return `
+            <article class="theme-card-item" onclick="openThemePage(${no})" style="cursor:pointer; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; transition:all 0.2s ease; box-shadow:var(--shadow-xs); display:flex; flex-direction:column; justify-content:space-between; gap:14px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px">
+                  <h3 style="font-size:15.5px; font-weight:800; color:#000000; margin:0; line-height:1.35">
+                    Theme ${no} : ${esc(info.name)}
+                  </h3>
+                  <span class="tag" style="background:var(--surface); color:#000000; border:1px solid var(--line); font-weight:700; font-size:12px; padding:4px 10px; border-radius:6px; flex-shrink:0">
+                    ${count} Projects
+                  </span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; justify-content:flex-end; padding-top:10px; border-top:1px solid var(--line);">
+              </div>
+            </article>
+          `;
+        }).join('')}
+      </div>
     </section>
   `;
 }
@@ -2178,7 +2204,7 @@ function allocationForm(){return `<section class="card"><h2>Team guide allocatio
 function facultyAdminPanel(){return heading('Coordinate faculty. Support every team.','CSE(AI) Faculty Admin · under '+esc(state.department.hod))+`<div class="grid"><div>${allocationForm()}<section class="card"><h2>Faculty directory</h2>${facultyCards()}</section></div><section class="card"><h2>Department ownership</h2><p><strong>Department:</strong> CSE(AI)</p><p><strong>HOD:</strong> ${esc(state.department.hod)}</p><p><strong>Faculty Admin:</strong> ${esc(state.department.facultyAdmin)}</p><div class="notice">Faculty Admin manages guide allocations. The assigned Faculty guide reviews and approves submissions. Admin imports the complete Excel roster.</div><button class="btn secondary" onclick="go('Department')">View all CSE(AI) teams →</button></section></div>`}
 function allocateGuide(){if(!['Admin','Faculty Admin'].includes(state.role))return;const t=state.teams.find(t=>t.id===$('#allocate-team').value),name=$('#allocate-guide').value;if(!t||!facultyNames().includes(name))return;save();t.faculty=name;if(t.id===state.activeTeamId)state.guide=name;if(state.workspaces[t.id])state.workspaces[t.id].guide=name;save();render();toast('CSE(AI) guide allocation saved.')}
 let importPreview=null;
-function adminPanel(){return heading('CSE(AI) · Administration','Import the department roster, assign guides and manage department ownership.',`<span class="tag">Admin panel</span>`)+`<div class="grid"><div><section class="card"><h2>Import complete Excel roster</h2><p>One row per team, with four member names and USNs, faculty, topic and project title.</p><div class="actions"><a class="btn secondary" href="CS-AI-Roster-Template.xlsx" download>↓ Excel template with dummy teams</a><button class="btn secondary" onclick="exportRoster()">Export current roster (CSV)</button></div><label for="roster-file">Excel / CSV file</label><input id="roster-file" type="file" accept=".xlsx,.xls,.csv"><p class="mini">Files stay in this browser. Up to 10 MB and 2,000 team rows. Macros and formulas are never executed.</p><button class="btn" onclick="readRosterFile()">Read & validate file →</button><div id="import-result" role="status">${importPreview?previewHTML():''}</div><details style="margin-top:18px"><summary>Required columns and import rules</summary><p class="mini">Team ID, Faculty Name, Topic, Project Title, Member 1 Name, Member 1 USN … Member 4 Name, Member 4 USN. Member 1 is Team Lead. Department, HOD and Faculty Admin are optional columns; blank values use the current CSE(AI) settings. Non-CS-AI departments are rejected. Only sheets with recognized team columns are read. Existing Team IDs are updated; new IDs are added. Other teams and their saved work are preserved.</p></details></section>${allocationForm()}</div><div><section class="card"><h2>One department. One HOD.</h2><label for="department-name">Department</label><input id="department-name" value="CSE(AI)" disabled><label for="hod-name">CSE(AI) HOD name</label><input id="hod-name" value="${esc(state.department.hod)}"><label for="faculty-admin-name">Faculty Admin name</label><input id="faculty-admin-name" value="${esc(state.department.facultyAdmin)}"><button class="btn secondary" style="margin-top:16px" onclick="saveDepartmentOwner()">Save department ownership</button><p class="mini">HOD and Faculty Admin names are placeholders until you enter the real names or import them.</p></section><section class="card"><h2>Faculty directory</h2>${facultyCards()}</section><section class="card"><h2>Department records</h2><p>${state.teams.length} teams · ${state.teams.length*4} students · CSE(AI)</p><button class="btn secondary" onclick="go('Department')">Open complete roster →</button></section></div></div>`}
+function adminPanel(){return heading('CSE(AI) · Administration','Import the department roster, assign guides and manage department ownership.',`<span class="tag">ADMIN PANEL</span>`)+`<div class="grid"><div><section class="card"><h2>Import complete Excel roster</h2><p>One row per team, with four member names and USNs, faculty, topic and project title.</p><div class="actions"><a class="btn secondary" href="CS-AI-Roster-Template.xlsx" download>↓ Excel template with dummy teams</a><button class="btn secondary" onclick="exportRoster()">Export current roster (CSV)</button></div><label for="roster-file">Excel / CSV file</label><input id="roster-file" type="file" accept=".xlsx,.xls,.csv"><p class="mini">Files stay in this browser. Up to 10 MB and 2,000 team rows. Macros and formulas are never executed.</p><button class="btn" onclick="readRosterFile()">Read & validate file →</button><div id="import-result" role="status">${importPreview?previewHTML():''}</div><details style="margin-top:18px"><summary>Required columns and import rules</summary><p class="mini">Team ID, Faculty Name, Topic, Project Title, Member 1 Name, Member 1 USN … Member 4 Name, Member 4 USN. Member 1 is Team Lead. Department, HOD and Faculty Admin are optional columns; blank values use the current CSE(AI) settings. Non-CS-AI departments are rejected. Only sheets with recognized team columns are read. Existing Team IDs are updated; new IDs are added. Other teams and their saved work are preserved.</p></details></section>${allocationForm()}</div><div><section class="card"><h2>One department. One HOD.</h2><label for="department-name">Department</label><input id="department-name" value="CSE(AI)" disabled><label for="hod-name">CSE(AI) HOD name</label><input id="hod-name" value="${esc(state.department.hod)}"><label for="faculty-admin-name">Faculty Admin name</label><input id="faculty-admin-name" value="${esc(state.department.facultyAdmin)}"><button class="btn secondary" style="margin-top:16px" onclick="saveDepartmentOwner()">Save department ownership</button><p class="mini">HOD and Faculty Admin names are placeholders until you enter the real names or import them.</p></section><section class="card"><h2>Faculty directory</h2>${facultyCards()}</section><section class="card"><h2>Department records</h2><p>${state.teams.length} teams · ${state.teams.length*4} students · CSE(AI)</p><button class="btn secondary" onclick="go('Department')">Open complete roster →</button></section></div></div>`}
 function saveDepartmentOwner(){if(state.role!=='Admin')return;const hod=$('#hod-name').value.trim(),facultyAdmin=$('#faculty-admin-name').value.trim();if(!hod||!facultyAdmin)return toast('Enter both the HOD and Faculty Admin names.');state.department={name:'CSE(AI)',hod,facultyAdmin};state.teams.forEach(t=>{t.hod=hod;t.facultyAdmin=facultyAdmin});save();render();toast('All CSE(AI) teams now report to the saved department owners.')}
 const normalHeader=s=>String(s??'').toLowerCase().replace(/[^a-z0-9]/g,'');
 function headerKey(label){const k=normalHeader(label),aliases={teamid:'id',teamno:'id',teamnumber:'id',team:'id',department:'department',dept:'department',hod:'hod',hodname:'hod',facultyadmin:'facultyAdmin',facultyadminname:'facultyAdmin',facultyadministrator:'facultyAdmin',facultyname:'faculty',faculty:'faculty',guide:'faculty',guidename:'faculty',facultyguide:'faculty',topic:'topic',theme:'topic',projecttopic:'topic',projecttitle:'title',title:'title',projectname:'title'};if(aliases[k])return aliases[k];const m=k.match(/^(?:member|student|teammember)([1-4])(name|usn)$/)||k.match(/^(name|usn)([1-4])$/);if(m)return /^\d$/.test(m[1])?'member'+m[1]+m[2]:'member'+m[2]+m[1];return null}
