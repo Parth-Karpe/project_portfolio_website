@@ -16,7 +16,7 @@ function upgradeState(){
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();
-const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Department'],HOD:['Department','Team Portfolio','Design Journey'],Faculty:['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor']};
+const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Department'],HOD:['Department','Team Portfolio'],Faculty:['Overview','Team Portfolio','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Evidence Library','AI Mentor']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
@@ -26,71 +26,130 @@ go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is
 function openSection(n,key=''){if(!rolePages[state.role].includes('Design Journey'))return;state.stage=n;page='Design Journey';selectedSection=key;save();render();if(key)document.getElementById('f-'+key)?.scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo(0,0)}
 
 let activePortfolioTopic = 'stage-0';
+let activePortfolioStage = null;
+window.activePortfolioStage = activePortfolioStage;
+
+function switchPortfolioStage(stageNum, autoScroll = false){
+  activePortfolioStage = stageNum;
+  window.activePortfolioStage = stageNum;
+  window.refreshPortfolioStageNav?.(stageNum);
+  document.querySelectorAll('.portfolio-stage-tab').forEach(button=>{
+    const active=Number(button.dataset.tab)===stageNum;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+    if(active) button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>{
+    const panelStage=section.id==='sec-system-design'?1:Number(section.id.replace('stage-',''));
+    section.style.removeProperty('display');
+    section.hidden=panelStage!==stageNum;
+  });
+  const first=stageNum===0?'sec-problem':stageNum===1?'sec-fr':`stage-${stageNum}`;
+  updateActivePortfolioNav(first);
+  if(autoScroll) document.getElementById('portfolio-stage-tabs')?.scrollIntoView({
+    behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'
+  });
+}
+window.switchPortfolioStage = switchPortfolioStage;
 function portfolioSubnav(){
   return `<div class="subnav portfolio-subnav">
-    <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-0'?'selected':''}" data-target="stage-0" onclick="scrollToPortfolioTopic('stage-0')">
-      <span class="nav-label">1. Stage 0 : Problem identification</span>
-    </button>
-    <div class="subtopics">
+    <!-- Stage 0 -->
+<div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-problem'?'selected':''}" data-target="sec-problem" onclick="scrollToPortfolioTopic('sec-problem')">
-        <span class="nav-label">Problem Statement</span>
+        <span class="nav-label">1. Problem Statement</span>
       </button>
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-objectives'?'selected':''}" data-target="sec-objectives" onclick="scrollToPortfolioTopic('sec-objectives')">
-        <span class="nav-label">Objectives</span>
+        <span class="nav-label">2. Project Objectives</span>
       </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-usecase'?'selected':''}" data-target="sec-usecase" onclick="scrollToPortfolioTopic('sec-usecase')">
-        <span class="nav-label">Use Case Diagram</span>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-courses'?'selected':''}" data-target="sec-courses" onclick="scrollToPortfolioTopic('sec-courses')">
+        <span class="nav-label">3. Foundation Course Integration</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-workflow-concept'?'selected':''}" data-target="sec-workflow-concept" onclick="scrollToPortfolioTopic('sec-workflow-concept')">
+        <span class="nav-label">4. Conceptual Workflow</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-scope'?'selected':''}" data-target="sec-scope" onclick="scrollToPortfolioTopic('sec-scope')">
+        <span class="nav-label">5. Project Scope</span>
+      </button>
+      <div style="padding-left:12px;display:flex;flex-direction:column;gap:1px">
+        <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-scope-in'?'selected':''}" data-target="sec-scope-in" onclick="scrollToPortfolioTopic('sec-scope-in')">
+          <span class="nav-label">i) In Scope</span>
+        </button>
+        <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-scope-out'?'selected':''}" data-target="sec-scope-out" onclick="scrollToPortfolioTopic('sec-scope-out')">
+          <span class="nav-label">ii) Out of Scope</span>
+        </button>
+      </div>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-feasibility'?'selected':''}" data-target="sec-feasibility" onclick="scrollToPortfolioTopic('sec-feasibility')">
+        <span class="nav-label">6. Feasibility &amp; Constraints</span>
       </button>
     </div>
 
-    <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-1'?'selected':''}" data-target="stage-1" onclick="scrollToPortfolioTopic('stage-1')">
-      <span class="nav-label">2. Stage 1 : Requirement Engineering</span>
-    </button>
-    <div class="subtopics">
+    <!-- Stage 1 - Requirement Analysis -->
+<div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-fr'?'selected':''}" data-target="sec-fr" onclick="scrollToPortfolioTopic('sec-fr')">
-        <span class="nav-label">Functional Requirements</span>
+        <span class="nav-label">1. Functional Requirements</span>
       </button>
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-nfr'?'selected':''}" data-target="sec-nfr" onclick="scrollToPortfolioTopic('sec-nfr')">
-        <span class="nav-label">Non Functional requirements</span>
+        <span class="nav-label">2. Non - Functional Requirements</span>
       </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
-        <span class="nav-label">Architecture</span>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-usecase'?'selected':''}" data-target="sec-usecase" onclick="scrollToPortfolioTopic('sec-usecase')">
+        <span class="nav-label">3. Use Cases</span>
       </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-workflow'?'selected':''}" data-target="sec-workflow" onclick="scrollToPortfolioTopic('sec-workflow')">
-        <span class="nav-label">System Workflow</span>
-      </button>
-      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-techstack'?'selected':''}" data-target="sec-techstack" onclick="scrollToPortfolioTopic('sec-techstack')">
-        <span class="nav-label">Tech Stack</span>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-acceptance'?'selected':''}" data-target="sec-acceptance" onclick="scrollToPortfolioTopic('sec-acceptance')">
+        <span class="nav-label">4. Acceptance Criteria</span>
       </button>
     </div>
 
+    <!-- System Design -->
+    <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='sec-system-design'?'selected':''}" data-target="sec-system-design" onclick="scrollToPortfolioTopic('sec-system-design')">
+      <span class="nav-label">• System Design</span>
+    </button>
+    <div class="subtopics">
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
+        <span class="nav-label">1. Architecture</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-data-design'?'selected':''}" data-target="sec-data-design" onclick="scrollToPortfolioTopic('sec-data-design')">
+        <span class="nav-label">2. Data Design</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-algo-design'?'selected':''}" data-target="sec-algo-design" onclick="scrollToPortfolioTopic('sec-algo-design')">
+        <span class="nav-label">3. Algorithm Design</span>
+      </button>
+      <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-security-design'?'selected':''}" data-target="sec-security-design" onclick="scrollToPortfolioTopic('sec-security-design')">
+        <span class="nav-label">4. Security Design</span>
+      </button>
+    </div>
+
+    <!-- Implementation and Integration -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-2'?'selected':''}" data-target="stage-2" onclick="scrollToPortfolioTopic('stage-2')">
-      <span class="nav-label">3. Stage 2 : Implementation</span>
+      <span class="nav-label">• Implementation and Integration</span>
     </button>
 
+    <!-- Testing and Validations -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-3'?'selected':''}" data-target="stage-3" onclick="scrollToPortfolioTopic('stage-3')">
-      <span class="nav-label">4. Stage 3 : Testing and Validations</span>
+      <span class="nav-label">• Testing and Validations</span>
     </button>
   </div>`;
 }
 
 function scrollToPortfolioTopic(id){
   activePortfolioTopic = id;
-  if(page !== 'Team Portfolio'){
-    go('Team Portfolio');
-    setTimeout(() => {
-      const el = document.getElementById(id);
-      if(el){
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        updateActivePortfolioNav(id);
-      }
-    }, 150);
-  } else {
+  const performScroll = () => {
     const el = document.getElementById(id);
     if(el){
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const panel=el.closest('.portfolio-section');
+      if(panel){
+        const stage=panel.id==='sec-system-design'?1:Number(panel.id.replace('stage-',''));
+        if(Number.isInteger(stage) && stage!==activePortfolioStage) switchPortfolioStage(stage);
+      }
+      el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
       updateActivePortfolioNav(id);
     }
+  };
+
+  if(page !== 'Team Portfolio'){
+    go('Team Portfolio');
+    setTimeout(performScroll, 150);
+  } else {
+    performScroll();
   }
 }
 
@@ -101,7 +160,7 @@ function updateActivePortfolioNav(id, fromScroll = false){
     const isTarget = btn.getAttribute('data-target') === id;
     btn.classList.toggle('selected', isTarget);
     if(isTarget && fromScroll){
-      btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      btn.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     }
   });
 }
@@ -114,16 +173,18 @@ window.addEventListener('scroll', () => {
   requestAnimationFrame(() => {
     isPortfolioTicking = false;
     const ids = [
-      'stage-0', 'sec-problem', 'sec-objectives', 'sec-usecase',
-      'stage-1', 'sec-fr', 'sec-nfr', 'sec-arch', 'sec-workflow', 'sec-techstack',
+      'stage-0', 'sec-problem', 'sec-objectives', 'sec-courses', 'sec-workflow-concept', 'sec-scope', 'sec-scope-in', 'sec-scope-out', 'sec-feasibility',
+      'stage-1', 'sec-fr', 'sec-nfr', 'sec-usecase', 'sec-acceptance',
+      'sec-system-design', 'sec-arch', 'sec-data-design', 'sec-algo-design', 'sec-security-design',
       'stage-2', 'stage-3'
     ];
     let current = '';
     for(const id of ids){
       const el = document.getElementById(id);
-      if(!el) continue;
+      if(!el || el.offsetParent === null) continue;
       const rect = el.getBoundingClientRect();
-      if(rect.top <= 160 && rect.bottom >= 60){
+      const readingOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) + parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stage-height')) + 20;
+      if(rect.top <= readingOffset && rect.bottom >= readingOffset){
         current = id;
       }
     }
@@ -133,7 +194,14 @@ window.addEventListener('scroll', () => {
   });
 }, { passive: true });
 
-function sidebar(){return rolePages[state.role].map(p=>`<button class="${page===p?'active':''}" onclick="go('${p}')" data-title="${esc(p)}" title="${esc(p)}">${iconFor[p]||''}<span class="nav-label">${p}</span></button>${p==='Team Portfolio'?portfolioSubnav():''}${p==='Design Journey'?`<div class="subnav">${[0,1,2,3].map(n=>`<button class="stage-link ${page===p&&state.stage===n?'selected':''}" onclick="openSection(${n})">${status(n)==='Approved'?ICONS.check:status(n)==='Submitted'?'⏳':status(n)==='Revision requested'?'⚠':'○'} &nbsp; <span class="nav-label">Stage ${n}: ${stageNames[n]}</span></button><div class="subtopics">${(fieldsets[n]||[]).slice(0,3).map(([key,label])=>`<button class="${page===p&&state.stage===n&&selectedSection===key?'selected':''}" onclick="openSection(${n},'${key}')"><span class="nav-label">${label}</span></button>`).join('')}</div>`).join('')}</div>`:''}`).join('')}
+// Removed go override to prevent resetting selectedTheme
+
+function sidebar(){
+  if(page === 'Team Portfolio'){
+    return portfolioSubnav();
+  }
+  return '';
+}
 function getStageImage(n){return (state.media||[]).find(m=>m.stage===n&&m.kind==='image')}
 async function uploadStageImage(n){
   if(!editableStage(n))return;
@@ -271,15 +339,27 @@ journey=function(){
 overview=function(){if(state.role==='Admin')return adminPanel();if(state.role==='HOD')return department();return originalOverview().replaceAll('Design & develop','Requirements & realization')};
 mentor=function(){let html=originalMentor().replaceAll('Design & develop','Requirements & realization').replace('Demo mode uses deterministic question templates with excerpts from your submission. It is not live AI, RAG, or automated assessment.','Each demo question quotes a specific section of your saved submission and asks about that claim. This is a rule-based coaching demo, not a live language model.').replace('DEMO · TEMPLATE QUESTIONS','DEMO · SUBMISSION-BASED').replace('Demo templates · works offline','Submission coach · offline demo');return html+mentorChat()};
 function currentIdentity(){return state.role==='Faculty'?state.guide:state.role==='Team Lead'?state.members[0].name:state.role==='HOD'?'Head of Department':'Workspace Administrator'}
+function sharedPageHeader(){
+  return `<header class="topbar common-page-header"><div class="topbar-left"><div class="school-top-header"><strong>KLE Technological University</strong><span>Department of CSE(AI)</span></div></div><div class="topright" style="display:flex; align-items:center; gap:10px">
+  <button type="button" class="user-role-card" onclick="switchRole('HOD');go('Department')" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:#000000; border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Log in as HOD</span>
+  </button>
+  <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
+</div></header>`;
+}
 render=function(){
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
   const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
-  $('#app').innerHTML=`<div class="shell ${isCol?'sidebar-collapsed':''}"><aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="sidebar-header"><div class="brand" onclick="isSidebarCollapsed()&&toggleSidebar()" style="cursor:pointer" title="ProjectGate AI"><span class="logo">P</span><span class="brand-text">ProjectGate <em>AI</em></span></div><button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Collapse sidebar (Ctrl+B)" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg></button></div><div class="school"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CS AI</span></div><div class="tiny" style="margin:0 14px 14px">${state.role==='HOD'?'DEPARTMENT WORKSPACE':state.role==='Admin'?'ADMINISTRATION':'PROJECT WORKSPACE'}</div><nav class="nav" aria-label="Main navigation">${sidebar()}</nav><div class="sidebottom"><div class="profile" title="${esc(m.name)} (${esc(state.role)} panel)">${avatar(m)}<div class="profile-info"><strong>${esc(m.name)}</strong><small>${esc(state.role)} panel</small></div></div></div></aside><div><header class="topbar"><div class="topbar-left"><button class="sidebar-open-btn" onclick="toggleSidebar()" title="Toggle sidebar (Ctrl+B)" aria-label="Toggle sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg></button><div class="crumb">Mini-project portal &nbsp; ${ICONS.chevronRight} &nbsp; <strong style="color:var(--ink)">${esc(page)}</strong></div></div><div class="topright"><button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button><span class="tag gray">AY 2026–27</span><label class="mini" for="role" style="margin:0">Demo panel</label><select id="role" aria-label="Demo role" onchange="switchRole(this.value)">${Object.keys(rolePages).map(r=>`<option ${state.role===r?'selected':''} value="${r}">${r==='HOD'?"HOD's":r} panel</option>`).join('')}</select></div></header><main class="main">${views[page]()}<footer class="foot"><span>AI-Powered Interactive Mini-Project Portfolio & Mentoring System</span><span>ProjectGate AI · Local MVP &nbsp; <button class="textbtn" onclick="resetDemo()">Reset demo</button></span></footer></main></div></div>${modal||''}`;
+  const isPortfolio = page === 'Team Portfolio';
+  const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (activeTeam()?.theme_no || 1);
+
+  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}">${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CSE(AI)</span></div><div style="margin-bottom:12px"><button class="btn secondary" style="width:100%; justify-content:center; padding:7px 12px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects(${curTheme})">← Back to Theme ${curTheme}</button></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div>${sharedPageHeader()}<main class="main">${views[page]()}</main></div></div>${modal||''}`;
   const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
   if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();
 }
-function adminPanel(){return heading('CS (AI) Administration','Loading department workspace…')}
+function adminPanel(){return heading('CSE(AI) Administration','Loading department workspace…')}
 const originalReview=review;
 review=function(){let html=originalReview();if(isFaculty())html=html.replace(`>${esc(state.feedback)}</textarea>`,`>${esc(state.reviews?.[state.stage]?.feedback||'')}</textarea>`).replace(`value="${esc(state.score)}"`,`value="${esc(state.reviews?.[state.stage]?.score??8)}"`);return html+evidenceSection(state.stage)};
 
