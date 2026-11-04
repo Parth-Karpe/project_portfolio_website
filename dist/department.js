@@ -1527,12 +1527,10 @@ function renderRequirementsTable(text, defaultList, type){
 
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
-        cleanId = (t.id || '').replace(/^[AB]-/, ''),
         staticTeam = (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (
           window.STATIC_TEAMS_DATA[t.id] ||
-          window.STATIC_TEAMS_DATA[cleanId] ||
-          window.STATIC_TEAMS_DATA[cleanId.padStart(2, '0')] ||
-          Object.values(window.STATIC_TEAMS_DATA).find(st => st.title === t.title || st.id === t.id)
+          (t.id === 'A-03' ? (window.STATIC_TEAMS_DATA['A-03'] || window.STATIC_TEAMS_DATA['03']) : null) ||
+          Object.values(window.STATIC_TEAMS_DATA).find(st => st && (st.id === t.id || (st.title && t.title && st.title.toLowerCase().trim() === t.title.toLowerCase().trim())))
         )) || null,
         hasData = Boolean(staticTeam),
         isSmartCampus = (t.id === 'A-03' || t.title === 'Smart Campus Lab and Resource Optimizer' || t.title === 'Smart Campus Lab & Resource Optimizer'),
@@ -1615,7 +1613,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
-          ${hasData && st0.problem ? `<p class="portfolio-prose" style="white-space:pre-line">${esc(st0.problem || '')}</p>` : ''}
+          ${hasData && st0.problem ? `<p class="portfolio-prose" style="white-space:pre-line">${esc((st0.problem || '').trim())}</p>` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-objectives">
@@ -1635,10 +1633,10 @@ portfolio=function(){
             <table class="test-suite-table">
               <thead>
                 <tr>
-                  <th style="width:85px">Sl. Number</th>
+                  <th style="width:75px">Sl. Number</th>
                   <th style="width:230px">Foundation Course</th>
                   <th>Concepts Used</th>
-                  <th style="width:130px">Role</th>
+                  <th style="width:110px">Role</th>
                 </tr>
               </thead>
               <tbody>
@@ -1759,7 +1757,7 @@ portfolio=function(){
             <table class="test-suite-table">
               <thead>
                 <tr>
-                  <th style="width:230px">Aspect</th>
+                  <th style="width:200px">Aspect</th>
                   <th>Assessment</th>
                 </tr>
               </thead>
@@ -1786,10 +1784,10 @@ portfolio=function(){
             <table class="test-suite-table">
               <thead>
                 <tr>
-                  <th style="width:85px">FR ID</th>
+                  <th style="width:80px">FR ID</th>
                   <th>Description</th>
-                  <th style="width:140px">Priority</th>
-                  <th style="width:280px">Source Need (from S0)</th>
+                  <th style="width:110px">Priority</th>
+                  <th style="width:160px">Source Need (from S0)</th>
                 </tr>
               </thead>
               <tbody>
@@ -1839,7 +1837,7 @@ portfolio=function(){
               <thead>
                 <tr>
                   <th style="width:50px">ID</th>
-                  <th style="width:170px">Actor</th>
+                  <th style="width:110px">Actor</th>
                   <th style="width:220px">Description / User Story</th>
                   <th>Main Flow</th>
                   <th>Exception Flow</th>
@@ -1874,7 +1872,7 @@ portfolio=function(){
                 <tr>
                   <th style="width:110px">Requirement ID</th>
                   <th>Acceptance Criteria</th>
-                  <th style="width:340px">Test / Verification Method</th>
+                  <th style="width:240px">Test / Verification Method</th>
                 </tr>
               </thead>
               <tbody>
@@ -2044,8 +2042,9 @@ function getThemePriority(team, themeNo){
   if (th === 2) {
     if (id === 'A-08' || id === '08' || title.includes('profiling') || title.includes('data quality')) return 1;
   } else if (th === 3) {
-    if (id === 'A-14' || id === '14' || title.includes('mini kernel') || title.includes('mini -kernel')) return 1;
-    if (id === 'B-07' || id === '07' || title.includes('java compiler')) return 2;
+    if (id === 'B-01' || title.includes('incremental build') || (title.includes('incremental') && title.includes('dependency resolution'))) return 1;
+    if (id === 'A-14' || id === '14' || title.includes('mini kernel') || title.includes('mini -kernel')) return 2;
+    if (id === 'B-07' || id === '07' || title.includes('java compiler')) return 3;
   } else if (th === 4) {
     if (id === 'B-13' || id === '13' || title.includes('resilient multi-peer') || title.includes('peer file distribution')) return 1;
     if (id === 'A-07' || id === 'a07' || (title.includes('network traffic') && title.includes('protocol analysis'))) return 2;

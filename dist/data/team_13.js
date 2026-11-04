@@ -515,4 +515,3 @@ const team13Data = {
 };
 
 window.STATIC_TEAMS_DATA['B-13'] = team13Data;
-window.STATIC_TEAMS_DATA['13'] = team13Data;
