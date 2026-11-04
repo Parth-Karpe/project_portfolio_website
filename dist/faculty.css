@@ -199,3 +199,14 @@ body #app-sidebar > .school { margin-top:0; margin-bottom:12px; }
   body #app-sidebar .portfolio-sidebar-nav { display:block; overflow:visible; }
   body #app-sidebar .portfolio-subnav { display:block; }
 }
+
+/* Compact space-efficient styling for FR and NFR tables */
+body :is(#sec-fr,#sec-nfr) table { width:100%!important; }
+body :is(#sec-fr,#sec-nfr) :is(th,td) { padding:8px 12px!important; font-size:12.5px!important; line-height:1.45!important; vertical-align:middle!important; }
+body :is(#sec-fr,#sec-nfr) th { padding:9px 12px!important; font-size:12px!important; font-weight:700!important; letter-spacing:0.3px; text-transform:uppercase; }
+body :is(#sec-fr,#sec-nfr) table:has(.req-tag) :is(th,td):first-child { min-width:76px!important; width:76px!important; text-align:center!important; padding:8px 6px!important; }
+body :is(#sec-fr,#sec-nfr) table .req-tag { min-width:56px!important; padding:2px 6px!important; font-size:12px!important; font-weight:700!important; line-height:1.4!important; }
+body :is(#sec-fr,#sec-nfr) .requirement-meta-text { font-size:12px!important; font-weight:600!important; }
+body :is(#sec-fr,#sec-nfr) td.fr-desc, body :is(#sec-fr,#sec-nfr) td.nfr-desc { font-size:12.5px!important; line-height:1.5!important; color:var(--black)!important; }
+body :is(#sec-fr,#sec-nfr) td.fr-source { font-size:12px!important; line-height:1.45!important; color:var(--ink-secondary)!important; }
+body :is(#sec-fr,#sec-nfr) td.nfr-target { font-size:12px!important; line-height:1.45!important; font-weight:600!important; color:var(--black)!important; }
