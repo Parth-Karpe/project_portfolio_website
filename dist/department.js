@@ -1044,6 +1044,19 @@ function ensureDepartment(){
     state.workspaces[t07.id].guide = t07.faculty;
     state.workspaces[t07.id].members = t07.members;
   }
+  const t14=state.teams?.find(t=>t.id==='A-14'||t.title.includes('Mini Kernel')||t.title.includes('Mini -kernel'));
+  if(t14){
+    t14.title = 'Mini -kernel with process, memory and file management';
+    t14.faculty = 'Ms. Arundati Aralimatti';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['A-14'] || STATIC_TEAMS_DATA['14'])){
+      const s14 = STATIC_TEAMS_DATA['A-14'] || STATIC_TEAMS_DATA['14'];
+      t14.members = s14.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t14.id]) state.workspaces[t14.id] = newTeamWorkspace(t14);
+    state.workspaces[t14.id].guide = t14.faculty;
+    state.workspaces[t14.id].members = t14.members;
+  }
 
   [state,...Object.values(state.workspaces||{})].forEach(w=>{
     w.media=w.media||[];w.messages=w.messages||[];w.mentorMessages=w.mentorMessages||[];w.reviews=w.reviews||{};w.questions=w.questions||[];w.answers=w.answers||{};w.activities=w.activities||[];
