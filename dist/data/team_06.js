@@ -201,55 +201,55 @@ const team06Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "The system shall enable authorized users to create, import, and update academic scheduling data, including courses, faculty members, rooms, sections, batches, and related information.",
         "priority": "Mandatory",
         "sourceNeed": "Maintain academic data and the weekly calendar in a centralized location."
       },
       {
-        "id": "FR-02",
+        "id": "FR ID-02",
         "desc": "The system shall allow users to configure working days, working hours, breaks, lunch periods, and time-slot rules before timetable generation.",
         "priority": "Mandatory",
         "sourceNeed": "Maintain academic data and the weekly calendar in a centralized location."
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "The system shall validate all required input data before timetable generation and identify missing, inconsistent, or incompatible scheduling information.",
         "priority": "Mandatory",
         "sourceNeed": "Identify incomplete or invalid data before scheduling."
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "The system shall represent and enforce all mandatory constraints, including faculty, room, section, and batch availability; room suitability and capacity; and time-continuity requirements.",
         "priority": "Mandatory",
         "sourceNeed": "Generate a clash-free timetable across faculty, rooms, sections, and batches."
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "The system shall generate a timetable by assigning every required academic session to an eligible day, time slot, and room while satisfying all mandatory constraints.",
         "priority": "Mandatory",
         "sourceNeed": "Generate a clash-free timetable across faculty, rooms, sections, and batches."
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "The system shall support laboratory scheduling at the batch level, allowing different batches within the same section to use separate, suitable rooms concurrently when permitted by the scheduling constraints.",
         "priority": "Mandatory",
         "sourceNeed": "Generate a clash-free timetable across faculty, rooms, sections, and batches."
       },
       {
-        "id": "FR-07",
+        "id": "FR ID-07",
         "desc": "The system shall evaluate and rank feasible timetable alternatives using configurable soft constraints, such as minimizing student gaps, avoiding repeated scheduling of the same subject on a day, balancing faculty workload, and improving room utilization.",
         "priority": "Challenge / Stretch",
         "sourceNeed": "Improve timetable quality by reducing gaps and balancing workload."
       },
       {
-        "id": "FR-08",
+        "id": "FR ID-08",
         "desc": "The system shall provide actionable diagnostic information when the scheduling problem is infeasible or constraints cannot be satisfied. It shall also independently validate each generated timetable before assigning it a valid status.",
         "priority": "Mandatory",
         "sourceNeed": "Identify the reasons when timetable generation is unsuccessful."
       },
       {
-        "id": "FR-09",
+        "id": "FR ID-09",
         "desc": "The system shall provide master, faculty-wise, section-wise, and batch-wise timetable views and support the export or sharing of timetable information in a suitable format.",
         "priority": "Mandatory",
         "sourceNeed": "View and print timetables by section, faculty, and room."
@@ -257,43 +257,43 @@ const team06Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "Every timetable accepted by the system shall be free from violations of mandatory (hard) constraints.",
         "cat": "Correctness",
         "target": "All hard-constraint validation checks (100%) must pass before a timetable is marked feasible."
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "Timetable generation shall complete within a predefined execution limit for the agreed reference dataset.",
         "cat": "Performance",
         "target": "The system shall either generate a result or terminate with a diagnostic status within 30 seconds on the agreed reference dataset."
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "The system shall handle infeasible scheduling inputs without entering an indefinite execution state.",
         "cat": "Reliability",
         "target": "Every generation attempt shall terminate with one of the following statuses: feasible, infeasible, or execution limit reached."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "The system shall support the agreed reference workload while preserving all academic and scheduling relationships.",
         "cat": "Scalability",
         "target": "The reference test dataset shall include at least 30 courses, 20 faculty members, 10 rooms, 4 sections, and their associated laboratory batches."
       },
       {
-        "id": "NFR-05",
+        "id": "NFR ID-05",
         "desc": "The system shall communicate input and scheduling errors clearly and consistently.",
         "cat": "Usability",
         "target": "Every rejected or unsuccessful operation shall return a specific error message or diagnostic category."
       },
       {
-        "id": "NFR-06",
+        "id": "NFR ID-06",
         "desc": "The system shall protect academic data and scheduling operations against unauthorized access or modification.",
         "cat": "Security",
         "target": "In the production environment, only authenticated and authorized users shall be permitted to modify configuration or timetable data."
       },
       {
-        "id": "NFR-07",
+        "id": "NFR ID-07",
         "desc": "The system architecture shall support independent testing and traceability of requirements and scheduling-engine responsibilities.",
         "cat": "Maintainability",
         "target": "Every mandatory functional requirement shall be mapped to at least one acceptance test and one primary responsible engine component."
@@ -375,47 +375,47 @@ const team06Data = {
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "Academic data can be created or imported successfully, and all required entities and their relationships are available for validation.",
         "method": "Perform create/import tests and verify entity counts, completeness, and relationships."
       },
       {
-        "req": "FR-02",
+        "req": "FR ID-02",
         "criteria": "Valid calendar configurations generate only permitted time slots, while invalid, overlapping, or out-of-range rules are rejected.",
         "method": "Conduct boundary-value tests using valid, overlapping, and out-of-range time configurations."
       },
       {
-        "req": "FR-03",
+        "req": "FR ID-03",
         "criteria": "The system identifies known missing or invalid inputs before generation and reports all mandatory validation issues.",
         "method": "Execute negative testing with deliberately incomplete, invalid, or inconsistent input data."
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "Every timetable accepted by the system has zero violations across all mandatory constraints.",
         "method": "Run automated validation against every defined hard constraint."
       },
       {
-        "req": "FR-05",
+        "req": "FR ID-05",
         "criteria": "For a feasible reference dataset, each required academic session is assigned exactly once to a valid day, time slot, and room.",
         "method": "Perform end-to-end generation testing, followed by assignment-count and constraint-validation checks."
       },
       {
-        "req": "FR-06",
+        "req": "FR ID-06",
         "criteria": "Different laboratory batches may be assigned simultaneously to separate suitable rooms, while a single batch is never assigned overlapping sessions.",
         "method": "Execute batch-level laboratory scheduling tests, including concurrent assignments and overlap checks."
       },
       {
-        "req": "FR-07",
+        "req": "FR ID-07",
         "criteria": "When multiple feasible timetable alternatives are available, the system selects and ranks them using the configured soft-constraint scoring mechanism and makes the score available for review.",
         "method": "Compare controlled candidate timetables and verify the calculated scores and ranking."
       },
       {
-        "req": "FR-08",
+        "req": "FR ID-08",
         "criteria": "Infeasible or execution-limit outcomes provide diagnostic information. Every generated timetable is independently validated before being marked valid.",
         "method": "Test with an infeasible dataset and verify post-generation validation and status handling."
       },
       {
-        "req": "FR-09",
+        "req": "FR ID-09",
         "criteria": "The master, faculty, section, and batch views display consistent validated assignments, and exported data matches the selected timetable view.",
         "method": "Perform cross-view consistency checks and verify the exported timetable against the selected view."
       }

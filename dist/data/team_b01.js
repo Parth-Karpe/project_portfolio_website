@@ -188,55 +188,55 @@ const teamB01Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "Load and validate manifests with targets, actions, commands, inputs, outputs and dependencies.",
         "priority": "Mandatory",
         "sourceNeed": "Project manifest and build definitions."
       },
       {
-        "id": "FR-02",
+        "id": "FR ID-02",
         "desc": "Use SHA-256 to classify files as added, modified, deleted or unchanged.",
         "priority": "Mandatory",
         "sourceNeed": "Detect changes from the saved state."
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "Build the dependency graph: detect missing dependencies/cycles and select affected actions plus downstream dependencies.",
         "priority": "Mandatory",
         "sourceNeed": "Dependency analysis and action selection."
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "Schedule actions after prerequisites pass, within the configured concurrency limit.",
         "priority": "Mandatory",
         "sourceNeed": "Safe, bounded scheduling."
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "Run actions as OS processes: record exit codes, logs and duration.",
         "priority": "Mandatory",
         "sourceNeed": "Build execution and results."
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "Reuse artifacts only when the full action key matches and outputs validate.",
         "priority": "Mandatory",
         "sourceNeed": "Safe cache reuse."
       },
       {
-        "id": "FR-07",
+        "id": "FR ID-07",
         "desc": "Persist file, action and artifact metadata and build history across runs in SQLite.",
         "priority": "Mandatory",
         "sourceNeed": "Consistent build state and history."
       },
       {
-        "id": "FR-08",
+        "id": "FR ID-08",
         "desc": "Support LAN-worker registration, dispatch, heartbeat/timeouts and artifact fingerprint checks.",
         "priority": "Challenge",
         "sourceNeed": "Proposed controlled-LAN extension; guide approval required."
       },
       {
-        "id": "FR-09",
+        "id": "FR ID-09",
         "desc": "Report changed files, affected actions, cache activity, execution location, timings and failures.",
         "priority": "Mandatory",
         "sourceNeed": "Traceable build outcomes."
@@ -244,40 +244,40 @@ const teamB01Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "Change classifications and affected-action sets must match expected test results.",
         "cat": "Correctness",
-        "target": "All defined file-change and graph tests match expected results."
+        "target": "100% of the defined file-change classification and dependency-graph test cases pass."
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "Incremental builds must match clean-build outputs for deterministic projects.",
         "cat": "Reliability / Correctness",
-        "target": "All defined output comparisons pass."
+        "target": "Incremental and clean builds produce identical output hashes for 100% of the defined deterministic test projects."
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "Cache reuse must reject stale or mismatched artifacts.",
         "cat": "Cache safety",
-        "target": "Any cache-key change causes a miss; hits require matching keys and valid outputs."
+        "target": "100% of tested cache-key mismatches and corrupted artifacts result in cache misses."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "Execution must respect dependencies and concurrency limits.",
         "cat": "Dependency safety / Performance",
-        "target": "Prerequisites pass before start; active actions never exceed the limit."
+        "target": "Zero dependency-order violations; concurrent actions never exceed the configured limit."
       },
       {
-        "id": "NFR-05",
+        "id": "NFR ID-05",
         "desc": "Metadata and transferred artifacts must remain consistent and verifiable.",
         "cat": "Integrity / Fault tolerance",
-        "target": "Restart tests preserve state; corrupt, incomplete or timed-out results are rejected."
+        "target": "100% of defined restart and corruption tests preserve valid state and reject invalid artifacts."
       },
       {
-        "id": "NFR-06",
+        "id": "NFR ID-06",
         "desc": "Build activity and module interfaces must be traceable and documented.",
         "cat": "Observability / Maintainability",
-        "target": "Each action records state, result and duration; core module interfaces are documented."
+        "target": "100% of executed build actions record status, duration and result; all defined core module interfaces are documented."
       }
     ],
     "userStoryTable": [
@@ -328,47 +328,47 @@ const teamB01Data = {
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "Valid manifests load; invalid or incomplete definitions are rejected with diagnostics.",
         "method": "Test valid, malformed and incomplete manifests."
       },
       {
-        "req": "FR-02",
+        "req": "FR ID-02",
         "criteria": "SHA-256 correctly classifies added, modified, deleted and unchanged files.",
         "method": "Test each change type against expected results."
       },
       {
-        "req": "FR-03",
+        "req": "FR ID-03",
         "criteria": "The graph detects missing dependencies/cycles and selects the complete affected-action closure.",
         "method": "Test valid, unresolved and cyclic graphs; compare selected actions."
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "Actions start only after prerequisites pass and never exceed the concurrency limit.",
         "method": "Run dependent/independent tasks; inspect states and timestamps."
       },
       {
-        "req": "FR-05",
+        "req": "FR ID-05",
         "criteria": "Each process records exit code, output/error logs and elapsed time.",
         "method": "Run successful and failing commands; verify recorded results."
       },
       {
-        "req": "FR-06",
+        "req": "FR ID-06",
         "criteria": "Cache hits require a matching full action key and validated outputs.",
         "method": "Repeat unchanged build; alter inputs/configuration to test invalidation."
       },
       {
-        "req": "FR-07",
+        "req": "FR ID-07",
         "criteria": "File, action and artifact metadata and history persist consistently after restart.",
         "method": "Run builds, restart application and inspect stored records."
       },
       {
-        "req": "FR-08",
+        "req": "FR ID-08",
         "criteria": "Approved workers register, receive tasks and return only verified artifacts; failures/timeouts are handled.",
         "method": "Test registration, dispatch, heartbeat, timeout and altered/incomplete transfers."
       },
       {
-        "req": "FR-09",
+        "req": "FR ID-09",
         "criteria": "Reports accurately show changes, affected actions, cache activity, execution location, timings and failures.",
         "method": "Compare reports with logs for cache, local/remote runs and failures."
       }

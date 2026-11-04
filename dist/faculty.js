@@ -112,6 +112,7 @@
   }
   function normalizeInlinePresentation(app) {
     app.querySelectorAll('[style]').forEach(el=>{
+      if(el.closest('#stage-0,#stage-1,table')) return;
       const size=el.style.fontSize;
       if(size && ((size.endsWith('px')&&parseFloat(size)<16)||(size.endsWith('rem')&&parseFloat(size)<1))) el.style.fontSize='1rem';
       if(el.closest('.diagram-frame,.portfolio-diagram-card,.faculty-diagram-frame')) return;

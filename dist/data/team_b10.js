@@ -172,37 +172,37 @@ const teamB10Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "The system shall open the single log file read-only and read it through memory mapping (mmap) in newline-aligned chunks of configurable size (default 64 MB), without loading the whole file into RAM.",
         "priority": "Mandatory",
         "source": "Handle a massive single log file on one machine"
       },
       {
-        "id": "FR-02",
+        "id": "FR ID-02",
         "desc": "The system shall parse every raw log line with a regular expression into timestamp, level, IP address, error code and message.",
         "priority": "Mandatory",
         "source": "Turn raw text logs into structured fields"
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "The system shall validate parsed fields and send malformed or incomplete lines to a quarantine file with line number and reason.",
         "priority": "Mandatory",
         "source": "Bad data must not crash the pipeline or vanish silently"
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "The system shall drop duplicate records by computing a fingerprint of the key fields and checking it against a bounded hash set.",
         "priority": "Mandatory",
         "source": "Avoid duplicate entries inflating counts, with flat memory"
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "The system shall hold clean records in an in-memory queue and flush them as one micro-batch when the batch-size limit is reached and stored in PostgreSQL.",
         "priority": "Mandatory",
         "source": "Efficient writes instead of row-by-row inserts and persistent, consistent storage"
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "The system shall expose the analytics through a REST API returning JSON, with aggregate SQL analytics time-range and log-level filters and display them on a web dashboard.",
         "priority": "Mandatory",
         "source": "View results in a browser"
@@ -210,25 +210,25 @@ const teamB10Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "Ingestion-to-storage throughput on a single machine.",
         "category": "Performance",
         "target": "At least 1000 lines/sec end to end on a 4-core, 8 GB machine with a 5 GB test file."
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "Aggregate analytics queries must be fast on large tables.",
         "category": "Performance",
         "target": "Each dashboard query completes in under 1 second on a table of 1000 rows."
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "A bad line or a failed batch write must not stop the pipeline.",
         "category": "Reliability",
         "target": "0 crashes in fault-injection tests; a failed batch is retried up to 3 times before being logged."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "Every input line must be accounted for and no duplicate inside the window may be stored.",
         "category": "Data integrity",
         "target": "lines read = valid + duplicate + quarantined for every run; 0 in-window duplicates in the database."
@@ -296,52 +296,52 @@ const teamB10Data = {
     "useCaseCaption": "Fig 2. System Use Case Diagram - Large-Scale Log Processing & Analytics Engine",
     "acceptanceTable": [
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "For a file larger than RAM the engine maps it read-only and yields chunks of the configured size; every chunk ends on a newline; joined chunks are byte-identical to the source file.",
         "method": "Unit test with mock offsets; checksum comparison of joined chunks with the original file."
       },
       {
-        "req": "FR-02",
+        "req": "FR ID-02",
         "criteria": "For a sample of 1,000 well-formed lines, 100% are parsed with correct timestamp, level, IP, error code and message.",
         "method": "Unit test comparing parsed fields with the labelled expected values."
       },
       {
-        "req": "FR-03",
+        "req": "FR ID-03",
         "criteria": "Every injected malformed or incomplete line appears in the quarantine file with line number and reason.",
         "method": "Test file with known bad lines; count quarantine entries and database rows."
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "Duplicates inside the window are dropped; assert set size <= N.",
         "method": "Unit tests: assert set size <= N."
       },
       {
-        "req": "FR-05",
+        "req": "FR ID-05",
         "criteria": "A batch is flushed when it reaches the batch-size limit; stored row count equals the valid unique records sent.",
         "method": "Unit test with a synthetic stream; bulk-insert test compared with SELECT COUNT(*)."
       },
       {
-        "req": "FR-06",
+        "req": "FR ID-06",
         "criteria": "Aggregate queries return correct counts by level, error code and minute on a dataset; the endpoint returns valid JSON with HTTP 200 and HTTP 400 for invalid ones; the dashboard draws charts from the response.",
         "method": "Run SQL on dataset and compare with expected values; API test (Postman); manual dashboard check."
       },
       {
-        "req": "NFR-01",
+        "req": "NFR ID-01",
         "criteria": "Throughput of at least 1000 lines/sec on a 4-core, 8 GB machine with a 5 GB file.",
         "method": "Timed run: lines read divided by elapsed time."
       },
       {
-        "req": "NFR-02",
+        "req": "NFR ID-02",
         "criteria": "Each dashboard aggregate query finishes in under 1 second on 1000 rows.",
         "method": "EXPLAIN ANALYZE and timed runs, repeated 10 times."
       },
       {
-        "req": "NFR-03",
+        "req": "NFR ID-03",
         "criteria": "Bad lines and a stopped database cause no crash; a failed batch is retried up to 3 times and then logged.",
         "method": "Fault injection: malformed input and database shutdown during a run."
       },
       {
-        "req": "NFR-04",
+        "req": "NFR ID-04",
         "criteria": "For every run lines read = valid + duplicate + quarantined, and no in-window duplicate fingerprint exists in the database.",
         "method": "Compare run counters; SQL query for repeated fingerprints."
       }

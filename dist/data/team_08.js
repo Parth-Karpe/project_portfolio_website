@@ -162,49 +162,49 @@ const team08Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "The system shall allow users to upload datasets in supported structured/tabular formats and ingest the data for analysis.",
         "priority": "Mandatory",
         "sourceNeed": "Automated profiling"
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "The system shall detect and report common data-quality issues including missing values, duplicate records, data-type inconsistencies, null values and basic invalid values.",
         "priority": "Mandatory",
         "sourceNeed": "Automated detection of common data-quality issues"
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "The system shall analyze the dataset using basic statistics, such as average, minimum, maximum, and distribution, and identify unusual values (outliers).",
         "priority": "Mandatory",
         "sourceNeed": "Unified quality analysis"
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "The system shall display the detected issues and allow the user to select which issues should be corrected.",
         "priority": "Mandatory",
         "sourceNeed": "Automated detection of common data-quality issues"
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "The system shall automatically apply the user-selected corrections, such as correcting supported data types and removing duplicate records, without modifying the original dataset.",
         "priority": "Mandatory",
         "sourceNeed": "Basic recommendations for detected issues"
       },
       {
-        "id": "FR-07",
+        "id": "FR ID-07",
         "desc": "The system shall recheck the corrected dataset and allow the user to perform additional correction rounds until the user chooses to finish and allow to generate quality report.",
         "priority": "Mandatory",
         "sourceNeed": "Unified quality analysis"
       },
       {
-        "id": "FR-08",
+        "id": "FR ID-08",
         "desc": "The system shall provide basic recommendations for suitable corrective actions for detected quality issues.",
         "priority": "Challenge",
         "sourceNeed": "Basic recommendations for detected issues"
       },
       {
-        "id": "FR-09",
+        "id": "FR ID-09",
         "desc": "The system shall support efficient processing of larger datasets within the defined system resource limits.",
         "priority": "Challenge",
         "sourceNeed": "Scalable processing of large datasets"
@@ -212,43 +212,43 @@ const team08Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "The system shall process datasets within the supported size limit without failure under the defined test environment.",
         "cat": "Performance",
         "target": "Successfully process ≥95% of defined test datasets within the supported size limit"
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "The system should quickly show the user the progress or result while the dataset is being uploaded and analyzed.",
         "cat": "Performance",
         "target": "Display processing status within 2 seconds of starting a long-running operation"
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "The system shall preserve the original uploaded dataset without modifying it during quality analysis.",
         "cat": "Reliability / Data Integrity",
         "target": "0 unintended modifications to original input files in test cases"
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "The system shall provide understandable quality results to users through the dashboard.",
         "cat": "Usability",
         "target": "A user shall be able to identify the overall score and major detected issues within 1 minute of viewing the results"
       },
       {
-        "id": "NFR-05",
+        "id": "NFR ID-05",
         "desc": "The system shall provide consistent results when the same dataset and rules are processed repeatedly.",
         "cat": "Reliability",
         "target": "Identical input and configuration shall produce identical results in repeated tests"
       },
       {
-        "id": "NFR-06",
+        "id": "NFR ID-06",
         "desc": "The system shall prevent unauthorized access to uploaded datasets and generated results.",
         "cat": "Security",
         "target": "Unauthorized access attempts are rejected in all security tests"
       },
       {
-        "id": "NFR-07",
+        "id": "NFR ID-07",
         "desc": "The system shall maintain correction results so that users can distinguish the original and corrected datasets.",
         "cat": "Reliability",
         "target": "100% of correction sessions preserve original/corrected distinction"
@@ -323,42 +323,42 @@ const team08Data = {
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "The system accepts supported dataset files and successfully loads valid files for processing. Unsupported, empty, or corrupted files are rejected with an error message.",
         "method": "Upload valid and invalid test files and verify the result."
       },
       {
-        "req": "FR-02",
+        "req": "FR ID-02",
         "criteria": "The system displays the dataset row count, column count, column names, data types, and basic profile information correctly.",
         "method": "Compare displayed profile results with the known dataset values."
       },
       {
-        "req": "FR-03",
+        "req": "FR ID-03",
         "criteria": "The system correctly detects and reports missing values, duplicate records, data-type inconsistencies, and defined invalid values.",
         "method": "Test datasets containing known quality issues and compare detected results with expected results."
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "The system calculates the defined statistical measures, identifies applicable outliers, and displays the results correctly.",
         "method": "Run the system on test datasets and compare results with independently calculated values."
       },
       {
-        "req": "FR-05",
+        "req": "FR ID-05",
         "criteria": "The system generates a quality score based on the defined scoring rules and displays the score correctly.",
         "method": "Use datasets with known quality issues and verify the calculated score against the defined formula."
       },
       {
-        "req": "FR-06",
+        "req": "FR ID-06",
         "criteria": "The system displays the detected quality results, final quality score and analysis through the dashboard and generates a downloadable quality report.",
         "method": "Complete the analysis and verify dashboard values and downloaded report values."
       },
       {
-        "req": "FR-07",
+        "req": "FR ID-07",
         "criteria": "The system provides a correction recommendation for supported detected quality issues and the recommendation is relevant to the detected issue.",
         "method": "Create datasets with supported issues and verify the displayed recommendations."
       },
       {
-        "req": "FR-08",
+        "req": "FR ID-08",
         "criteria": "The system processes datasets within the defined supported size/resource limit without failure and completes the quality-analysis workflow.",
         "method": "Test datasets of increasing sizes and measure successful completion and processing time."
       }

@@ -150,49 +150,49 @@ const teamA07Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "The system shall capture live packets at both configured probes",
         "priority": "Mandatory",
         "sourceNeed": "Multi-point live packet capture"
       },
       {
-        "id": "FR-02",
+        "id": "FR ID-02",
         "desc": "The system shall timestamp packets and extract supported protocol fields.",
         "priority": "Mandatory",
         "sourceNeed": "Timestamping and protocol analysis"
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "The system shall generate deterministic 64-bit BLAKE2b packet fingerprints.",
         "priority": "Mandatory",
         "sourceNeed": "Packet fingerprint generation"
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "The system shall send probe metadata to the Host VM over TCP port 9000.",
         "priority": "Mandatory",
         "sourceNeed": "Centralized probe telemetry"
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "The system shall match probe observations using fingerprints within 500 ms.",
         "priority": "Mandatory",
         "sourceNeed": "Cross-probe packet matching"
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "The system shall calculate transit delay and flag unmatched packets as suspected loss.",
         "priority": "Mandatory",
         "sourceNeed": "Delay and loss diagnosis"
       },
       {
-        "id": "FR-07",
+        "id": "FR ID-07",
         "desc": "The system shall store results in SQLite and display them on the dashboard.",
         "priority": "Mandatory",
         "sourceNeed": "Persistent storage and monitoring"
       },
       {
-        "id": "FR-08",
+        "id": "FR ID-08",
         "desc": "The system shall use bounded packet buffers and count queue overflows.",
         "priority": "Mandatory",
         "sourceNeed": "Bounded buffering and overload visibility"
@@ -200,49 +200,49 @@ const teamA07Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "The system shall sustain the specified traffic load.",
         "cat": "Throughput / Bandwidth",
         "target": "≥10 Mbps for 5 minutes."
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "The system shall process packets without unbounded queue growth..",
         "cat": "Processing Performance",
         "target": "≥1,000 packets/sec for 5 minutes."
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "The system shall deliver probe telemetry within the specified time.",
         "cat": "Telemetry Latency",
         "target": "≤100 ms one-way."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "The system shall expire unmatched observations within the specified time.",
         "cat": "Correlation Latency",
         "target": "500 ms ± 50 ms."
       },
       {
-        "id": "NFR-05",
+        "id": "NFR ID-05",
         "desc": "The system shall update dashboard results promptly.",
         "cat": "Dashboard Latency",
         "target": "≤2 seconds."
       },
       {
-        "id": "NFR-06",
+        "id": "NFR ID-06",
         "desc": "The system shall maintain a fixed-capacity buffer per probe.",
         "cat": "Memory / Buffer Capacity",
         "target": "10,000 slots per probe."
       },
       {
-        "id": "NFR-07",
+        "id": "NFR ID-07",
         "desc": "The system shall maintain synchronized probe clocks for delay measurement.",
         "cat": "Timing Accuracy",
         "target": "Clock offset ≤1 ms."
       },
       {
-        "id": "NFR-08",
+        "id": "NFR ID-08",
         "desc": "The system shall support concurrent traffic and telemetry without crashing.",
         "cat": "Concurrency / Availability",
         "target": "30 minutes continuous operation."
@@ -289,42 +289,42 @@ const teamA07Data = {
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "Both configured probes capture live packets at their selected interfaces in the four-VM lab.",
         "method": "Generate client-to-server traffic and verify packet observations at Client-A and the Server VM."
       },
       {
-        "req": "FR-02",
+        "req": "FR ID-02",
         "criteria": "Each captured observation includes a timestamp and correctly extracted fields for the supported protocols.",
         "method": "Generate Ethernet/IPv4 TCP, UDP, ICMP and DNS test traffic; compare extracted fields with an independent packet analyzer."
       },
       {
-        "req": "FR-03",
+        "req": "FR ID-03",
         "criteria": "Identical configured packet-field inputs produce identical 64-bit BLAKE2b fingerprints at both probes.",
         "method": "Provide matching normalized field inputs to both probe implementations and compare the resulting fingerprints."
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "Both probes deliver observation metadata to the Host VM using TCP port 9000, and a telemetry failure is recorded if delivery is interrupted.",
         "method": "Verify delivery at the Host, then stop the telemetry receiver and verify that the probe/central service reports the failure."
       },
       {
-        "req": "FR-05",
+        "req": "FR ID-05",
         "criteria": "Corresponding observations are matched by fingerprint within the 500 ms correlation window.",
         "method": "Replay paired observations with controlled arrival intervals and verify match decisions inside the configured window."
       },
       {
-        "req": "FR-06",
+        "req": "FR ID-06",
         "criteria": "Matched observations produce T2 − T1 delay when clocks are synchronized; expired unmatched observations are labelled suspected loss.",
         "method": "Synchronize probe clocks, replay paired and unpaired observations, and verify delay and unmatched classifications."
       },
       {
-        "req": "FR-07",
+        "req": "FR ID-07",
         "criteria": "SQLite retains diagnostic records and the dashboard/API displays probe status, matches, delay, unmatched observations and available drop counters.",
         "method": "Compare dashboard/API output with SQLite records and verify persistence after an application restart."
       },
       {
-        "req": "FR-08",
+        "req": "FR ID-08",
         "criteria": "Each probe buffer is limited to 10,000 slots and application-level overflow is counted when the queue is full.",
         "method": "Run a producer/consumer overload test and verify the configured capacity and overflow counter."
       }

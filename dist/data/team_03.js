@@ -130,32 +130,32 @@ const team03Data = {
   stage1: {
     // 1. Functional Requirements Table (Source: Smart_Campus_FRs_NFRs.docx)
     frTable: [
-      { id: 'FR-01', desc: 'Allow coordinators to upload existing college timetables.', priority: 'Mandatory', sourceNeed: 'Reduce manual timetable preparation and updating.' },
-      { id: 'FR-02', desc: 'Extract subjects, faculty, classrooms, laboratories, and time slots from uploaded timetables.', priority: 'Mandatory', sourceNeed: 'Organize timetable information in a usable form.' },
-      { id: 'FR-03', desc: 'Detect overlapping classes, faculty conflicts, and room conflicts.', priority: 'Mandatory', sourceNeed: 'Prevent scheduling conflicts and booking clashes.' },
-      { id: 'FR-04', desc: 'Check whether the required lecture, tutorial, and practical (L:T:P) hours are followed.', priority: 'Mandatory', sourceNeed: 'Ensure academic hour requirements are met.' },
-      { id: 'FR-05', desc: 'Allow students and faculty to view timetables and available time slots.', priority: 'Mandatory', sourceNeed: 'Provide clear timetable information and reduce confusion.' },
-      { id: 'FR-06', desc: 'Allow faculty to request extra classes, schedule changes, or report unavailability.', priority: 'Mandatory', sourceNeed: 'Handle additional classes and faculty unavailability.' },
-      { id: 'FR-07', desc: 'Handle incoming requests based on priority, fairness, and resource availability.', priority: 'Mandatory', sourceNeed: 'Manage competing requests fairly and efficiently.' },
-      { id: 'FR-08', desc: 'Suggest available classrooms, laboratories, and suitable faculty members.', priority: 'Mandatory', sourceNeed: 'Improve use of available rooms, labs, and faculty time.' },
-      { id: 'FR-09', desc: 'Allow HODs to approve or reject scheduling requests.', priority: 'Mandatory', sourceNeed: 'Support controlled approval of scheduling changes.' },
-      { id: 'FR-10', desc: 'Update the timetable after approved changes.', priority: 'Mandatory', sourceNeed: 'Keep the timetable accurate after approved changes.' },
-      { id: 'FR-11', desc: 'Generate reports showing classroom usage, laboratory usage, and faculty workload.', priority: 'Mandatory', sourceNeed: 'Monitor resource utilization and faculty workload.' },
-      { id: 'FR-12', desc: 'Notify affected students and faculty about timetable changes.', priority: 'Challenge', sourceNeed: 'Keep students and faculty informed about schedule changes.' }
+      { id: 'FR ID-01', desc: 'Allow coordinators to upload existing college timetables.', priority: 'Mandatory', sourceNeed: 'Reduce manual timetable preparation and updating.' },
+      { id: 'FR ID-02', desc: 'Extract subjects, faculty, classrooms, laboratories, and time slots from uploaded timetables.', priority: 'Mandatory', sourceNeed: 'Organize timetable information in a usable form.' },
+      { id: 'FR ID-03', desc: 'Detect overlapping classes, faculty conflicts, and room conflicts.', priority: 'Mandatory', sourceNeed: 'Prevent scheduling conflicts and booking clashes.' },
+      { id: 'FR ID-04', desc: 'Check whether the required lecture, tutorial, and practical (L:T:P) hours are followed.', priority: 'Mandatory', sourceNeed: 'Ensure academic hour requirements are met.' },
+      { id: 'FR ID-05', desc: 'Allow students and faculty to view timetables and available time slots.', priority: 'Mandatory', sourceNeed: 'Provide clear timetable information and reduce confusion.' },
+      { id: 'FR ID-06', desc: 'Allow faculty to request extra classes, schedule changes, or report unavailability.', priority: 'Mandatory', sourceNeed: 'Handle additional classes and faculty unavailability.' },
+      { id: 'FR ID-07', desc: 'Handle incoming requests based on priority, fairness, and resource availability.', priority: 'Mandatory', sourceNeed: 'Manage competing requests fairly and efficiently.' },
+      { id: 'FR ID-08', desc: 'Suggest available classrooms, laboratories, and suitable faculty members.', priority: 'Mandatory', sourceNeed: 'Improve use of available rooms, labs, and faculty time.' },
+      { id: 'FR ID-09', desc: 'Allow HODs to approve or reject scheduling requests.', priority: 'Mandatory', sourceNeed: 'Support controlled approval of scheduling changes.' },
+      { id: 'FR ID-10', desc: 'Update the timetable after approved changes.', priority: 'Mandatory', sourceNeed: 'Keep the timetable accurate after approved changes.' },
+      { id: 'FR ID-11', desc: 'Generate reports showing classroom usage, laboratory usage, and faculty workload.', priority: 'Mandatory', sourceNeed: 'Monitor resource utilization and faculty workload.' },
+      { id: 'FR ID-12', desc: 'Notify affected students and faculty about timetable changes.', priority: 'Challenge', sourceNeed: 'Keep students and faculty informed about schedule changes.' }
     ],
 
     // 2. Non Functional Requirements Table (Source: Smart_Campus_FRs_NFRs.docx)
     nfrTable: [
-      { id: 'NFR-01', desc: 'Timetables should load quickly.', cat: 'Performance', target: 'Within 3 seconds.' },
-      { id: 'NFR-02', desc: 'Avoid overlapping faculty and room allocations.', cat: 'Accuracy', target: 'Zero conflicts in approved schedules.' },
-      { id: 'NFR-03', desc: 'Scheduling requests should not be lost.', cat: 'Reliability', target: '100% of accepted requests saved.' },
-      { id: 'NFR-04', desc: 'Requests should be handled fairly without unnecessary delays.', cat: 'Fairness', target: 'Track waiting time for every request.' },
-      { id: 'NFR-05', desc: 'System should be simple and easy to use.', cat: 'Usability', target: 'Basic tasks completed without training.' },
-      { id: 'NFR-06', desc: 'Only authorized users can modify schedules.', cat: 'Security', target: 'Access based on user roles.' },
-      { id: 'NFR-07', desc: 'System should support multiple semesters.', cat: 'Scalability', target: 'Initially support 1st, 3rd, and 5th semesters.' },
-      { id: 'NFR-08', desc: 'Scheduling rules should be easy to update.', cat: 'Maintainability', target: 'Change rules without modifying core code.' },
-      { id: 'NFR-09', desc: 'New scheduling requests should be processed quickly.', cat: 'Responsiveness', target: 'Suggest allocation within 5 seconds.' },
-      { id: 'NFR-10', desc: 'Original timetable information should remain safe.', cat: 'Data Integrity', target: 'Maintain original and updated timetable versions.' }
+      { id: 'NFR ID-01', desc: 'Timetables should load quickly.', cat: 'Performance', target: 'Within 3 seconds.' },
+      { id: 'NFR ID-02', desc: 'Avoid overlapping faculty and room allocations.', cat: 'Accuracy', target: 'Zero conflicts in approved schedules.' },
+      { id: 'NFR ID-03', desc: 'Scheduling requests should not be lost.', cat: 'Reliability', target: '100% of accepted requests saved.' },
+      { id: 'NFR ID-04', desc: 'Requests should be handled fairly without unnecessary delays.', cat: 'Fairness', target: 'Track waiting time for every request.' },
+      { id: 'NFR ID-05', desc: 'System should be simple and easy to use.', cat: 'Usability', target: 'Basic tasks completed without training.' },
+      { id: 'NFR ID-06', desc: 'Only authorized users can modify schedules.', cat: 'Security', target: 'Access based on user roles.' },
+      { id: 'NFR ID-07', desc: 'System should support multiple semesters.', cat: 'Scalability', target: 'Initially support 1st, 3rd, and 5th semesters.' },
+      { id: 'NFR ID-08', desc: 'Scheduling rules should be easy to update.', cat: 'Maintainability', target: 'Change rules without modifying core code.' },
+      { id: 'NFR ID-09', desc: 'New scheduling requests should be processed quickly.', cat: 'Responsiveness', target: 'Suggest allocation within 5 seconds.' },
+      { id: 'NFR ID-10', desc: 'Original timetable information should remain safe.', cat: 'Data Integrity', target: 'Maintain original and updated timetable versions.' }
     ],
 
     // 3. Use Cases Table & Diagram

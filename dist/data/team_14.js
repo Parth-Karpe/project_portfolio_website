@@ -144,61 +144,61 @@ const team14Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "Boot and initialize the educational mini-kernel in a controlled emulated environment and make kernel output available.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N2"
       },
       {
-        "id": "FR-02",
+        "id": "FR ID-02",
         "desc": "Create, initialize, track and terminate bounded kernel processes using process identity and lifecycle states.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N2"
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "Allocate and release fixed-size memory pages while maintaining page-availability state.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N2"
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "Select an eligible process and perform a CPU context transfer between process contexts.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N2"
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "Create, open, read, write, close and remove files using bounded kernel file facilities.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N2"
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "Associate file resources with processes through process identity and file descriptors.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N2"
       },
       {
-        "id": "FR-07",
+        "id": "FR ID-07",
         "desc": "Dispatch supported process, memory and file service requests through the kernel-service interface.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N2"
       },
       {
-        "id": "FR-08",
+        "id": "FR ID-08",
         "desc": "Record selected process, memory, file and service events with information needed to inspect resource-state changes.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N3"
       },
       {
-        "id": "FR-09",
+        "id": "FR ID-09",
         "desc": "Measure selected execution/resource operations and make performance evidence available for analysis.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N4"
       },
       {
-        "id": "FR-10",
+        "id": "FR ID-10",
         "desc": "Demonstrate and validate an integrated Process–Memory–File interaction within the kernel.",
         "priority": "Mandatory",
         "sourceNeed": "S0-N5"
@@ -206,37 +206,37 @@ const team14Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "Invalid or unsafe page requests shall be rejected without corrupting allocator state.",
         "cat": "Reliability",
         "target": "No invalid/double-free test may alter valid allocation state."
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "The kernel shall execute process, memory and file management operations within specified CPU cycle limits.",
         "cat": "Performance",
         "target": "Each supported operation shall complete within its experimentally established CPU cycle threshold under identical QEMU test conditions."
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "Process, Memory and File responsibilities shall retain clear ownership boundaries.",
         "cat": "Modularity",
         "target": "Engines use defined interfaces and do not directly corrupt another engine's internal state."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "Validation shall be reproducible in the documented emulated environment.",
         "cat": "Reproducibility",
         "target": "Documented build/run/test procedure reproduces the validation sequence."
       },
       {
-        "id": "NFR-05",
+        "id": "NFR ID-05",
         "desc": "Observation and performance outputs shall be understandable to learners.",
         "cat": "Educational usability",
         "target": "Each demonstration identifies operation, result and relevant state/event/measurement."
       },
       {
-        "id": "NFR-06",
+        "id": "NFR ID-06",
         "desc": "The Round Robin scheduler shall ensure fair CPU allocation among ready processes using a fixed time quantum.",
         "cat": "Scheduling Fairness",
         "target": "Every continuously ready process shall receive CPU time in cyclic order, with no process being indefinitely starved."
@@ -318,87 +318,87 @@ const team14Data = {
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "Kernel starts successfully in the controlled environment and reaches the required startup stage.",
         "method": "Kernel startup test"
       },
       {
-        "req": "FR-02",
+        "req": "FR ID-02",
         "criteria": "A process is created with a valid identity and state, and can be terminated correctly.",
         "method": "Process lifecycle test"
       },
       {
-        "req": "FR-03",
+        "req": "FR ID-03",
         "criteria": "Memory pages can be allocated and released while maintaining correct memory state.",
         "method": "Memory allocation/release test"
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "A READY process is selected and its context is switched correctly.",
         "method": "Scheduler/context-switch test"
       },
       {
-        "req": "FR-05",
+        "req": "FR ID-05",
         "criteria": "Files can be created, opened, read, written, closed and removed correctly.",
         "method": "File operation test"
       },
       {
-        "req": "FR-06",
+        "req": "FR ID-06",
         "criteria": "A valid PID/FD identifies the intended file resource.",
         "method": "Process-file integration test"
       },
       {
-        "req": "FR-07",
+        "req": "FR ID-07",
         "criteria": "Supported service requests reach the correct subsystem and unsupported requests are rejected.",
         "method": "Service dispatch test"
       },
       {
-        "req": "FR-08",
+        "req": "FR ID-08",
         "criteria": "Selected process, memory and file operations generate the required event records.",
         "method": "Event recording test"
       },
       {
-        "req": "FR-09",
+        "req": "FR ID-09",
         "criteria": "Selected operations produce measurable performance results using the defined measurement method.",
         "method": "Performance measurement test"
       },
       {
-        "req": "FR-10",
+        "req": "FR ID-10",
         "criteria": "At least one Process–Memory–File interaction completes successfully and its result/events can be observed.",
         "method": "Integrated validation test"
       },
       {
-        "req": "NFR-01",
+        "req": "NFR ID-01",
         "criteria": "Invalid or unsafe memory requests are rejected without changing valid memory state.",
         "method": "Invalid allocation/free test"
       },
       {
-        "req": "NFR-02",
+        "req": "NFR ID-02",
         "criteria": "When a resource limit is reached, the system reports failure without overwriting valid entries.",
         "method": "Resource exhaustion test"
       },
       {
-        "req": "NFR-03",
+        "req": "NFR ID-03",
         "criteria": "Recorded events contain the required information consistently.",
         "method": "Event record inspection"
       },
       {
-        "req": "NFR-04",
+        "req": "NFR ID-04",
         "criteria": "Performance measurements are obtained using the same defined procedure and test conditions, producing comparable cycle-based evidence",
         "method": "Repeated performance measurements"
       },
       {
-        "req": "NFR-05",
+        "req": "NFR ID-05",
         "criteria": "Process, Memory and File components use their defined responsibilities without directly corrupting another component's state.",
         "method": "Interface/integration test"
       },
       {
-        "req": "NFR-06",
+        "req": "NFR ID-06",
         "criteria": "The documented build, run and test steps can be repeated in the controlled environment.",
         "method": "Repeat build/run/test"
       },
       {
-        "req": "NFR-07",
+        "req": "NFR ID-07",
         "criteria": "Demonstrations clearly show the operation, result and relevant event/state/measurement information.",
         "method": "Evidence inspection"
       }

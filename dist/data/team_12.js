@@ -159,43 +159,43 @@ const team12Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "The system shall accept client HTTP GET requests through a TCP listening endpoint.",
         "priority": "Mandatory",
         "sourceNeed": "Client access through an intermediary"
       },
       {
-        "id": "FR-02",
+        "id": "FR ID-02",
         "desc": "The system shall parse supported requests and identify the method, host and path.",
         "priority": "Mandatory",
         "sourceNeed": "Correct request processing"
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "The system shall create a request key and check the in-memory cache for a matching response.",
         "priority": "Mandatory",
         "sourceNeed": "Reuse of responses for repeated requests"
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "The system shall serve a fresh cached response without contacting the origin server.",
         "priority": "Mandatory",
         "sourceNeed": "Reduced origin traffic and latency"
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "The system shall fetch a cache MISS from the origin, return it to the client and cache it if eligible.",
         "priority": "Mandatory",
         "sourceNeed": "Completion of requests not in cache"
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "The system shall maintain LRU ordering and evict the least recently used entry at capacity.",
         "priority": "Mandatory",
         "sourceNeed": "Bounded in-memory cache capacity"
       },
       {
-        "id": "FR-07",
+        "id": "FR ID-07",
         "desc": "The system shall handle invalid requests, disconnections, origin failures and timeouts without crashing or leaking resources.",
         "priority": "Mandatory",
         "sourceNeed": "Controlled failure behaviour"
@@ -203,25 +203,25 @@ const team12Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "The system shall respond faster to fresh cache hits than to origin-forwarded requests.",
         "cat": "Performance",
         "target": "HIT response time ≥50% lower than MISS."
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "The system shall manage cache memory and lookups efficiently as entries grow.",
         "cat": "Resource Efficiency",
         "target": "≤100 MB memory; lookup <10 ms for 10,000 entries."
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "The system shall handle concurrent requests and failures without crashing or corrupting the cache.",
         "cat": "Reliability",
         "target": "≥100 concurrent requests; failure rate <1%; no deadlocks."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "The system shall sustain increasing request loads with repeatable measurements.",
         "cat": "Scalability",
         "target": "≥500 req/s; p95 <200 ms; HIT ratio ≥70%."
@@ -275,57 +275,57 @@ const team12Data = {
     "useCaseCaption": "",
     "acceptanceTable": [
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "The proxy accepts client TCP connections and receives HTTP GET requests on its listening port.",
         "method": "Send GET requests with curl or a browser configured to use the proxy; verify receipt."
       },
       {
-        "req": "FR-02",
+        "req": "FR ID-02",
         "criteria": "Method, host and path are identified correctly; invalid or incomplete requests are rejected safely.",
         "method": "Send valid and malformed GET requests; verify parsed values and controlled rejection."
       },
       {
-        "req": "FR-03",
+        "req": "FR ID-03",
         "criteria": "Each request produces a request key and a cache lookup that returns HIT or MISS correctly.",
         "method": "Request the same and different URLs; verify lookup outcomes in logs."
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "A fresh cached entry is returned without any connection to the origin server.",
         "method": "Request a cacheable resource twice; verify the origin sees only the first request."
       },
       {
-        "req": "FR-05",
+        "req": "FR ID-05",
         "criteria": "On a MISS the proxy fetches from the origin, returns the response and caches it if eligible.",
         "method": "Request an uncached resource; verify client response, origin contact and new cache entry."
       },
       {
-        "req": "FR-06",
+        "req": "FR ID-06",
         "criteria": "At configured capacity the LRU entry is evicted and the new entry stored.",
         "method": "Set a small capacity, access entries in a known order, insert a new one; verify LRU eviction."
       },
       {
-        "req": "FR-07",
+        "req": "FR ID-07",
         "criteria": "Malformed requests, disconnects, origin failures and timeouts do not crash the proxy; resources are released.",
         "method": "Send malformed requests, stop the origin, disconnect mid-request; verify handling and no leaked sockets."
       },
       {
-        "req": "NFR-01",
+        "req": "NFR ID-01",
         "criteria": "HIT response time is at least 50% lower than MISS response time.",
         "method": "Measure average HIT and MISS latency under identical conditions."
       },
       {
-        "req": "NFR-02",
+        "req": "NFR ID-02",
         "criteria": "Memory ≤100 MB and average lookup <10 ms with 10,000 entries.",
         "method": "Populate 10,000 entries; measure memory and lookup time."
       },
       {
-        "req": "NFR-03",
+        "req": "NFR ID-03",
         "criteria": "≥100 concurrent requests, failure rate <1%, no corruption or deadlock.",
         "method": "Run a concurrent load test; verify failure rate and cache consistency."
       },
       {
-        "req": "NFR-04",
+        "req": "NFR ID-04",
         "criteria": "≥500 req/s, p95 <200 ms and HIT ratio ≥70% on a repeated workload.",
         "method": "Run a controlled repeated-request benchmark; compute throughput, p95 and HIT ratio."
       }

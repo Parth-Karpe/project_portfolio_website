@@ -150,79 +150,79 @@ const team01Data = {
   "stage1": {
     "frTable": [
       {
-        "id": "FR-01",
+        "id": "FR ID-01",
         "desc": "Tokenize & parsing: The system shall split each query into tokens and build a parse tree (AST) using a fixed grammar, and reject any query that breaks the grammar.",
         "priority": "Mandatory",
         "sourceNeed": "SN-1, SN-3"
       },
       {
-        "id": "FR-02",
+        "id": "FR ID-02",
         "desc": "Semantic checking: The system shall check that every table and column exists and every value matches its column type before any data is touched.",
         "priority": "Mandatory",
         "sourceNeed": "SN-4"
       },
       {
-        "id": "FR-03",
+        "id": "FR ID-03",
         "desc": "Query error reporting: For every rejected query, the system shall show what went wrong, where (token / position) and a hint to fix it.",
         "priority": "Mandatory",
         "sourceNeed": "SN-4"
       },
       {
-        "id": "FR-04",
+        "id": "FR ID-04",
         "desc": "Table Management, Data Manipulation and Indexing: The system shall support table creation, validated record insertion, retrieval using SELECT and WHERE conditions, updating and deleting records, and creating and maintaining hash and sorted indexes consistently across INSERT, UPDATE, DELETE and ROLLBACK operations.",
         "priority": "Mandatory",
         "sourceNeed": "SN-2, SN-3, SN-7"
       },
       {
-        "id": "FR-05",
+        "id": "FR ID-05",
         "desc": "Choose access path: For each SELECT / UPDATE / DELETE, the system shall choose index lookup, index range or full scan, picking the option that reads the fewest rows.",
         "priority": "Mandatory",
         "sourceNeed": "SN-7"
       },
       {
-        "id": "FR-06",
+        "id": "FR ID-06",
         "desc": "EXPLAIN (learning mode): When the user types EXPLAIN <query>, the system shall show the tokens, parse tree, chosen plan and the reason for the choice, without changing any data.",
         "priority": "Mandatory",
         "sourceNeed": "SN-1"
       },
       {
-        "id": "FR-07",
+        "id": "FR ID-07",
         "desc": "Safe UPDATE / DELETE preview: Before an UPDATE or DELETE runs, the system shall show how many rows will be affected and ask for Y/N confirmation, with an extra warning when there is no WHERE clause.",
         "priority": "Mandatory",
         "sourceNeed": "SN-5"
       },
       {
-        "id": "FR-08",
+        "id": "FR ID-08",
         "desc": "BEGIN / COMMIT / ROLLBACK: The system shall support BEGIN, COMMIT and ROLLBACK, a single statement outside BEGIN shall run as its own transaction (auto-commit).",
         "priority": "Mandatory",
         "sourceNeed": "SN-6"
       },
       {
-        "id": "FR-09",
+        "id": "FR ID-09",
         "desc": "Undo log & rollback: The system shall record the old value of every change before applying it, and on ROLLBACK or any error shall restore all of them so no partial change remains.",
         "priority": "Mandatory",
         "sourceNeed": "SN-6"
       },
       {
-        "id": "FR-10",
+        "id": "FR ID-10",
         "desc": "Saving & reloading data: The system shall save committed tables to files on disk and load them again when it starts.",
         "priority": "Mandatory",
         "sourceNeed": "SN-8, SN-9"
       },
       {
-        "id": "FR-11",
+        "id": "FR ID-11",
         "desc": "Crash recovery: If the program stops in the middle of a transaction, on restart the system shall keep only committed data and discard unfinished changes.",
         "priority": "Challenge",
         "sourceNeed": "SN-8"
       },
       {
-        "id": "FR-12",
+        "id": "FR ID-12",
         "desc": "Concurrency control: The system shall use shared / exclusive table locks so two sessions cannot corrupt the same table, and shall detect a deadlock (or 2 s timeout) and abort one transaction.",
         "priority": "Challenge",
         "sourceNeed": "SN-8"
       },
       {
-        "id": "FR-13",
+        "id": "FR ID-13",
         "desc": "Command-line interface: The system shall accept queries ending with ';' (also multi-line), show results as a table with row count and time taken, and show errors without crashing.",
         "priority": "Mandatory",
         "sourceNeed": "SN-1, SN-9"
@@ -230,49 +230,49 @@ const team01Data = {
     ],
     "nfrTable": [
       {
-        "id": "NFR-01",
+        "id": "NFR ID-01",
         "desc": "Efficient query processing",
         "cat": "Performance",
         "target": "Indexed equality lookup on 10,000 rows ≤ 1 ms; full scan ≤ 50 ms; parse and plan ≤ 10 ms."
       },
       {
-        "id": "NFR-02",
+        "id": "NFR ID-02",
         "desc": "Efficient handling of larger datasets",
         "cat": "Scalability",
         "target": "Support up to 100,000 rows per table; peak memory ≤ 3× raw data size."
       },
       {
-        "id": "NFR-03",
+        "id": "NFR ID-03",
         "desc": "Atomic and reliable transactions",
         "cat": "Reliability",
         "target": "Zero partial changes in 50/50 rollback and failure-injection tests."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "Consistent and accurate data handling",
         "cat": "Correctness",
         "target": "Index and full-scan results identical in 100% of test queries; 100% of rule violations rejected."
       },
       {
-        "id": "NFR-04",
+        "id": "NFR ID-04",
         "desc": "Secure input handling",
         "cat": "Security",
         "target": "Queries exceeding 1,000 characters rejected; identifiers validated; no eval/exec of user input; 20/20 negative tests pass."
       },
       {
-        "id": "NFR-05",
+        "id": "NFR ID-05",
         "desc": "Safe concurrent access by multiple sessions",
         "cat": "Concurrency",
         "target": "0 lost updates with 4 sessions × 100 updates; deadlocks resolved within 2 seconds."
       },
       {
-        "id": "NFR-06",
+        "id": "NFR ID-06",
         "desc": "Clear and beginner-friendly error messages",
         "cat": "Usability",
         "target": "100% of error messages indicate what went wrong, where and provide a hint; at least 8/10 student testers resolve errors using only the message."
       },
       {
-        "id": "NFR-07",
+        "id": "NFR ID-07",
         "desc": "Portable and lightweight execution",
         "cat": "Portability",
         "target": "Python 3.10+ standard library only; runs on Windows and Linux; setup ≤ 5 minutes."
@@ -347,47 +347,47 @@ const team01Data = {
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "CREATE TABLE students(id INT PRIMARY KEY, name TEXT NOT NULL, age INT) adds the table with 3 typed columns to the catalog, running it again gives a 'table exists' error.",
         "method": "Unit test + CLI demo"
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "A valid INSERT increases row count by 1. Duplicate id, NULL name and 'abc' into INT are each rejected (3 / 3) and the row count does not change.",
         "method": "Unit test (pytest)"
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "20 SELECT test queries return exactly the same rows as the expected answers (checked against SQLite as reference): 20 / 20.",
         "method": "Comparison test vs SQLite"
       },
       {
-        "req": "FR-01",
+        "req": "FR ID-01",
         "criteria": "40 valid queries produce a parse tree; 20 invalid queries are rejected: 60 / 60 correct.",
         "method": "Parser test suite"
       },
       {
-        "req": "FR-04",
+        "req": "FR ID-04",
         "criteria": "After 1,000 random INSERT / UPDATE / DELETE / ROLLBACK operations, index results = full-scan results for every key.",
         "method": "Randomised consistency test"
       },
       {
-        "req": "FR-08",
+        "req": "FR ID-08",
         "criteria": "BEGIN; execute 3 INSERTs; COMMIT → all 3 rows are successfully committed. A single statement outside BEGIN runs as its own transaction",
         "method": "Integration test"
       },
       {
-        "req": "FR-10",
+        "req": "FR ID-10",
         "criteria": "Committed tables are saved to disk and successfully reloaded after restart. A single statement outside BEGIN is also saved immediately.",
         "method": "Persistence and restart test"
       },
       {
-        "req": "FR-09",
+        "req": "FR ID-09",
         "criteria": "BEGIN; INSERT, UPDATE, DELETE; ROLLBACK → table checksum equals the value before BEGIN in 50 / 50 runs.",
         "method": "Failure-injection test"
       },
       {
-        "req": "NFR-01",
+        "req": "NFR ID-01",
         "criteria": "Benchmark on 10,000 rows: indexed lookup ≤ 1 ms, full scan ≤ 50 ms.",
         "method": "benchmark.py"
       }

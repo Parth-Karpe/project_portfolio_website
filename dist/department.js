@@ -964,8 +964,8 @@ function ensureDepartment(){
       engines:'• E1: Stream Ingestion & Schema Profiler Engine\n• E2: Statistical & Distribution Analysis Engine\n• E3: Deterministic Data Quality Rules Engine\n• E4: Remediation, Revalidation & Audit Reporting Engine'
     },
     1:{
-      functional:'FR-01: Ingestion & Format Parsing (CSV, JSON, Parquet streaming chunks)\nFR-02: Automated Schema Profiling (column types, nullability, uniqueness)\nFR-03: Statistical Distribution Metrics (mean, median, variance, skewness, quantiles)\nFR-04: Outlier Detection (Tukey IQR method & modified Z-score)\nFR-05: Duplicate Record Identification (multi-column hash-based deduplication)\nFR-06: Custom Rule Engine (user-defined assertions, regex patterns, range checks)\nFR-07: Dataset Health Scoring (0–100 weighted quality index across 6 dimensions)\nFR-08: Copy-on-Write Remediation (immutable source with rollback safety)\nFR-09: Multi-Format Report Generation (interactive HTML dashboard, PDF, Excel summary)',
-      nonfunctional:'NFR-01 (Latency): Profile 1M rows (100MB CSV) in < 15 seconds on consumer hardware\nNFR-02 (Memory Bound): Peak RAM usage bounded within 2.5x chunk buffer (streaming memory ceiling < 500MB)\nNFR-03 (Deduplication Accuracy): 100% precision & recall on exact duplicate detection\nNFR-04 (Rule Throughput): Evaluate 50 constraint rules on 100k rows in < 1.2 seconds\nNFR-05 (Security & Isolation): Zero unauthorized data leakage; zero telemetry of customer data rows\nNFR-06 (Portability): Cross-platform execution across Linux, Windows, and macOS without native dependencies\nNFR-07 (Reliability): Graceful handling of malformed records with quarantine logging without pipeline crash',
+      functional:'FR ID-01: Ingestion & Format Parsing (CSV, JSON, Parquet streaming chunks)\nFR-02: Automated Schema Profiling (column types, nullability, uniqueness)\nFR-03: Statistical Distribution Metrics (mean, median, variance, skewness, quantiles)\nFR-04: Outlier Detection (Tukey IQR method & modified Z-score)\nFR-05: Duplicate Record Identification (multi-column hash-based deduplication)\nFR-06: Custom Rule Engine (user-defined assertions, regex patterns, range checks)\nFR-07: Dataset Health Scoring (0–100 weighted quality index across 6 dimensions)\nFR-08: Copy-on-Write Remediation (immutable source with rollback safety)\nFR-09: Multi-Format Report Generation (interactive HTML dashboard, PDF, Excel summary)',
+      nonfunctional:'NFR ID-01 (Latency): Profile 1M rows (100MB CSV) in < 15 seconds on consumer hardware\nNFR-02 (Memory Bound): Peak RAM usage bounded within 2.5x chunk buffer (streaming memory ceiling < 500MB)\nNFR-03 (Deduplication Accuracy): 100% precision & recall on exact duplicate detection\nNFR-04 (Rule Throughput): Evaluate 50 constraint rules on 100k rows in < 1.2 seconds\nNFR-05 (Security & Isolation): Zero unauthorized data leakage; zero telemetry of customer data rows\nNFR-06 (Portability): Cross-platform execution across Linux, Windows, and macOS without native dependencies\nNFR-07 (Reliability): Graceful handling of malformed records with quarantine logging without pipeline crash',
       architecture:'Modular local-first architecture: Presentation Tier (Semantic HTML5, CSS design tokens, Chart.js visualizers) → API Gateway / Coordinator (FastAPI asynchronous router with schema validation) → Core Execution Engine (Python 3.11 streaming chunk processor, NumExpr, DAA hash index) → Local-First Persistence Tier (Browser IndexedDB for media/binary evidence, LocalStorage for state, and immutable GitHub repository versioning).',
       workflow:'Phase 01: Dataset Ingestion & Chunk Buffering → Phase 02: Schema Inference & Completeness Analysis → Phase 03: Statistical Distribution & Outlier Screening → Phase 04: Duplicate Detection & Constraint Checking → Phase 05: Aggregate Health Scoring & Copy-on-Write Remediation → Phase 06: Multi-Format Audit Report Generation & Export.',
       techstack:'Frontend: HTML5 Semantic, Vanilla JavaScript ES2022, CSS3 Design Tokens, Chart.js & SVG Visualizers.\nBackend/Engine: Python 3.11, FastAPI, Pandas 2.x (Arrow backend), NumPy / SciPy, NumExpr.\nStorage: Browser IndexedDB (Media & binary evidence), LocalStorage JSON state, Git & GitHub version control.\nReporting & Verification: Local Ollama LLM daemon (Qwen 3:4b / Mistral), WeasyPrint PDF generator, SheetJS / openpyxl.',
@@ -1243,33 +1243,33 @@ function getDomainKnowledge(t){
       ],
       uc1:'Upload Dataset & Discover Schema',uc2:'Execute Automated Quality Profiling',uc3:'Select & Apply Guided Corrections',uc4:'Revalidate & Export Quality Report',
       frList:[
-        {id:'FR-01',desc:'The system shall allow users to upload datasets in supported structured/tabular formats and ingest data for analysis.',prio:'Mandatory',source:'Automated Ingestion'},
-        {id:'FR-02',desc:'The system shall profile the uploaded dataset and provide its structure, dimensions, columns, data types and basic characteristics.',prio:'Mandatory',source:'Automated Profiling'},
-        {id:'FR-03',desc:'The system shall detect and report common data-quality issues including missing values, duplicate records, data-type inconsistencies, null values and basic invalid values.',prio:'Mandatory',source:'Quality Anomaly Detection'},
-        {id:'FR-04',desc:'The system shall analyze the dataset using basic statistics, such as average, minimum, maximum, and distribution, and identify unusual values (outliers).',prio:'Mandatory',source:'Unified Quality Analysis'},
-        {id:'FR-05',desc:'The system shall display the detected issues and allow the user to select which issues should be corrected.',prio:'Mandatory',source:'User Decision Loop'},
-        {id:'FR-06',desc:'The system shall automatically apply user-selected corrections, such as correcting supported data types and removing duplicate records, without modifying the original dataset.',prio:'Mandatory',source:'Safe Remediation'},
-        {id:'FR-07',desc:'The system shall recheck the corrected dataset and allow the user to perform additional correction rounds until the user chooses to finish and generate the quality report.',prio:'Mandatory',source:'Revalidation'},
-        {id:'FR-08',desc:'The system shall provide basic recommendations for suitable corrective actions for detected quality issues.',prio:'Challenge',source:'Recommendation Engine'},
-        {id:'FR-09',desc:'The system shall support efficient processing of larger datasets within the defined system resource limits.',prio:'Challenge',source:'Scalability & Performance'}
+        {id:'FR ID-01',desc:'The system shall allow users to upload datasets in supported structured/tabular formats and ingest data for analysis.',prio:'Mandatory',source:'Automated Ingestion'},
+        {id:'FR ID-02',desc:'The system shall profile the uploaded dataset and provide its structure, dimensions, columns, data types and basic characteristics.',prio:'Mandatory',source:'Automated Profiling'},
+        {id:'FR ID-03',desc:'The system shall detect and report common data-quality issues including missing values, duplicate records, data-type inconsistencies, null values and basic invalid values.',prio:'Mandatory',source:'Quality Anomaly Detection'},
+        {id:'FR ID-04',desc:'The system shall analyze the dataset using basic statistics, such as average, minimum, maximum, and distribution, and identify unusual values (outliers).',prio:'Mandatory',source:'Unified Quality Analysis'},
+        {id:'FR ID-05',desc:'The system shall display the detected issues and allow the user to select which issues should be corrected.',prio:'Mandatory',source:'User Decision Loop'},
+        {id:'FR ID-06',desc:'The system shall automatically apply user-selected corrections, such as correcting supported data types and removing duplicate records, without modifying the original dataset.',prio:'Mandatory',source:'Safe Remediation'},
+        {id:'FR ID-07',desc:'The system shall recheck the corrected dataset and allow the user to perform additional correction rounds until the user chooses to finish and generate the quality report.',prio:'Mandatory',source:'Revalidation'},
+        {id:'FR ID-08',desc:'The system shall provide basic recommendations for suitable corrective actions for detected quality issues.',prio:'Challenge',source:'Recommendation Engine'},
+        {id:'FR ID-09',desc:'The system shall support efficient processing of larger datasets within the defined system resource limits.',prio:'Challenge',source:'Scalability & Performance'}
       ],
-      fr1:'FR-01: Multi-Source Dataset Ingestion (CSV, MySQL, PostgreSQL, SQLite) with automatic schema discovery.',
-      fr2:'FR-02: Structural Profiling & Completeness Engine scanning missing, null, duplicate, and invalid entries.',
-      fr3:'FR-03: Statistical & IQR Anomaly Analysis with user-guided copy-on-write remediation.',
-      fr4:'FR-04: Multi-Dimensional Quality Scoring and Export (PDF Report, Excel Sheet, CSV Audit).',
+      fr1:'FR ID-01: Multi-Source Dataset Ingestion (CSV, MySQL, PostgreSQL, SQLite) with automatic schema discovery.',
+      fr2:'FR ID-02: Structural Profiling & Completeness Engine scanning missing, null, duplicate, and invalid entries.',
+      fr3:'FR ID-03: Statistical & IQR Anomaly Analysis with user-guided copy-on-write remediation.',
+      fr4:'FR ID-04: Multi-Dimensional Quality Scoring and Export (PDF Report, Excel Sheet, CSV Audit).',
       nfrList:[
-        {id:'NFR-01',desc:'The system shall process datasets within the supported size limit without failure under the defined test environment.',cat:'Performance',target:'Successfully process >= 95% of defined test datasets within size limits'},
-        {id:'NFR-02',desc:'The system should quickly show the user the progress or result while the dataset is being uploaded and analyzed.',cat:'Performance',target:'Display processing status within 2 seconds of starting long-running operations'},
-        {id:'NFR-03',desc:'The system shall preserve the original uploaded dataset without modifying it during quality analysis.',cat:'Reliability / Data Integrity',target:'0 unintended modifications to original input files in test cases'},
-        {id:'NFR-04',desc:'The system shall provide understandable quality results to users through the dashboard.',cat:'Usability',target:'User identifies overall score and major issues within 1 minute of viewing'},
-        {id:'NFR-05',desc:'The system shall provide consistent results when the same dataset and rules are processed repeatedly.',cat:'Reliability',target:'100% identical results produced on identical input and rules'},
-        {id:'NFR-06',desc:'The system shall prevent unauthorized access to uploaded datasets and generated results.',cat:'Security',target:'Unauthorized access attempts are rejected in 100% of security tests'},
-        {id:'NFR-07',desc:'The system shall maintain correction results so that users can distinguish the original and corrected datasets.',cat:'Auditability / Reliability',target:'100% of correction sessions preserve original vs. corrected distinction'}
+        {id:'NFR ID-01',desc:'The system shall process datasets within the supported size limit without failure under the defined test environment.',cat:'Performance',target:'Successfully process >= 95% of defined test datasets within size limits'},
+        {id:'NFR ID-02',desc:'The system should quickly show the user the progress or result while the dataset is being uploaded and analyzed.',cat:'Performance',target:'Display processing status within 2 seconds of starting long-running operations'},
+        {id:'NFR ID-03',desc:'The system shall preserve the original uploaded dataset without modifying it during quality analysis.',cat:'Reliability / Data Integrity',target:'0 unintended modifications to original input files in test cases'},
+        {id:'NFR ID-04',desc:'The system shall provide understandable quality results to users through the dashboard.',cat:'Usability',target:'User identifies overall score and major issues within 1 minute of viewing'},
+        {id:'NFR ID-05',desc:'The system shall provide consistent results when the same dataset and rules are processed repeatedly.',cat:'Reliability',target:'100% identical results produced on identical input and rules'},
+        {id:'NFR ID-06',desc:'The system shall prevent unauthorized access to uploaded datasets and generated results.',cat:'Security',target:'Unauthorized access attempts are rejected in 100% of security tests'},
+        {id:'NFR ID-07',desc:'The system shall maintain correction results so that users can distinguish the original and corrected datasets.',cat:'Auditability / Reliability',target:'100% of correction sessions preserve original vs. corrected distinction'}
       ],
-      nfr1:'NFR-01: Processing Scalability: Complete profiling of 1M row datasets in < 30s.',
-      nfr2:'NFR-02: Zero Modification Immutability: 0 unintended changes to source datasets.',
-      nfr3:'NFR-03: Deterministic Reliability: 100% repeatable results given identical rules.',
-      nfr4:'NFR-04: Usability: Instant visual quality score and major issue breakdown in < 1 min.',
+      nfr1:'NFR ID-01: Processing Scalability: Complete profiling of 1M row datasets in < 30s.',
+      nfr2:'NFR ID-02: Zero Modification Immutability: 0 unintended changes to source datasets.',
+      nfr3:'NFR ID-03: Deterministic Reliability: 100% repeatable results given identical rules.',
+      nfr4:'NFR ID-04: Usability: Instant visual quality score and major issue breakdown in < 1 min.',
       archImg:'assets/team08_architecture_workflow.png',
       archDesc:'Decoupled 6-phase pipeline connecting multi-source ingestion to statistical profiling, rule-based quality assessment, metric calculation, and web visualization, backed by isolated Metadata Store and Results Database.',
       workflow:['1. Data Input','2. Ingestion & Schema','3. Data Profiling','4. Quality Assessment','5. Metrics & Scoring','6. Dashboard & Output'],
@@ -1318,14 +1318,14 @@ function getDomainKnowledge(t){
       success1:'Diagnostic Accuracy: >= 90% Macro F1 on held-out multi-class test sets.',
       success2:'Inference Latency: Sub-800ms per high-resolution frame on edge hardware.',
       uc1:'Upload Clinical Scans & Field Images',uc2:'Execute Vision Transformer / CNN Pipeline',uc3:'Generate Explainable Grad-CAM Heatmap',uc4:'Review & Verify Diagnostic Predictions',
-      fr1:'FR-01: Multi-Format Image Ingestion (DICOM, JPG, PNG) with automatic normalization and artifact reduction.',
-      fr2:'FR-02: Deep Neural Network Classifier (Vision Transformer / Compact CNN) with multi-label confidence scores.',
-      fr3:'FR-03: Saliency Heatmap Generation via Grad-CAM to highlight localized pathological regions.',
-      fr4:'FR-04: Automated Diagnostic PDF and Structured JSON Report Generation for clinician validation.',
-      nfr1:'NFR-01: Inference Speed < 800ms on edge GPU accelerators.',
-      nfr2:'NFR-02: Generalization: >= 88% accuracy across unseen acquisition devices.',
-      nfr3:'NFR-03: Privacy: HIPAA/GDPR-compliant zero-cloud client-side execution.',
-      nfr4:'NFR-04: Resilience: Rejection of corrupted, over-exposed or blurry inputs.',
+      fr1:'FR ID-01: Multi-Format Image Ingestion (DICOM, JPG, PNG) with automatic normalization and artifact reduction.',
+      fr2:'FR ID-02: Deep Neural Network Classifier (Vision Transformer / Compact CNN) with multi-label confidence scores.',
+      fr3:'FR ID-03: Saliency Heatmap Generation via Grad-CAM to highlight localized pathological regions.',
+      fr4:'FR ID-04: Automated Diagnostic PDF and Structured JSON Report Generation for clinician validation.',
+      nfr1:'NFR ID-01: Inference Speed < 800ms on edge GPU accelerators.',
+      nfr2:'NFR ID-02: Generalization: >= 88% accuracy across unseen acquisition devices.',
+      nfr3:'NFR ID-03: Privacy: HIPAA/GDPR-compliant zero-cloud client-side execution.',
+      nfr4:'NFR ID-04: Resilience: Rejection of corrupted, over-exposed or blurry inputs.',
       archDesc:'Client Image Uploader → Preprocessing Engine → Vision Transformer Backbone → Saliency Visualizer → Local Diagnostic Database.',
       workflow:['Image Upload','Preprocessing','Neural Inference','Heatmap Generation','Diagnostic Report'],
       techGroup2:['PyTorch 2.2','Vision Transformers (ViT)','MobileNetV3','OpenCV / Albumentations'],
@@ -1348,14 +1348,14 @@ function getDomainKnowledge(t){
       success1:'Retrieval Quality: >= 90% Recall@5 over benchmark campus policy query test sets.',
       success2:'Zero Hallucinations: 100% of factual project claims traceable to exact institutional quotes.',
       uc1:'Ingest Approved Bilingual Policy Documents',uc2:'Perform Dense Passage Semantic Retrieval',uc3:'Generate Citation-Grounded Responses',uc4:'Audit & Flag Unsupported Claims',
-      fr1:'FR-01: Multi-Document Ingestion (PDF, Markdown, HTML) with semantic paragraph chunking.',
-      fr2:'FR-02: Bilingual Dense Vector Embedding & Retrieval supporting English and regional languages.',
-      fr3:'FR-03: Grounded Answer Synthesis using local Ollama model with verbatim quote extraction.',
-      fr4:'FR-04: Citation Verification Audit rejecting any response containing unverified claims.',
-      nfr1:'NFR-01: End-to-End Latency < 4 seconds on local evaluation hardware.',
-      nfr2:'NFR-02: Verifiability: 100% of generated claims must match an exact substring in source documents.',
-      nfr3:'NFR-03: Security: Restricted document update permissions for authorized department staff only.',
-      nfr4:'NFR-04: Offline Operation: Zero reliance on external paid cloud APIs.',
+      fr1:'FR ID-01: Multi-Document Ingestion (PDF, Markdown, HTML) with semantic paragraph chunking.',
+      fr2:'FR ID-02: Bilingual Dense Vector Embedding & Retrieval supporting English and regional languages.',
+      fr3:'FR ID-03: Grounded Answer Synthesis using local Ollama model with verbatim quote extraction.',
+      fr4:'FR ID-04: Citation Verification Audit rejecting any response containing unverified claims.',
+      nfr1:'NFR ID-01: End-to-End Latency < 4 seconds on local evaluation hardware.',
+      nfr2:'NFR ID-02: Verifiability: 100% of generated claims must match an exact substring in source documents.',
+      nfr3:'NFR ID-03: Security: Restricted document update permissions for authorized department staff only.',
+      nfr4:'NFR ID-04: Offline Operation: Zero reliance on external paid cloud APIs.',
       archDesc:'Student Web Interface → Multilingual Retrieval API → Document Vector Index → Local Ollama Model → Cited Answer Output.',
       workflow:['Doc Ingestion','Vector Chunking','Dense Retrieval','Local LLM Prompt','Cited Output'],
       techGroup2:['Python 3.11','FastAPI','FAISS / SentenceTransformers','Local Ollama (Qwen 3:4b)'],
@@ -1378,14 +1378,14 @@ function getDomainKnowledge(t){
       success1:'Fairness Certification: Achieve Disparate Impact Ratio >= 0.85 across all protected cohorts.',
       success2:'Adversarial Resilience: Retain >= 85% model accuracy under epsilon=0.03 FGSM perturbations.',
       uc1:'Upload Student Cohort & Feature Datasets',uc2:'Calculate Demographic Parity & Disparate Impact',uc3:'Execute Adversarial Noise Injection Test',uc4:'Generate Institutional Fairness Scorecard',
-      fr1:'FR-01: Dataset Ingestion with protected demographic attribute tagging (gender, domicile, socioeconomic tier).',
-      fr2:'FR-02: Algorithmic Fairness Metric Calculator (Demographic Parity, Equalized Odds, Disparate Impact).',
-      fr3:'FR-03: Adversarial Perturbation Testing (FGSM, PGD) to evaluate classification boundary stability.',
-      fr4:'FR-04: Export of Accredited Fairness Compliance Scorecard in CSV, PDF, and interactive visual dashboard.',
-      nfr1:'NFR-01: Full audit suite completion in < 15 seconds for cohorts up to 10,000 records.',
-      nfr2:'NFR-02: Zero Parameter Leakage: Differential privacy guarantee (epsilon <= 0.5).',
-      nfr3:'NFR-03: Reproducibility: Deterministic audit logs with cryptographic hash signatures.',
-      nfr4:'NFR-04: Usability: Interactive fairness-accuracy trade-off Pareto frontiers.',
+      fr1:'FR ID-01: Dataset Ingestion with protected demographic attribute tagging (gender, domicile, socioeconomic tier).',
+      fr2:'FR ID-02: Algorithmic Fairness Metric Calculator (Demographic Parity, Equalized Odds, Disparate Impact).',
+      fr3:'FR ID-03: Adversarial Perturbation Testing (FGSM, PGD) to evaluate classification boundary stability.',
+      fr4:'FR ID-04: Export of Accredited Fairness Compliance Scorecard in CSV, PDF, and interactive visual dashboard.',
+      nfr1:'NFR ID-01: Full audit suite completion in < 15 seconds for cohorts up to 10,000 records.',
+      nfr2:'NFR ID-02: Zero Parameter Leakage: Differential privacy guarantee (epsilon <= 0.5).',
+      nfr3:'NFR ID-03: Reproducibility: Deterministic audit logs with cryptographic hash signatures.',
+      nfr4:'NFR ID-04: Usability: Interactive fairness-accuracy trade-off Pareto frontiers.',
       archDesc:'Compliance Dashboard → Audit API Controller → FairLearn & Adversarial Engine → Differential Privacy Store.',
       workflow:['Data Intake','Protected Tagging','Fairness Metric Run','Adversarial Test','Audit Scorecard'],
       techGroup2:['Python 3.11','FairLearn Toolkit','Adversarial Robustness Toolbox (ART)','Scikit-Learn'],
@@ -1407,14 +1407,14 @@ function getDomainKnowledge(t){
     success1:'Zero Hard Conflicts: Strict constraint satisfaction with zero double-booked rooms or faculty slots.',
     success2:'Runtime Optimization: Generate verifiable cohort timetables in under 30 seconds on standard compute.',
     uc1:'Upload Constraints & Capacities',uc2:'Execute Constraint Solver Engine',uc3:'Review & Approve Milestones',uc4:'View & Export Timetable / Portfolio',
-    fr1:'FR-01: Ingestion of faculty availability matrices, room capacities, course lists, and student cohort rosters.',
-    fr2:'FR-02: Constraint-based solver modeling hard limits and optimizing preferred morning time slots.',
-    fr3:'FR-03: Interactive conflict resolution and manual slot overrides with real-time clash validation.',
-    fr4:'FR-04: Multi-format publication exporting finalized timetables in PDF, Excel, and Web formats.',
-    nfr1:'NFR-01: Sub-30s solver runtime on benchmark department dataset.',
-    nfr2:'NFR-02: 100% hard constraint enforcement with zero simultaneous clashes.',
-    nfr3:'NFR-03: Role-based authorization: Coordinator edits, Faculty reviews, Students view.',
-    nfr4:'NFR-04: Zero-build offline architecture operable in standard university computer labs.',
+    fr1:'FR ID-01: Ingestion of faculty availability matrices, room capacities, course lists, and student cohort rosters.',
+    fr2:'FR ID-02: Constraint-based solver modeling hard limits and optimizing preferred morning time slots.',
+    fr3:'FR ID-03: Interactive conflict resolution and manual slot overrides with real-time clash validation.',
+    fr4:'FR ID-04: Multi-format publication exporting finalized timetables in PDF, Excel, and Web formats.',
+    nfr1:'NFR ID-01: Sub-30s solver runtime on benchmark department dataset.',
+    nfr2:'NFR ID-02: 100% hard constraint enforcement with zero simultaneous clashes.',
+    nfr3:'NFR ID-03: Role-based authorization: Coordinator edits, Faculty reviews, Students view.',
+    nfr4:'NFR ID-04: Zero-build offline architecture operable in standard university computer labs.',
     archDesc:'Web Dashboard → Scheduling API Gateway → Google OR-Tools Constraint Solver → Timetable Repository.',
     workflow:['Data Ingestion','Constraint Setup','Solver Run','Clash Check','Final Export'],
     techGroup2:['Python 3.11','Google OR-Tools (CP-SAT)','FastAPI Framework','Constraint Satisfaction (CSP)'],
@@ -1549,6 +1549,13 @@ function renderRequirementsTable(text, defaultList, type){
       </table>
     </div>`;
   }
+}
+
+function formatReqId(id){
+  if(!id) return '';
+  return String(id)
+    .replace(/\bNFR-(\d+)\b/g, 'NFR ID-$1')
+    .replace(/\bFR-(\d+)\b/g, 'FR ID-$1');
 }
 
 portfolio=function(){
@@ -1791,10 +1798,10 @@ portfolio=function(){
               <tbody>
                 ${((hasData && st1.frTable) || []).map(fr=>`
                   <tr id="portfolio-fr-${esc(fr.id)}">
-                    <td style="text-align:center"><span class="req-tag">${esc(fr.id)}</span></td>
-                    <td class="fr-desc" style="color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-                    <td><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
-                    <td class="fr-source" style="color:var(--muted);line-height:1.45">${esc(fr.sourceNeed||'')}</td>
+                    <td style="text-align:center"><span class="req-tag">${esc(formatReqId(fr.id))}</span></td>
+                    <td class="fr-desc" style="font-size:12px;color:#000000;line-height:1.5">${esc(fr.desc)}</td>
+                    <td><span class="requirement-meta-text" style="font-size:12px">${esc(fr.priority||'Mandatory')}</span></td>
+                    <td class="fr-source" style="font-size:12px;color:var(--muted);line-height:1.45">${esc(fr.sourceNeed||'')}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1817,10 +1824,10 @@ portfolio=function(){
               <tbody>
                 ${((hasData && st1.nfrTable) || []).map(nfr=>`
                   <tr id="portfolio-nfr-${esc(nfr.id)}">
-                    <td style="text-align:center"><span class="req-tag">${esc(nfr.id)}</span></td>
-                    <td class="nfr-desc" style="color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
-                    <td><span class="requirement-meta-text">${esc(nfr.cat||nfr.category||'')}</span></td>
-                    <td class="nfr-target" style="color:var(--brand);font-weight:600;line-height:1.45">${esc(nfr.target||'')}</td>
+                    <td style="text-align:center"><span class="req-tag">${esc(formatReqId(nfr.id))}</span></td>
+                    <td class="nfr-desc" style="font-size:12px;color:#000000;line-height:1.5">${esc(nfr.desc)}</td>
+                    <td><span class="requirement-meta-text" style="font-size:12px">${esc(nfr.cat||nfr.category||'')}</span></td>
+                    <td class="nfr-target" style="font-size:12px;color:var(--brand);font-weight:600;line-height:1.45">${esc(nfr.target||'')}</td>
                   </tr>
                 `).join('')}
               </tbody>
