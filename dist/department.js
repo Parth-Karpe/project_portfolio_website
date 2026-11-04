@@ -1149,6 +1149,19 @@ function ensureDepartment(){
     state.workspaces[t05.id].guide = t05.faculty;
     state.workspaces[t05.id].members = t05.members;
   }
+  const tb10=state.teams?.find(t=>t.id==='B-10'||t.title.includes('Log Processing'));
+  if(tb10){
+    tb10.title = 'Large-Scale Log Processing & Analytics Engine';
+    tb10.faculty = 'Ms. Umadevi F M';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-10'] || STATIC_TEAMS_DATA['10'])){
+      const sb10 = STATIC_TEAMS_DATA['B-10'] || STATIC_TEAMS_DATA['10'];
+      tb10.members = sb10.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[tb10.id]) state.workspaces[tb10.id] = newTeamWorkspace(tb10);
+    state.workspaces[tb10.id].guide = tb10.faculty;
+    state.workspaces[tb10.id].members = tb10.members;
+  }
 
   [state,...Object.values(state.workspaces||{})].forEach(w=>{
     w.media=w.media||[];w.messages=w.messages||[];w.mentorMessages=w.mentorMessages||[];w.reviews=w.reviews||{};w.questions=w.questions||[];w.answers=w.answers||{};w.activities=w.activities||[];
@@ -2033,6 +2046,7 @@ function getThemePriority(team, themeNo){
   
   if (th === 2) {
     if (id === 'A-08' || id === '08' || title.includes('profiling') || title.includes('data quality')) return 1;
+    if (id === 'B-10' || id === '10' || title.includes('log processing') || (title.includes('log') && title.includes('analytics engine'))) return 2;
   } else if (th === 3) {
     if (id === 'B-01' || title.includes('incremental build') || (title.includes('incremental') && title.includes('dependency resolution'))) return 1;
     if (id === 'A-14' || id === '14' || title.includes('mini kernel') || title.includes('mini -kernel')) return 2;
