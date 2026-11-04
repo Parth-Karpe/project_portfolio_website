@@ -111,7 +111,7 @@ function portfolioSubnav(){
 
     <!-- System Design -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='sec-system-design'?'selected':''}" data-target="sec-system-design" onclick="scrollToPortfolioTopic('sec-system-design')">
-      <span class="nav-label">• System Design</span>
+      <span class="nav-label">Stage 2 - System Design</span>
     </button>
     <div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
@@ -130,12 +130,12 @@ function portfolioSubnav(){
 
     <!-- Implementation and Integration -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-2'?'selected':''}" data-target="stage-2" onclick="scrollToPortfolioTopic('stage-2')">
-      <span class="nav-label">• Implementation and Integration</span>
+      <span class="nav-label">Stage 3 - Implementation and Integration</span>
     </button>
 
     <!-- Testing and Validations -->
     <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='stage-3'?'selected':''}" data-target="stage-3" onclick="scrollToPortfolioTopic('stage-3')">
-      <span class="nav-label">• Testing and Validations</span>
+      <span class="nav-label">Stage 4 - Testing and Validations</span>
     </button>
   </div>`;
 }

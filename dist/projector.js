@@ -240,19 +240,19 @@
     if(!tabs.length) return;
     tabs.forEach(tab=>{
       if(tab.dataset.tab === '0') {
-        setText(tab, 'Stage 0 - Problem Definition');
+        setText(tab, 'Stage 0 – Problem Definition and Scope');
         tab.dataset.target = 'stage-0';
       } else if(tab.dataset.tab === '1') {
         setText(tab, 'Stage 1 - Requirement Analysis');
         tab.dataset.target = 'stage-1';
       } else if(tab.dataset.tab === 'system-design') {
-        setText(tab, 'System Design');
+        setText(tab, 'Stage 2 - System Design');
         tab.dataset.target = 'sec-system-design';
       } else if(tab.dataset.tab === '2') {
-        setText(tab, 'Implementation and Integration');
+        setText(tab, 'Stage 3 - Implementation and Integration');
         tab.dataset.target = 'stage-2';
       } else if(tab.dataset.tab === '3') {
-        setText(tab, 'Testing and Validations');
+        setText(tab, 'Stage 4 - Testing and Validations');
         tab.dataset.target = 'stage-3';
       }
     });

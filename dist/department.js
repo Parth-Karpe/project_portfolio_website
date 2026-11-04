@@ -1586,24 +1586,19 @@ portfolio=function(){
       <!-- Stage Switcher Tabs -->
       <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
         <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||'0')==='0'?'active':''}" data-tab="0" data-target="stage-0" onclick="switchPortfolioStage('0',true)">
-          <span class="tab-badge">STAGE 0</span>
-          <span>Problem Statement &amp; Need Identification</span>
+          Stage 0 – Problem Definition and Scope
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='1'?'active':''}" data-tab="1" data-target="stage-1" onclick="switchPortfolioStage('1',true)">
-          <span class="tab-badge">STAGE 1</span>
-          <span>Requirement Analysis</span>
+          Stage 1 - Requirement Analysis
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='system-design'?'active':''}" data-tab="system-design" data-target="sec-system-design" onclick="switchPortfolioStage('system-design',true)">
-          <span class="tab-badge">DESIGN</span>
-          <span>System Design</span>
+          Stage 2 - System Design
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='2'?'active':''}" data-tab="2" data-target="stage-2" onclick="switchPortfolioStage('2',true)">
-          <span class="tab-badge">STAGE 2</span>
-          <span>Implementation and Integration</span>
+          Stage 3 - Implementation and Integration
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='3'?'active':''}" data-tab="3" data-target="stage-3" onclick="switchPortfolioStage('3',true)">
-          <span class="tab-badge">STAGE 3</span>
-          <span>Testing and Validations</span>
+          Stage 4 - Testing and Validations
         </button>
       </div>
 
@@ -1892,7 +1887,7 @@ portfolio=function(){
       <!-- System Design -->
       <section class="portfolio-section" id="sec-system-design">
         <div class="portfolio-section-title">
-          <h2>System Design</h2>
+          <h2>Stage 2 - System Design</h2>
         </div>
 
         ${hasData && sys && sys.architecturePoints && sys.architecturePoints.length ? `
@@ -1942,7 +1937,7 @@ portfolio=function(){
       <!-- Implementation and Integration -->
       <section class="portfolio-section" id="stage-2">
         <div class="portfolio-section-title">
-          <h2>Implementation and Integration</h2>
+          <h2>Stage 3 - Implementation and Integration</h2>
         </div>
         <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
@@ -1952,7 +1947,7 @@ portfolio=function(){
       <!-- Testing and Validations -->
       <section class="portfolio-section" id="stage-3">
         <div class="portfolio-section-title">
-          <h2>Testing and Validations</h2>
+          <h2>Stage 4 - Testing and Validations</h2>
         </div>
         <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
