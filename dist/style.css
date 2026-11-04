@@ -2527,13 +2527,20 @@ tbody tr:hover {
   transform: translateY(20px) scale(0.96);
   transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.24s;
+              visibility 0.24s,
+              width 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .portfolio-chat-drawer.open {
   opacity: 1;
   visibility: visible;
   transform: translateY(0) scale(1);
+}
+
+.portfolio-chat-drawer.quiz-open {
+  width: 520px;
+  height: 700px;
 }
 
 /* Chat Header */
@@ -2731,6 +2738,11 @@ tbody tr:hover {
 @keyframes fadeInBubble {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-bubble-wrap.assistant .chat-bubble-content {
+  max-height: 320px;
+  overflow-y: auto;
 }
 
 .chat-bubble {
@@ -3141,7 +3153,7 @@ tbody tr:hover {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: 440px;
+  max-height: 520px;
   overflow-y: auto;
 }
 
@@ -3281,6 +3293,22 @@ tbody tr:hover {
   font-size: 12px !important;
   height: auto !important;
   min-height: unset !important;
+}
+
+.missed-topics {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-subtle);
+  font-size: 12px;
+}
+
+.missed-topic-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
 }
 
 /* Quiz Evaluation Rows */
