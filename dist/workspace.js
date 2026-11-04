@@ -2,12 +2,12 @@
 function upgradeState(){
   if(!state.version||state.version<2){
     ['Parth Karpe','Nupur Bagave','Vedant Khot','Sachi Aarati'].forEach((name,i)=>{state.members[i].name=name;delete state.members[i].share});
-    state.members[0].role='Team Lead · Full-stack';state.guide='Amit K';
+    state.members[0].role='Team Lead · Full-stack';state.guide='Mr. Amit Kachavimath';
     state.role=state.role==='Team Admin'||state.role==='Student'?'Team Lead':state.role;
     state.questions=[];state.answers={};state.version=2;
   }
   if(!['Admin','HOD','Faculty','Team Lead','Faculty Admin'].includes(state.role))state.role='Team Lead';
-  state.guide=state.guide||'Amit K';state.messages=state.messages||[];state.mentorMessages=state.mentorMessages||[];
+  state.guide=state.guide||'Mr. Amit Kachavimath';state.messages=state.messages||[];state.mentorMessages=state.mentorMessages||[];
   state.media=state.media||[];state.questions=state.questions||[];
   state.forms=state.forms||{};
   [0,1,2,3].forEach(s=>{state.forms[s]=state.forms[s]||{}});

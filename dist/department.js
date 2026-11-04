@@ -394,7 +394,7 @@ function seedTeams(){
   },
   {
     "id": "B-14",
-    "faculty": "Mr.Amit Kachavimath",
+    "faculty": "Mr. Amit Kachavimath",
     "topic": "Theme 4: Networked Systems and Tools",
     "theme_no": 4,
     "theme_name": "Networked Systems and Tools",
@@ -642,7 +642,7 @@ function seedTeams(){
   },
   {
     "id": "A-03",
-    "faculty": "Mr.Amit Kachavimath",
+    "faculty": "Mr. Amit Kachavimath",
     "topic": "Theme 6: Concurrent and Transactional Systems",
     "theme_no": 6,
     "theme_name": "Concurrent and Transactional Systems",
@@ -934,7 +934,7 @@ function ensureDepartment(){
     state.excelVersion=4;
     state.activeTeamId=state.teams.some(t=>t.id===state.activeTeamId)?state.activeTeamId:'A-03';
     state.workspaces=state.workspaces||{};
-    state.facultyAccount=state.facultyAccount||'Mr.Amit Kachavimath';
+    state.facultyAccount=state.facultyAccount||'Mr. Amit Kachavimath';
     state.teams.forEach(t=>{
       t.department='CSE(AI)';t.hod=state.department.hod;t.facultyAdmin=state.department.facultyAdmin;
       if(!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
@@ -1004,7 +1004,7 @@ function ensureDepartment(){
   const t03=state.teams?.find(t=>t.id==='A-03'||t.id==='03');
   if(t03){
     t03.title = 'Smart Campus Lab and Resource Optimizer';
-    t03.faculty = 'Mr.Amit Kachavimath';
+    t03.faculty = 'Mr. Amit Kachavimath';
     if(typeof STATIC_TEAMS !== 'undefined' && STATIC_TEAMS['03']){
       t03.title = STATIC_TEAMS['03'].title || t03.title;
       t03.faculty = STATIC_TEAMS['03'].faculty || t03.faculty;
@@ -1421,7 +1421,8 @@ portfolio=function(){
         topic = isSmartCampus ? (staticTeam?.theme || t.topic || 'Specialization Theme') : (t.topic || 'Specialization Theme'),
         themeName = (t.theme_name || (staticTeam?.theme) || topic || '').replace(/^Theme\s*\d+\s*:\s*/i, ''),
         title = isSmartCampus ? (staticTeam?.title || t.title) : (t.title || 'Project Portfolio'),
-        guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide'),
+        guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide');
+  if (guide === 'Mr. Amit K' || guide === 'Amit K' || guide === 'Mr.Amit Kachavimath') guide = 'Mr. Amit Kachavimath';
         repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
