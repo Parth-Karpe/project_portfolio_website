@@ -885,6 +885,169 @@
     return null;
   }
 
+  // Dynamic AI Viva Quiz Generator (Calls LLM when available, falls back to grounded KB generator)
+  async function generateVivaQuizWithAI(kb, userQuery = '', customSeed = null){
+    const settings = getLLMSettings();
+
+    // In pure extractive mode, use instant deterministic generator
+    if(settings.provider === 'extractive'){
+      return generateVivaQuiz(kb, customSeed);
+    }
+
+    const sessionSeed = customSeed !== null ? customSeed : (Math.floor(Date.now() / 1000) % 100000);
+    const st0 = kb.st0 || {};
+    const st1 = kb.st1 || {};
+
+    const groundedContext = `
+PROJECT: ${kb.title} (Team ${kb.teamId})
+THEME: ${kb.theme}
+PROBLEM: ${st0.problem || 'Standard problem definition'}
+OBJECTIVES: ${Array.isArray(st0.objectives) ? st0.objectives.join('; ') : String(st0.objectives || '')}
+ENGINES: ${(st0.enginesTable || []).map(e => `Engine ${e.id} (${e.name}): ${e.desc}`).join('; ')}
+IN-SCOPE: ${(st0.scopeInTable || []).map(s => s.item).join('; ')}
+OUT-OF-SCOPE EXCLUSIONS: ${(st0.scopeOutTable || []).map(s => `${s.item} (${s.reason || ''})`).join('; ')}
+FUNCTIONAL REQUIREMENTS: ${(st1.frTable || []).map(f => `${f.id}: ${f.desc} (${f.priority || 'Mandatory'})`).join('; ')}
+QUALITY TARGETS (NFRs): ${(st1.nfrTable || []).map(n => `${n.id} (${n.cat || n.category}): ${n.desc} -> Target: ${n.target}`).join('; ')}
+TEST MATRIX: ${(st1.testCases || st1.acceptanceTable || []).map(tc => `${tc.id || ('TC-' + tc.req)} verifies ${tc.req}: ${tc.criteria}`).join('; ')}
+`;
+
+    const systemPrompt = `You are a strict university faculty examination panel preparing a Viva Defense Quiz for students defending "${kb.title}" (Team ${kb.teamId}).
+Based ONLY on the verified facts provided below, generate 3 to 4 multiple-choice questions (MCQs).
+Rules:
+1. Every question must have 4 options labeled A, B, C, D.
+2. Exactly one option must be the correct answer based on verified facts.
+3. Every question must cite a verified deliverable tag (e.g. [Table 0.4], [Engine E1], [FR-01], [NFR-02], [Table 1.3: Test Matrix]).
+4. Provide a grounded explanation and a faculty defense tip for panel questioning.
+5. Return ONLY a valid JSON array of question objects with this schema:
+[
+  {
+    "id": "q1",
+    "type": "Scope Boundary / Engine Responsibility / Traceability / Quality Benchmark",
+    "prompt": "The question prompt text",
+    "options": [
+      { "key": "A", "text": "Option A" },
+      { "key": "B", "text": "Option B" },
+      { "key": "C", "text": "Option C" },
+      { "key": "D", "text": "Option D" }
+    ],
+    "correctKey": "A",
+    "citation": "[Table 0.4]",
+    "explanation": "Why this is correct based on verified portfolio deliverables.",
+    "defenseTip": "Strategic advice on how to explain this in front of faculty."
+  }
+]
+Do NOT output any markdown backticks or extra text, ONLY valid JSON.
+
+VERIFIED CONTEXT:
+${groundedContext}`;
+
+    try {
+      const isApiOk = await checkApiChatAvailability();
+      let rawAiResponse = null;
+
+      // 1. Try server proxy /api/chat
+      if(isApiOk && (settings.provider === 'auto' || settings.provider === 'vercel_api' || settings.provider === 'ollama' || settings.provider === 'gemini')){
+        const res = await fetchWithTimeout('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: userQuery ? `Generate a viva defense quiz for: ${userQuery}` : `Generate a 4-question viva defense quiz for Team ${kb.teamId}.`,
+            systemInstruction: systemPrompt,
+            provider: settings.provider,
+            geminiKey: settings.geminiKey,
+            geminiModel: settings.geminiModel || 'gemini-1.5-flash',
+            ollamaToken: settings.ollamaToken,
+            ollamaModel: settings.ollamaModel,
+            ollamaUrl: settings.ollamaUrl
+          })
+        }, 8000);
+
+        if(res.ok){
+          const data = await res.json();
+          if(data && data.text && !data.useFallback){
+            rawAiResponse = data.text;
+          }
+        }
+      }
+
+      // 2. Direct Gemini fallback if key is present
+      if(!rawAiResponse && settings.geminiKey){
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${settings.geminiModel || 'gemini-1.5-flash'}:generateContent?key=${settings.geminiKey}`;
+        const gRes = await fetchWithTimeout(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: `${systemPrompt}\n\nGenerate the JSON quiz array now:` }] }],
+            generationConfig: { temperature: 0.2, maxOutputTokens: 1200 }
+          })
+        }, 6000);
+
+        if(gRes.ok){
+          const gData = await gRes.json();
+          rawAiResponse = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+        }
+      }
+
+      if(rawAiResponse){
+        // Clean markdown fences ```json ... ```
+        const jsonMatch = rawAiResponse.match(/\[\s*\{[\s\S]*\}\s*\]/);
+        if(jsonMatch){
+          const parsed = JSON.parse(jsonMatch[0]);
+          if(Array.isArray(parsed) && parsed.length >= 2){
+            const registry = kb.citationRegistry || {};
+            const cleanQuestions = parsed.slice(0, 4).map((q, idx) => {
+              const normTag = (q.citation || '').toLowerCase().trim();
+              const elemId = registry[normTag] || registry[q.citation] || 'sec-problem';
+              const correctKey = (q.correctKey || 'A').toUpperCase();
+              const options = (q.options || []).map(opt => ({
+                key: (opt.key || 'A').toUpperCase(),
+                text: String(opt.text || ''),
+                isCorrect: (opt.key || '').toUpperCase() === correctKey
+              }));
+              const correctOpt = options.find(o => o.isCorrect) || options[0];
+
+              return {
+                id: q.id || `ai-q${idx+1}`,
+                index: idx,
+                type: q.type || 'Viva Defense Question',
+                prompt: q.prompt,
+                options,
+                correctKey,
+                correctAnswer: correctOpt ? correctOpt.text : 'Correct deliverable',
+                citation: q.citation || '[Table 0.1]',
+                elementId: elemId,
+                explanation: q.explanation || 'Verified from portfolio documentation.',
+                defenseTip: q.defenseTip || 'Ground your answer in verified architecture tables.'
+              };
+            });
+
+            const quizState = {
+              teamId: kb.teamId,
+              seed: sessionSeed,
+              generatedBy: 'AI Mentor (Cloud Generative Engine)',
+              questions: cleanQuestions,
+              userAnswers: cleanQuestions.map(() => null),
+              isEvaluated: false
+            };
+
+            try {
+              if(typeof sessionStorage !== 'undefined'){
+                sessionStorage.setItem('pg_quiz_' + kb.teamId, JSON.stringify(quizState));
+              }
+            } catch(_) {}
+
+            return quizState;
+          }
+        }
+      }
+    } catch(err) {
+      console.warn('AI Quiz generation error, falling back to KB generator:', err);
+    }
+
+    // Graceful offline fallback
+    return generateVivaQuiz(kb, customSeed);
+  }
+
   // ==========================================
   // 7. CITATION FORMATTER & DEEP LINKER
   // ==========================================
@@ -1413,23 +1576,36 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     window.handleChatSubmit();
   };
 
-  window.startVivaQuizForActiveTeam = function(forceNewSeed = false){
+  window.startVivaQuizForActiveTeam = async function(forceNewSeed = false){
     const kb = buildTeamKnowledgeBase(activeChatTeamId);
     let seed = null;
     if(forceNewSeed){
       seed = Math.floor(Date.now() / 1000) % 100000;
     }
-    const quiz = generateVivaQuiz(kb, seed);
-    activeQuizState = quiz;
-
     isChatOpen = true;
-    chatMessages.push({
-      role: 'assistant',
-      type: 'quiz',
-      quiz
-    });
+    isGenerating = true;
+    updateChatMessagesThread();
 
-    renderChatDrawer();
+    try {
+      const quiz = await generateVivaQuizWithAI(kb, '', seed);
+      activeQuizState = quiz;
+      chatMessages.push({
+        role: 'assistant',
+        type: 'quiz',
+        quiz
+      });
+    } catch(e) {
+      const quiz = generateVivaQuiz(kb, seed);
+      activeQuizState = quiz;
+      chatMessages.push({
+        role: 'assistant',
+        type: 'quiz',
+        quiz
+      });
+    } finally {
+      isGenerating = false;
+      updateChatMessagesThread();
+    }
   };
 
   window.handleQuizOptionSelect = function(teamId, questionIndex, optionKey){
@@ -1531,7 +1707,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const route = classifyAndRouteIntent(rawQuery, kb);
 
       if(route.intent === 'QUIZ_TRIGGER'){
-        const newQuiz = generateVivaQuiz(kb);
+        const newQuiz = await generateVivaQuizWithAI(kb, rawQuery);
         activeQuizState = newQuiz;
         chatMessages.push({
           role: 'assistant',
@@ -1602,6 +1778,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     classifyAndRouteIntent,
     generateTeamBaseContext,
     generateVivaQuiz,
+    generateVivaQuizWithAI,
     evaluateVivaQuiz,
     synthesizeExtractiveAnswer,
     formatResponseWithClickableCitations,

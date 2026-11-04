@@ -2446,6 +2446,19 @@ tbody tr:hover {
    Portfolio RAG Chatbot & Deep-Linking Citations
    ============================================================ */
 
+/* Fixed Root Container (Prevents top-to-bottom layout jump on load) */
+#portfolio-chat-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 9998;
+  pointer-events: none;
+}
+
+#portfolio-chat-container > * {
+  pointer-events: auto;
+}
+
 /* Floating Action Button (FAB) */
 .portfolio-chat-fab {
   position: fixed;
