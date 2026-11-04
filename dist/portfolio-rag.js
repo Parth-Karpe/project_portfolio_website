@@ -372,17 +372,25 @@ Rules:
 VERIFIED CONTEXT FROM PORTFOLIO:
 ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join('\n\n')}`;
 
-    // 1. Try Vercel Serverless Function `/api/chat` (if hosted on Vercel)
-    if(settings.provider === 'auto' || settings.provider === 'vercel_api'){
+    // 1. Try Serverless / Local Server Proxy `/api/chat`
+    // This handles both Gemini and Ollama Cloud (gpt-oss:20b, gemma4:31b, etc.) server-side
+    // with ZERO browser CORS restrictions!
+    if(settings.provider === 'auto' || settings.provider === 'vercel_api' || settings.provider === 'ollama' || settings.provider === 'gemini'){
       try {
         const response = await fetchWithTimeout('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: query,
-            systemInstruction: systemPrompt
+            systemInstruction: systemPrompt,
+            provider: settings.provider,
+            geminiKey: settings.geminiKey,
+            geminiModel: settings.geminiModel,
+            ollamaToken: settings.ollamaToken,
+            ollamaModel: settings.ollamaModel,
+            ollamaUrl: settings.ollamaUrl
           })
-        }, 2500);
+        }, 6500);
 
         if(response.ok){
           const data = await response.json();
@@ -390,12 +398,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             return {
               answer: data.text,
               citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
-              provider: 'Gemini 1.5 Flash (via Vercel Serverless)'
+              provider: data.provider || 'AI Assistant (via Server Proxy)'
             };
           }
         }
       } catch(e) {
-        // Vercel serverless function not present (e.g. running local python or static host) -> proceed
+        // Local server proxy not reachable (e.g. running purely static or python server)
       }
     }
 
@@ -403,12 +411,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     const geminiKey = settings.geminiKey;
     if(geminiKey && (settings.provider === 'auto' || settings.provider === 'gemini')){
       const targetModel = (settings.geminiModel || 'gemini-1.5-flash').trim();
-      let lastError = null;
-
       const candidateEndpoints = [
         { url: `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${geminiKey}`, label: targetModel },
-        { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, label: 'gemini-1.5-flash' },
-        { url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, label: 'gemini-1.5-flash (v1)' }
+        { url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, label: 'gemini-1.5-flash' }
       ];
 
       for (const cand of candidateEndpoints) {
@@ -422,7 +427,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
               }],
               generationConfig: { temperature: 0.2, maxOutputTokens: 900 }
             })
-          }, 5000);
+          }, 4500);
 
           if(response.ok){
             const data = await response.json();
@@ -434,106 +439,53 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
                 provider: `${cand.label} (Direct API)`
               };
             }
-          } else {
-            const errData = await response.json().catch(() => ({}));
-            lastError = errData.error?.message || `HTTP ${response.status} ${response.statusText}`;
-            console.warn(`Gemini endpoint (${cand.label}) error:`, lastError);
-            if(response.status === 404){
-              continue;
-            } else {
-              break;
-            }
           }
         } catch(e) {
-          lastError = e.message;
-          console.warn(`Fetch error for ${cand.label}:`, e);
+          // Handled gracefully (e.g. net::ERR_INTERNET_DISCONNECTED or network timeout)
         }
-      }
-
-      if(lastError && settings.provider === 'gemini'){
-        console.warn('Gemini calls failed:', lastError);
       }
     }
 
-    // 3. Ollama Cloud / Local Fallback
-    // Only attempt Ollama if:
-    // a) Explicitly selected as provider ('ollama')
-    // OR b) In 'auto' mode AND either an Ollama token is supplied (for ollama.com) OR a local/custom URL is supplied
-    const rawOllamaUrl = settings.ollamaUrl || 'https://ollama.com/api';
+    // 3. Direct Local Ollama (ONLY for localhost/127.0.0.1)
+    // Cloud ollama.com MUST NOT be queried directly from client browser due to browser CORS policies.
+    const rawOllamaUrl = settings.ollamaUrl || '';
     const cleanUrl = rawOllamaUrl.replace(/\/+$/, '');
-    const isCloudOllama = cleanUrl.includes('ollama.com');
-    const shouldAttemptOllama = settings.provider === 'ollama' || 
-      (settings.provider === 'auto' && (!isCloudOllama || Boolean(settings.ollamaToken)));
+    const isLocalOllama = cleanUrl.includes('localhost') || cleanUrl.includes('127.0.0.1');
 
-    if(cleanUrl && shouldAttemptOllama){
+    if(isLocalOllama && (settings.provider === 'ollama' || settings.provider === 'auto')){
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if(settings.ollamaToken){
-          headers['Authorization'] = settings.ollamaToken.startsWith('Bearer ') ? settings.ollamaToken : `Bearer ${settings.ollamaToken}`;
-        }
         const oModel = settings.ollamaModel || 'gpt-oss:20b';
-        let answerText = null;
+        const chatEndpoint = cleanUrl.endsWith('/api') ? `${cleanUrl}/chat` : cleanUrl.includes('/api/') ? cleanUrl : `${cleanUrl}/api/chat`;
+        const chatRes = await fetchWithTimeout(chatEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: oModel,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: `USER QUESTION: ${query}\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].` }
+            ],
+            stream: false
+          })
+        }, 3000);
 
-        // Try /api/chat first (standard for Ollama Cloud models like gpt-oss:20b)
-        try {
-          const chatEndpoint = cleanUrl.endsWith('/api') ? `${cleanUrl}/chat` : cleanUrl.includes('/api/') ? cleanUrl : `${cleanUrl}/api/chat`;
-          const chatRes = await fetchWithTimeout(chatEndpoint, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-              model: oModel,
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: `USER QUESTION: ${query}\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].` }
-              ],
-              stream: false
-            })
-          }, 5000);
-
-          if(chatRes.ok){
-            const data = await chatRes.json();
-            answerText = data.message?.content || data.response;
+        if(chatRes.ok){
+          const data = await chatRes.json();
+          const answerText = data.message?.content || data.response;
+          if(answerText){
+            return {
+              answer: answerText,
+              citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
+              provider: `Local Ollama (${oModel})`
+            };
           }
-        } catch(e) {
-          console.warn('Ollama chat endpoint attempt failed:', e);
-        }
-
-        // Fallback to /api/generate if /api/chat did not succeed
-        if(!answerText){
-          try {
-            const genEndpoint = cleanUrl.endsWith('/api') ? `${cleanUrl}/generate` : cleanUrl.includes('/api/') ? cleanUrl : `${cleanUrl}/api/generate`;
-            const genRes = await fetchWithTimeout(genEndpoint, {
-              method: 'POST',
-              headers,
-              body: JSON.stringify({
-                model: oModel,
-                prompt: `${systemPrompt}\n\nUSER QUESTION: ${query}\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].\nANSWER:`,
-                stream: false
-              })
-            }, 5000);
-
-            if(genRes.ok){
-              const data = await genRes.json();
-              answerText = data.response || data.message?.content;
-            }
-          } catch(e){
-            console.warn('Ollama generate endpoint attempt failed:', e);
-          }
-        }
-
-        if(answerText){
-          return {
-            answer: answerText,
-            citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
-            provider: `${isCloudOllama ? 'Ollama Cloud' : 'Local Ollama'} (${oModel})`
-          };
         }
       } catch(e) {
-        console.warn('Ollama connection attempt failed:', e);
+        // Local Ollama instance not running or offline
       }
     }
 
-    // 4. Instant Default: Smart Extractive RAG Synthesizer (Instant & Zero-Compute)
+    // 4. Instant Default: Smart Extractive RAG Synthesizer (Instant, Offline & Zero-Compute)
     const fallback = synthesizeExtractiveAnswer(query, retrievedChunks, kb);
     fallback.provider = 'Smart Extractive RAG (Zero-Compute)';
     return fallback;
