@@ -77,9 +77,7 @@
   }
   function normalizeInlinePresentation(app) {
     app.querySelectorAll('[style]').forEach(el=>{
-      const size=el.style.fontSize;
-      if(size && ((size.endsWith('px')&&parseFloat(size)<16)||(size.endsWith('rem')&&parseFloat(size)<1))) el.style.fontSize='1rem';
-      if(el.closest('.diagram-frame,.portfolio-diagram-card,.faculty-diagram-frame')) return;
+      if(el.closest('.diagram-frame,.portfolio-diagram-card,.faculty-diagram-frame,.project-card,.stat-cards-grid,.theme-chip,.portfolio-hero-banner')) return;
       ['color','backgroundColor','background','borderColor'].forEach(property=>{
         const value=el.style[property]; if(!value) return;
         el.style[property]=/gradient\(/.test(value)?'var(--surface)':inlinePalette(value,property);
@@ -114,7 +112,7 @@
     copy.querySelectorAll('h2,h3,.portfolio-section-title').forEach(el=>el.remove());
     if(copy.textContent.trim() || copy.querySelector('img,svg,table,video,input,textarea,select,button,a[href]')) return;
     const card=document.createElement('div'); card.className='faculty-placeholder';
-    card.innerHTML='<span class="tag">In progress</span><p>This section is in progress and will be updated soon.</p>';
+    card.textContent='This section will be updated soon.';
     host.append(card);
   }
   function orderedProse(portfolio) {

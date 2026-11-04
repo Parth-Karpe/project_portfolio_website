@@ -16,7 +16,7 @@ function upgradeState(){
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();
-const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Department'],HOD:['Department','Team Portfolio'],Faculty:['Overview','Team Portfolio','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Evidence Library','AI Mentor']};
+const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Design Journey','Department'],HOD:['Department','Team Portfolio','Design Journey'],Faculty:['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Design Journey','Evidence Library','AI Mentor']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
@@ -40,13 +40,12 @@ function switchPortfolioStage(stageNum, autoScroll = false){
     if(active) button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');
   });
   document.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>{
-    const panelStage=section.id==='sec-system-design'?1:Number(section.id.replace('stage-',''));
     section.style.removeProperty('display');
-    section.hidden=panelStage!==stageNum;
+    section.hidden=false;
   });
-  const first=stageNum===0?'sec-problem':stageNum===1?'sec-fr':`stage-${stageNum}`;
+  const first=stageNum===0?'stage-0':stageNum===1?'stage-1':`stage-${stageNum}`;
   updateActivePortfolioNav(first);
-  if(autoScroll) document.getElementById('portfolio-stage-tabs')?.scrollIntoView({
+  if(autoScroll) document.getElementById(first)?.scrollIntoView({
     behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'
   });
 }
@@ -165,6 +164,18 @@ function updateActivePortfolioNav(id, fromScroll = false){
   });
 }
 
+function initPortfolioScrollSpy(){
+  if(window.__pgSpy){window.__pgSpy.disconnect();window.__pgSpy=null}
+  if(page!=='Team Portfolio'||!('IntersectionObserver' in window))return;
+  const nodes=[...document.querySelectorAll('.portfolio-content .portfolio-section[id], .portfolio-content .portfolio-subblock[id]')];
+  if(!nodes.length)return;
+  const obs=new IntersectionObserver(entries=>{
+    const hit=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+    if(hit?.target?.id)updateActivePortfolioNav(hit.target.id,true);
+  },{rootMargin:'-15% 0px -60% 0px',threshold:[0.15,0.4]});
+  nodes.forEach(node=>obs.observe(node));
+  window.__pgSpy=obs;
+}
 let isPortfolioTicking = false;
 window.addEventListener('scroll', () => {
   if(page !== 'Team Portfolio') return;
@@ -243,8 +254,8 @@ journey=function(){
   <section class="card">
     <div class="card-head">
       <div>
-        <h2>Stage ${n} · ${stageNames[n]}</h2>
-        <p>Team ${esc(state.activeTeamId||'08')} · ${esc(tTitle)}</p>
+        <h2>${esc(tTitle)}</h2>
+        <p>Team ${esc(state.activeTeamId||'')}</p>
       </div>
       <span class="tag ${curStatus==='Approved'?'':curStatus==='Submitted'?'amber':'gray'}">${esc(curStatus)}</span>
     </div>
@@ -340,22 +351,21 @@ overview=function(){if(state.role==='Admin')return adminPanel();if(state.role===
 mentor=function(){let html=originalMentor().replaceAll('Design & develop','Requirements & realization').replace('Demo mode uses deterministic question templates with excerpts from your submission. It is not live AI, RAG, or automated assessment.','Each demo question quotes a specific section of your saved submission and asks about that claim. This is a rule-based coaching demo, not a live language model.').replace('DEMO · TEMPLATE QUESTIONS','DEMO · SUBMISSION-BASED').replace('Demo templates · works offline','Submission coach · offline demo');return html+mentorChat()};
 function currentIdentity(){return state.role==='Faculty'?state.guide:state.role==='Team Lead'?state.members[0].name:state.role==='HOD'?'Head of Department':'Workspace Administrator'}
 function sharedPageHeader(){
-  return `<header class="topbar common-page-header"><div class="topbar-left"><div class="school-top-header"><strong>KLE Technological University</strong><span>Department of CSE(AI)</span></div></div><div class="topright" style="display:flex; align-items:center; gap:10px">
-  <button type="button" class="user-role-card" onclick="switchRole('HOD');go('Department')" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:#000000; border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Log in as HOD</span>
-  </button>
-  <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
-</div></header>`;
+  const labels={'Overview':'Overview','Admin Panel':'Admin panel','Team Portfolio':'Team portfolio','Design Journey':'Design journey','Evidence Library':'Evidence library','AI Mentor':'AI mentor','Faculty Review':'Faculty review','Department':'Department','Discussion':'Discussion'};
+  const order=['Department','Team Portfolio','Design Journey','Overview','Admin Panel','Evidence Library','AI Mentor','Faculty Review','Discussion'];
+  const items=order.filter(name=>rolePages[state.role]?.includes(name));
+  const roles=['Admin','HOD','Faculty','Team Lead','Faculty Admin'];
+  return `<header class="topbar common-page-header"><div class="topbar-inner"><div class="topbar-left"><a class="brand" href="#" onclick="event.preventDefault();go(rolePages[state.role][0])"><span class="logo">P</span><span class="brand-text">ProjectGate <em>AI</em></span></a><nav class="app-nav" aria-label="Main navigation">${items.map(name=>`<button type="button" class="nav-pill ${page===name?'active':''}" onclick="go('${name}')">${labels[name]||name}</button>`).join('')}</nav></div><div class="topright"><span class="tag ay-tag">AY 2026–27</span><label class="sr-only" for="role-switch">Role</label><select id="role-switch" class="role-select" aria-label="Role" onchange="switchRole(this.value)">${roles.map(role=>`<option value="${role}" ${role===state.role?'selected':''}>${role}</option>`).join('')}</select><button type="button" class="user-role-card textbtn" onclick="switchRole('HOD');go('Department')">Log in as HOD</button><button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button></div></div></header>`;
 }
 render=function(){
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
   const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
   const isPortfolio = page === 'Team Portfolio';
-  const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (activeTeam()?.theme_no || 1);
+  const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (typeof activeTeam==='function' ? (activeTeam()?.theme_no || 1) : 1);
 
-  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}">${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><strong>KLE Technological University</strong><br><span style="color:var(--muted)">Department of CSE(AI)</span></div><div style="margin-bottom:12px"><button class="btn secondary" style="width:100%; justify-content:center; padding:7px 12px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects(${curTheme})">← Back to Theme ${curTheme}</button></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div>${sharedPageHeader()}<main class="main">${views[page]()}</main></div></div>${modal||''}`;
+  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}">${sharedPageHeader()}<div class="page-frame">${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school"><strong>On this page</strong><br><span>KLE Technological University · CSE (AI)</span></div><div class="sidebar-back"><button class="btn secondary" onclick="backToThemeProjects(${curTheme})">← Back to Theme ${curTheme}</button></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div class="page-column"><main class="main">${views[page]()}</main><footer class="foot"><span>KLE Technological University · Department of CSE (AI)</span><button type="button" class="textbtn" onclick="resetDemo()">Reset demo</button></footer></div></div></div>${modal||''}`;
+  setTimeout(()=>{if(typeof initPortfolioScrollSpy==='function')initPortfolioScrollSpy()},0);
   const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
   if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();
 }

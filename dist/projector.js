@@ -33,9 +33,8 @@
       if(match) setText(badge,`${match[1]} projects`);
     });
     app.querySelectorAll('.nav-label,.portfolio-section-title h2,.faculty-accordion > summary').forEach(stripHeadingMarkers);
-    app.querySelectorAll('.faculty-dashboard-heading').forEach(heading=>{
-      setText(heading.querySelector('h1'),'HOD Mini-Project Dashboard');
-      heading.querySelector('.faculty-dashboard-lead')?.remove();
+    app.querySelectorAll('.faculty-dashboard-heading h1').forEach(heading=>{
+      heading.textContent=heading.textContent.replace(/\s+/g,' ').trim();
     });
   }
   function dashboardPresentation(app) {
@@ -122,7 +121,7 @@
         const copy=section.cloneNode(true);copy.querySelectorAll('h2,h3,.portfolio-section-title').forEach(el=>el.remove());
         if(!copy.textContent.trim() && !copy.querySelector('img,svg,table,video,input,textarea,select,button,a[href]')) {
           placeholder=document.createElement('div');placeholder.className='faculty-placeholder';
-          placeholder.innerHTML='<span class="tag">In progress</span><p>This section is in progress and will be updated soon.</p>';
+          placeholder.textContent='This section will be updated soon.';
           section.append(placeholder);
         }
       }
@@ -186,43 +185,18 @@
       }
     }
   }
-  window.refreshPortfolioStageNav=function(stage) {
+  window.refreshPortfolioStageNav=function() {
     const app=document.getElementById('app');
-    const host=app?.querySelector('.portfolio-sidebar-nav');
     const panel=app?.querySelector('#app-sidebar');
     const layout=app?.querySelector('.portfolio-layout');
-    if(!host || !panel || !layout) return;
-    const template=document.createElement('template');template.innerHTML=portfolioSubnav();
-    const nav=template.content.querySelector('.portfolio-subnav');
-    [...nav.children].forEach(group=>{
-      const links=group.matches('[data-target]')?[group]:[...group.querySelectorAll('[data-target]')];
-      const belongs=links.some(link=>{
-        const section=document.getElementById(link.dataset.target)?.closest('.portfolio-section');
-        const owner=section?.id==='sec-system-design'?1:Number(section?.id?.replace('stage-',''));
-        return owner===stage;
-      });
-      if(!belongs) group.remove();
-    });
-    host.replaceChildren(nav);
-    panel.inert=false;layout.classList.add('projector-nav-open');
-    app.querySelectorAll('.portfolio-stage-tab').forEach(tab=>tab.setAttribute('aria-expanded',String(Number(tab.dataset.tab)===stage)));
-    sidebarPresentation(app);
+    if(panel) panel.inert=false;
+    layout?.classList.add('projector-nav-open');
   };
   function stagePresentation(app) {
     const tabs=[...app.querySelectorAll('.portfolio-stage-tab')];
     if(!tabs.length) return;
-    tabs.forEach(tab=>{
-      setText(tab,`STAGE ${tab.dataset.tab}`);
-      tab.dataset.target=`stage-${tab.dataset.tab}`;
-    });
-    const content=app.querySelector('.portfolio-content');
     tabs.forEach(tab=>{tab.setAttribute('aria-controls','app-sidebar');});
-    if(content && !content.dataset.stageInitialized) {
-      content.dataset.stageInitialized='true';
-      app.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>section.hidden=true);
-      const panel=app.querySelector('#app-sidebar');if(panel) panel.inert=true;
-      if(window.activePortfolioStage!==null) switchPortfolioStage(window.activePortfolioStage);
-    }
+    app.querySelectorAll('.portfolio-content > .portfolio-section').forEach(section=>{section.hidden=false;});
   }
   function imagesPresentation(app) {
     app.querySelectorAll('.diagram-frame img,.portfolio-diagram-card img,.faculty-diagram-frame img').forEach(img=>{
