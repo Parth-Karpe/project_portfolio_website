@@ -138,7 +138,8 @@ html body :is(.tablewrap,.faculty-table-scroll) { border:3px solid var(--navy)!i
 html body table { border-collapse:collapse; width:100%; min-width:640px; }
 html body table :is(th,td) { padding:14px 16px!important; border-bottom:1.5px solid var(--line)!important; border-right:1px solid var(--soft)!important; font-size:var(--p-td)!important; vertical-align:middle; }
 html body .portfolio-content.portfolio-content table th,html body table th { background:var(--navy)!important; color:var(--white)!important; font-size:var(--p-th)!important; font-weight:700!important; }
-html body .portfolio-content.portfolio-content table td,html body table td { color:var(--ink)!important; font-size:var(--p-td)!important; font-weight:500!important; }
+html body .portfolio-content.portfolio-content table td,html body table td { color:var(--ink)!important; font-size:var(--p-prose)!important; font-weight:500!important; }
+html body .portfolio-content.portfolio-content table td :is(p,li,div,span:not(.req-tag):not(.tag),strong) { font-size:var(--p-prose)!important; }
 html body table td :is(p,strong,small,div) { font-size:inherit!important; }
 html body table tbody tr:nth-child(even) { background:var(--tint)!important; }
 html body table tbody tr:hover { background:var(--soft)!important; }

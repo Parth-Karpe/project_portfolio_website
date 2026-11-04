@@ -112,7 +112,13 @@
   }
   function normalizeInlinePresentation(app) {
     app.querySelectorAll('[style]').forEach(el=>{
-      if(el.closest('#stage-0,#stage-1,table')) return;
+      if(el.closest('#stage-0,#stage-1,table')) {
+        const size=el.style.fontSize;
+        if(size && (size.includes('12px') || size.includes('11.5px') || size.includes('12.5px') || (size.endsWith('px')&&parseFloat(size)<16))) {
+          el.style.fontSize='var(--p-prose, 1.125rem)';
+        }
+        return;
+      }
       const size=el.style.fontSize;
       if(size && ((size.endsWith('px')&&parseFloat(size)<16)||(size.endsWith('rem')&&parseFloat(size)<1))) el.style.fontSize='1rem';
       if(el.closest('.diagram-frame,.portfolio-diagram-card,.faculty-diagram-frame')) return;

@@ -201,16 +201,18 @@ body #app-sidebar > .school { margin-top:0; margin-bottom:12px; }
   body #app-sidebar .portfolio-subnav { display:block; }
 }
 
-/* Stage 1 typography matching Stage 0 exactly across all portfolios */
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) table { width:100%!important; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) th { padding:10px 12px!important; font-size:12px!important; font-weight:700!important; letter-spacing:0.3px; text-transform:uppercase; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) td { padding:10px 12px!important; font-size:12px!important; line-height:1.5!important; vertical-align:middle!important; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) table:has(.req-tag) :is(th,td):first-child { min-width:95px!important; width:95px!important; text-align:center!important; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) table .req-tag { display:inline-flex!important; align-items:center!important; justify-content:center!important; padding:2px 8px!important; font-size:11.5px!important; font-weight:700!important; border-radius:999px!important; line-height:1.4!important; white-space:nowrap!important; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) .requirement-meta-text { font-size:12px!important; font-weight:600!important; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) td.fr-desc, body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) td.nfr-desc { font-size:12px!important; line-height:1.5!important; color:#000000!important; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) td.fr-source { font-size:12px!important; line-height:1.45!important; color:var(--muted)!important; }
-body :is(#stage-0,#stage-1,#sec-fr,#sec-nfr) td.nfr-target { font-size:12px!important; line-height:1.45!important; font-weight:600!important; color:var(--brand)!important; }
+/* All tables across all portfolios match the font size of data in plain boxes */
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) table { width:100%!important; }
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) th { padding:12px 14px!important; font-size:var(--p-th, 1rem)!important; font-weight:700!important; letter-spacing:0.3px; text-transform:uppercase; }
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) td,
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) td :is(p,li,div,span:not(.req-tag):not(.tag),strong),
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) td.fr-desc,
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) td.nfr-desc,
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) td.fr-source,
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) td.nfr-target,
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) .requirement-meta-text { font-size:var(--p-prose, 1.125rem)!important; line-height:1.6!important; vertical-align:middle!important; }
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) table:has(.req-tag) :is(th,td):first-child { min-width:110px!important; width:110px!important; text-align:center!important; }
+body :is(#stage-0,#stage-1,#stage-2,#stage-3,#stage-4,#sec-fr,#sec-nfr,.portfolio-content) table .req-tag { display:inline-flex!important; align-items:center!important; justify-content:center!important; padding:3px 10px!important; font-size:var(--p-badge, 15px)!important; font-weight:700!important; border-radius:999px!important; line-height:1.4!important; white-space:nowrap!important; }
 
 /* Ensure AI Mentor and Next stage floating buttons have the EXACT same size, height, and typography */
 html body #portfolio-chat-container .portfolio-chat-fab,

@@ -1517,9 +1517,9 @@ function renderRequirementsTable(text, defaultList, type){
           ${rows.map(fr=>`
             <tr id="portfolio-fr-${esc(fr.id)}">
               <td><span class="req-tag">${esc(fr.id)}</span></td>
-              <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
+              <td style="font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(fr.desc)}</td>
               <td><span class="requirement-meta-text">${esc(fr.prio)}</span></td>
-              <td style="font-size:11.5px;color:var(--muted)">${esc(fr.source||'Automated Profiling')}</td>
+              <td style="font-size:var(--p-prose, 1.125rem);color:var(--muted);line-height:1.6">${esc(fr.source||'Automated Profiling')}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -1540,9 +1540,9 @@ function renderRequirementsTable(text, defaultList, type){
           ${rows.map(nfr=>`
             <tr id="portfolio-nfr-${esc(nfr.id)}">
               <td><span class="req-tag">${esc(nfr.id)}</span></td>
-              <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
+              <td style="font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(nfr.desc)}</td>
               <td><span class="requirement-meta-text">${esc(nfr.cat||'Reliability')}</span></td>
-              <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'Defined benchmark threshold')}</td>
+              <td style="font-size:var(--p-prose, 1.125rem);color:var(--brand);font-weight:600;line-height:1.6">${esc(nfr.target||'Defined benchmark threshold')}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -1672,7 +1672,7 @@ portfolio=function(){
                   <tr>
                     <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
                     <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
-                    <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
+                    <td style="color:#000000;font-size:var(--p-prose, 1.125rem);line-height:1.6">${esc(c.concepts)}</td>
                     <td><span class="course-role-text">${esc(c.role)}</span></td>
                   </tr>
                 `).join('')}
@@ -1703,7 +1703,7 @@ portfolio=function(){
                 ${(st0.enginesTable || []).map(e=>`
                   <tr id="portfolio-engine-${esc(e.id||'')}">
                     <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag engine-outline-id" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
-                    <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
+                    <td style="color:#000000;font-size:var(--p-prose, 1.125rem);line-height:1.6">${esc(e.desc)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1727,7 +1727,7 @@ portfolio=function(){
                   ${((hasData && st0.scopeInTable) || []).map(s=>`
                     <tr>
                       <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
+                      <td style="color:#000000;font-size:var(--p-prose, 1.125rem);line-height:1.6">${esc(s.item)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -1746,8 +1746,8 @@ portfolio=function(){
                   ${((hasData && st0.scopeOutTable) || []).map(s=>`
                     <tr>
                       <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
-                      <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
+                      <td style="color:#000000;font-size:var(--p-prose, 1.125rem);line-height:1.6">${esc(s.item)}</td>
+                      <td style="color:#000000;font-size:var(--p-prose, 1.125rem);line-height:1.6">${esc(s.reason)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -1770,7 +1770,7 @@ portfolio=function(){
                 ${((hasData && st0.feasibilityTable) || []).map(f=>`
                   <tr>
                     <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
-                    <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
+                    <td style="color:#000000;font-size:var(--p-prose, 1.125rem);line-height:1.6">${esc(f.assessment)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1799,9 +1799,9 @@ portfolio=function(){
                 ${((hasData && st1.frTable) || []).map(fr=>`
                   <tr id="portfolio-fr-${esc(fr.id)}">
                     <td style="text-align:center"><span class="req-tag">${esc(formatReqId(fr.id))}</span></td>
-                    <td class="fr-desc" style="font-size:12px;color:#000000;line-height:1.5">${esc(fr.desc)}</td>
-                    <td><span class="requirement-meta-text" style="font-size:12px">${esc(fr.priority||'Mandatory')}</span></td>
-                    <td class="fr-source" style="font-size:12px;color:var(--muted);line-height:1.45">${esc(fr.sourceNeed||'')}</td>
+                    <td class="fr-desc" style="font-size:var(--p-prose, 1.125rem);color:#000000;line-height:1.6">${esc(fr.desc)}</td>
+                    <td><span class="requirement-meta-text" style="font-size:var(--p-prose, 1.125rem)">${esc(fr.priority||'Mandatory')}</span></td>
+                    <td class="fr-source" style="font-size:var(--p-prose, 1.125rem);color:var(--muted);line-height:1.6">${esc(fr.sourceNeed||'')}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1825,9 +1825,9 @@ portfolio=function(){
                 ${((hasData && st1.nfrTable) || []).map(nfr=>`
                   <tr id="portfolio-nfr-${esc(nfr.id)}">
                     <td style="text-align:center"><span class="req-tag">${esc(formatReqId(nfr.id))}</span></td>
-                    <td class="nfr-desc" style="font-size:12px;color:#000000;line-height:1.5">${esc(nfr.desc)}</td>
-                    <td><span class="requirement-meta-text" style="font-size:12px">${esc(nfr.cat||nfr.category||'')}</span></td>
-                    <td class="nfr-target" style="font-size:12px;color:var(--brand);font-weight:600;line-height:1.45">${esc(nfr.target||'')}</td>
+                    <td class="nfr-desc" style="font-size:var(--p-prose, 1.125rem);color:#000000;line-height:1.6">${esc(nfr.desc)}</td>
+                    <td><span class="requirement-meta-text" style="font-size:var(--p-prose, 1.125rem)">${esc(nfr.cat||nfr.category||'')}</span></td>
+                    <td class="nfr-target" style="font-size:var(--p-prose, 1.125rem);color:var(--brand);font-weight:600;line-height:1.6">${esc(nfr.target||'')}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1853,9 +1853,9 @@ portfolio=function(){
                   <tr>
                     <td><span class="req-tag">${esc(u.id)}</span></td>
                     <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
-                    <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
-                    <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
-                    <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
+                    <td style="font-weight:600;font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(u.desc)}</td>
+                    <td style="font-size:var(--p-prose, 1.125rem);color:#000000;line-height:1.6">${esc(u.mainFlow)}</td>
+                    <td style="font-size:var(--p-prose, 1.125rem);color:var(--amber,#b45309);line-height:1.6">${esc(u.exceptionFlow)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1884,8 +1884,8 @@ portfolio=function(){
                 ${((hasData && st1.acceptanceTable) || []).map(tc=>`
                   <tr>
                     <td><span class="req-tag">${esc(tc.req)}</span></td>
-                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
-                    <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
+                    <td style="font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(tc.criteria)}</td>
+                    <td style="font-size:var(--p-prose, 1.125rem);color:#000000;line-height:1.6">${esc(tc.method)}</td>
                   </tr>
                 `).join('')}
               </tbody>
