@@ -2171,7 +2171,7 @@ function department(){
     <div class="heading faculty-dashboard-heading" style="margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
       <div>
         <h1 style="font-size:22px; font-weight:800; color:#000000; margin:0; line-height:1.2">
-          HOD Mini-Project Dashboard
+          Mini-Project Dashboard
         </h1>
         <p class="faculty-dashboard-lead">Dr. Narayan D.G. &middot; Head of Department</p>
       </div>

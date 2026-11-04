@@ -343,7 +343,7 @@ const team01Data = {
         "exceptionFlow": "Data file damaged → load last good copy, report affected table, deadlock (A waits for B, B waits for A) → detected, one transaction aborted and rolled back, message shown."
       }
     ],
-    "useCaseImage": "assets/team01_use_case_diagram.jpg",
+    "useCaseImage": "assets/team01_use_case_diagram.jpg?v=20261104",
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {

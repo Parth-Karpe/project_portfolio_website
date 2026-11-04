@@ -34,7 +34,7 @@
     });
     app.querySelectorAll('.nav-label,.portfolio-section-title h2,.faculty-accordion > summary').forEach(stripHeadingMarkers);
     app.querySelectorAll('.faculty-dashboard-heading').forEach(heading=>{
-      setText(heading.querySelector('h1'),'HOD Mini-Project Dashboard');
+      setText(heading.querySelector('h1'),'Mini-Project Dashboard');
       heading.querySelector('.faculty-dashboard-lead')?.remove();
     });
   }
