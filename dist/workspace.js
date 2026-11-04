@@ -21,8 +21,8 @@ const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Tea
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
 function editableStage(n=state.stage){return isAdmin()&&!['Submitted','Approved'].includes(status(n))}
-function switchRole(role){if(!rolePages[role])return;state.role=role;modal=null;selectedSection='';if(!rolePages[role].includes(page))page=role==='HOD'?'Department':role==='Admin'?'Admin Panel':'Overview';save();render()}
-go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is not available to your current role.');page=p;selectedSection='';modal=null;render();window.scrollTo(0,0)};
+function switchRole(role){if(!rolePages[role])return;state.role=role;modal=null;selectedSection='';if(!rolePages[role].includes(page))page=role==='HOD'?'Department':role==='Admin'?'Admin Panel':'Overview';if(page!=='Team Portfolio'&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();save();render()}
+go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is not available to your current role.');if(p!=='Team Portfolio'&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();page=p;selectedSection='';modal=null;render();window.scrollTo(0,0)};
 function openSection(n,key=''){if(!rolePages[state.role].includes('Design Journey'))return;state.stage=n;page='Design Journey';selectedSection=key;save();render();if(key)document.getElementById('f-'+key)?.scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo(0,0)}
 
 let activePortfolioTopic = 'stage-0';

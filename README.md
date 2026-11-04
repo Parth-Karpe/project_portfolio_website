@@ -62,10 +62,87 @@ Team Lead draft answers save locally while typing. Submit viva answers validates
 
 Only the Faculty panel can view or manage the AI connection settings and generation mode. These settings are absent from the Team Lead/student view. In the Faculty panel, save the local endpoint (default http://localhost:11434) and an installed model name in AI Mentor, then choose Ollama mode. Calls use /api/generate and need a running model and allowed browser origin. The suggested qwen3:4b model is editable. Live questions require valid source fields and exact quotes; unverifiable citations are rejected. Connection/model errors are explicit. This integration is implemented but has not been verified against a running model. There is no silent fallback presented as live AI.
 
+## AI Viva Assistant & Portfolio RAG Bot
+
+The Team Portfolio view (`HOD -> Department -> Team Portfolio`) includes a floating, low-compute AI Assistant (`💬 AI Viva Assistant`) designed to assist evaluators, faculty, and students during project viva examinations and portfolio reviews.
+
+### Architecture & Zero-Compute Design
+- **100% In-Browser Knowledge Extraction & BM25 Retrieval**: Chunks all Gate 0 and Gate 1 portfolio elements (Tables 0.1–0.5, Figures 0.1–1.2, Engines E1–E4, Functional Requirements FR-01–08, Non-Functional Requirements NFR-01–10, Tech Stack, and Test Suite Matrix Table 1.3) directly in the browser's JavaScript memory. **0 Vercel server memory or CPU is consumed for vector search or database indexing.**
+- **Interactive Deep-Linking Citation Pills**: Every generated answer provides clickable citation tags (e.g., `[FR-01]`, `[Table 0.4]`, `[Engine E2]`). Clicking any pill automatically scrolls the portfolio smoothly to the exact verified table or diagram and triggers a glowing CSS pulse highlight.
+- **Cascading Fallback Chain (Auto Mode)**:
+  1. **Vercel Serverless Function** (`/api/chat` with Google Gemini 2.0/1.5 Flash).
+  2. **Direct Google Gemini API** (Client-side with user-provided API key and model fallback).
+  3. **Ollama Cloud / Remote API** (with free cloud usage credits and Bearer token).
+  4. **Smart Extractive RAG Synthesizer** (Instant, zero-compute offline fallback requiring 0 API keys and 0 network calls).
+
+---
+
+### All Network Routes & Endpoints Used by the Bot
+
+| Route / Endpoint | Method | Provider / Target | Purpose & Payload |
+|---|---|---|---|
+| **`/api/chat`** | `POST` | Vercel Serverless Function (`api/chat.js`) | Proxies prompts securely to Google Gemini using server-side `GEMINI_API_KEY`.<br>**Request:** `{ "prompt": string, "systemInstruction": string }`<br>**Response:** `{ "text": string, "provider": string }` or `{ "useFallback": true }` |
+| **`https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}`** | `POST` | Google Generative AI (Direct API) | Direct client-side Gemini generation when a key is provided in Settings.<br>Tries models in order: `gemini-3.8-flash`, `gemini-2.0-flash`, `gemini-2.5-flash`, `gemini-1.5-flash`.<br>**Request:** `{ "contents": [...], "generationConfig": { "temperature": 0.2, "maxOutputTokens": 900 } }` |
+| **`https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={key}`** | `POST` | Google Generative AI (`v1` endpoint fallback) | Fallback for Gemini models exposed under the standard `v1` endpoint. |
+| **`https://ollama.com/api/chat`** | `POST` | Ollama Cloud / Remote API | Chat completions for cloud models using free credits.<br>**Headers:** `Authorization: Bearer <token>`, `Content-Type: application/json`<br>**Request:** `{ "model": "gpt-oss:20b", "messages": [...], "stream": false }`<br>**Response:** `{ "message": { "content": "..." } }` |
+| **`https://ollama.com/api/generate`** | `POST` | Ollama Cloud / Local Ollama fallback | Raw prompt generation fallback if `/api/chat` is not supported.<br>**Request:** `{ "model": "gpt-oss:20b", "prompt": "...", "stream": false }`<br>**Response:** `{ "response": "..." }` |
+| **`http://localhost:11434/api/chat`** and **`/api/generate`** | `POST` | Local Self-Hosted Ollama | Local instance fallback when running an Ollama daemon locally. |
+| **In-Memory (No Network)** | `N/A` | Smart Extractive RAG | Zero-compute, zero-latency deterministic extraction directly from BM25 retrieved portfolio chunks. |
+
+---
+
+### Supported Ollama Cloud Models (Free Credits)
+
+Users can select or type any of the following models in the ⚙️ Settings dialog:
+- 🥇 **`gpt-oss:20b`** *(Default / Recommended)*: High reasoning speed, concise markdown, perfect citation tag adherence.
+- 🥈 **`gemma4:31b`**: Google's open architecture, excellent for deep technical and system architecture queries.
+- 🥉 **`gpt-oss:120b`**: Flagship heavy reasoning model for complex algorithmic trade-offs.
+- ⚡ **`nemotron-3-nano:30b`**: NVIDIA efficient model for crisp tabular summaries.
+- ⚡ **`nemotron-3-super`** & **`nemotron-3-ultra`**: NVIDIA large-parameter enterprise models.
+- 🚀 **`beam`**: Ultra-lightweight model for high-speed instant response.
+
+---
+
+### Citation Deep-Linking Anchor IDs in the Portfolio
+
+The bot links citations directly to the following verified DOM elements:
+
+| Citation Tag | Target Element ID | Portfolio Section |
+|---|---|---|
+| `[Table 0.1: Course Mapping]` | `table-courses` | Semester 5 Course-to-Engine Mapping |
+| `[Table 0.2: Pipeline Matrix]` | `table-pipeline` | 7-Stage Architectural Pipeline |
+| `[Stage 0: Problem Statement]` | `sec-problem` | Problem Statement & Baseline Friction |
+| `[Figure 0.1: Use Case Diagram]` | `portfolio-diagram-usecase` | UML Use Case Diagram (Gate 0) |
+| `[Figure 0.2: AS-IS Workflow]` | `portfolio-diagram-asis` | AS-IS Swimlane Workflow Diagram |
+| `[Table 0.4: Scope Boundaries]` | `table-scope` | In-Scope & Out-of-Scope Boundaries |
+| `[Table 0.5: Feasibility]` | `table-feasibility` | Feasibility & Resource Assessment |
+| `[Stage 1: Architecture & Workflow]` | `sec-arch` | Multi-tier Architecture & Operational Pipeline |
+| `[Figure 1.1: Architecture Diagram]` | `portfolio-diagram-arch` | System Architecture Diagram |
+| `[Figure 1.2: DFD Diagram]` | `portfolio-diagram-dfd` | Level 1 Data Flow Diagram (DFD) |
+| `[Engine E1]` .. `[Engine E4]` | `portfolio-engine-E1` .. `portfolio-engine-E4` | Core Decoupled Modular Engines |
+| `[FR-01]` .. `[FR-08]` | `portfolio-fr-FR-01` .. `portfolio-fr-FR-08` | Functional Requirements Table 1.1 |
+| `[NFR-01]` .. `[NFR-10]` | `portfolio-nfr-NFR-01` .. `portfolio-nfr-NFR-10` | Non-Functional Requirements Table 1.2 |
+| `[Tech Stack]` | `sec-techstack` | Technologies & Tools Stack |
+| `[Table 1.3: Test Matrix]` | `table-testsuite` | Acceptance Verification Test Cases |
+
+---
+
+### Bot Configuration (Settings Modal)
+Inside the chat drawer, clicking the **⚙️ Settings** icon allows configuring:
+1. **Generation Provider**: `Auto` (Gemini → Ollama Cloud → Offline), `Ollama Cloud`, `Google Gemini`, or `Smart Extractive RAG`.
+2. **Google Gemini API Key & Model**: Enter a custom API key and model (defaults to `gemini-3.8-flash`). Keys are saved strictly in the user's browser `localStorage` (`pg_gemini_key`).
+3. **Ollama Cloud Endpoint URL & Model**: Defaults to `https://ollama.com/api` and `gpt-oss:20b`.
+4. **Ollama Bearer Token**: Enter token for authenticated Ollama Cloud accounts (`pg_ollama_token`).
+
+All configuration is client-isolated in `localStorage` and never committed or transmitted to any third-party server beyond the selected LLM provider.
+
+---
+
 ## Storage and verification
 
 Team workspaces are isolated and saved in this browser's localStorage. Evidence binaries use IndexedDB. JSON exports contain forms, messages, profile photos and evidence metadata/URLs, but not image/video evidence binaries; download those separately. Clearing browser data removes saved work. Reset starts a fresh demonstration and reseeds the cases on rendering.
 
 Checks cover roster import validation and actual XLSX parsing, per-team persistence and faculty access, the three cases, ten answered viva questions, shared inline feedback, and independent faculty unlocks. Browser checks cover Excel preview/import, HOD/student feedback visibility, file persistence and WebM decoding. Dummy upload fixtures were removed.
 
-No production login, server database, cloud synchronization, live RAG or automated academic grading is claimed.
+No production login, server database, cloud synchronization, or automated academic grading is claimed.
+

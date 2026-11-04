@@ -1342,7 +1342,7 @@ function renderRequirementsTable(text, defaultList, type){
         </thead>
         <tbody>
           ${rows.map(fr=>`
-            <tr>
+            <tr id="portfolio-fr-${esc(fr.id)}">
               <td><span class="req-tag">${esc(fr.id)}</span></td>
               <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
               <td><span class="tag ${fr.prio==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.prio)}</span></td>
@@ -1365,7 +1365,7 @@ function renderRequirementsTable(text, defaultList, type){
         </thead>
         <tbody>
           ${rows.map(nfr=>`
-            <tr>
+            <tr id="portfolio-nfr-${esc(nfr.id)}">
               <td><span class="req-tag">${esc(nfr.id)}</span></td>
               <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
               <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||'Reliability')}</span></td>
@@ -1409,7 +1409,7 @@ portfolio=function(){
   ];
   const userStoryRows = st0.userStoryTable || dk.userStoryTable || (dk.ucList||[]).map((u,i)=>({id:String(i+1).padStart(2,'0'),actor:dk.ucActor||'User',desc:u,mainFlow:'Input → Process → Output',exceptionFlow:'Validation error triggered'}));
 
-  return heading('Project Portfolio', 'Comprehensive One-Page Technical Showcase · CS (AI) AY 2026–27')+`
+  const html = heading('Project Portfolio', 'Comprehensive One-Page Technical Showcase · CS (AI) AY 2026–27')+`
 <div class="portfolio-container">
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
@@ -1482,7 +1482,7 @@ portfolio=function(){
             <div style="margin-top:18px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.1: Foundation Course Integration &amp; Academic Role (Gate 0 Table 2)</h4>
               <div class="tablewrap">
-                <table class="test-suite-table">
+                <table class="test-suite-table" id="table-courses">
                   <thead>
                     <tr>
                       <th style="width:65px">Sl. No.</th>
@@ -1511,7 +1511,7 @@ portfolio=function(){
             <div style="margin-top:18px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.2: Conceptual Pipeline Flow (Gate 0 Table 3)</h4>
               <div class="tablewrap">
-                <table class="test-suite-table">
+                <table class="test-suite-table" id="table-pipeline">
                   <thead>
                     <tr>
                       <th>Input</th>
@@ -1549,7 +1549,7 @@ portfolio=function(){
                   </thead>
                   <tbody>
                     ${enginesRows.map(e=>`
-                      <tr>
+                      <tr id="portfolio-engine-${esc(e.id||'')}">
                         <td style="font-weight:700;color:var(--ink)"><span class="req-tag" style="margin-right:6px">${esc(e.id||'')}</span>${esc(e.name||e.engine)}</td>
                         <td style="color:var(--ink-secondary);font-size:12px">${esc(e.desc)}</td>
                       </tr>
@@ -1564,7 +1564,7 @@ portfolio=function(){
           ${(scopeInRows.length || scopeOutRows.length) ? `
             <div style="margin-top:18px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.4: Broad Project Scope (In-Scope &amp; Out-of-Scope Boundaries - Gate 0 Tables 5 &amp; 6)</h4>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:14px">
+              <div id="table-scope" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:14px">
                 <div class="tablewrap">
                   <table class="test-suite-table">
                     <thead>
@@ -1612,7 +1612,7 @@ portfolio=function(){
             <div style="margin-top:18px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Table 0.5: Feasibility &amp; Hardware Assessment (3-Credit Scope - Gate 0 Table 7)</h4>
               <div class="tablewrap">
-                <table class="test-suite-table">
+                <table class="test-suite-table" id="table-feasibility">
                   <thead>
                     <tr>
                       <th style="width:230px">Aspect</th>
@@ -1652,7 +1652,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-usecase">
           <h3>${ICONS.Overview} Use Case Diagram</h3>
-          <div class="diagram-frame">
+          <div class="diagram-frame" id="portfolio-diagram-usecase">
             ${(()=>{
               const customImg0=getStageImage(0);
               if(customImg0){
@@ -1702,7 +1702,7 @@ portfolio=function(){
           ${st0.asIsWorkflowImage ? `
             <div style="margin-top:20px">
               <h4 style="font-size:13px;color:var(--ink);margin:0 0 8px;font-weight:700">Figure 0.2: AS-IS Process Swimlane Workflow Diagram</h4>
-              <div class="diagram-frame">
+              <div class="diagram-frame" id="portfolio-diagram-asis">
                 <img src="${st0.asIsWorkflowImage}" alt="AS-IS Workflow Diagram" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.06);background:#fff;display:block;margin:0 auto">
                 <p class="diagram-caption">${esc(st0.asIsWorkflowCaption || ('Figure 0.2: AS-IS Current Manual Booking Swimlane Workflow for '+t.title+' (Gate 0 Source Document).'))}</p>
               </div>
@@ -1766,7 +1766,7 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-arch">
           <h3>${ICONS['Admin Panel']} Architecture</h3>
           <p class="portfolio-prose">${esc(st1.archDesc || f1.architecture || f2.architecture || dk.archDesc)}</p>
-          <div class="diagram-frame">
+          <div class="diagram-frame" id="portfolio-diagram-arch">
             ${(()=>{
               const customImg1=getStageImage(1);
               if(customImg1){
@@ -1977,7 +1977,7 @@ portfolio=function(){
           ` : ''}
 
           <div class="tablewrap" style="margin-top:14px">
-            <table class="test-suite-table">
+            <table class="test-suite-table" id="table-testsuite">
               <thead>
                 <tr>
                   <th style="width:140px">Requirement / Test ID</th>
@@ -2039,7 +2039,14 @@ portfolio=function(){
     </main>
   </div>
 </div>
-`;};
+`;
+  setTimeout(() => {
+    if (typeof mountPortfolioChat === 'function') {
+      mountPortfolioChat(t.id);
+    }
+  }, 60);
+  return html;
+};
 
 function openTeamPortfolio(id){
   switchTeam(id);
