@@ -1833,8 +1833,6 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       name.textContent = `${kb.title} (Team ${kb.teamId})`;
       name.title = kb.title;
     }
-    const badge = document.querySelector('#portfolio-chat-fab .chat-fab-badge');
-    if(badge) badge.textContent = `Team ${kb.teamId} Mentor`;
   }
 
   function chatDrawerClass(){
@@ -1860,9 +1858,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(!drawer){
       container.innerHTML = `
         <!-- Floating Action Button (FAB) -->
-        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.togglePortfolioChat()" title="Toggle AI Mentor" aria-label="Toggle AI Mentor">
-          <span class="chat-fab-text">${isChatOpen ? 'Close Mentor' : 'AI Mentor'}</span>
-          <span class="chat-fab-badge">Team ${esc(kb.teamId)} Mentor</span>
+        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.togglePortfolioChat()" title="AI Mentor" aria-label="AI Mentor">
+          <span class="chat-fab-text">${isChatOpen ? 'Close' : 'AI Mentor'}</span>
         </button>
 
         <!-- Expandable Chat Drawer -->
@@ -1982,7 +1979,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       if(fab){
         fab.className = `portfolio-chat-fab ${isChatOpen ? 'active' : ''}`;
         const fabText = fab.querySelector('.chat-fab-text');
-        if(fabText) fabText.textContent = isChatOpen ? 'Close Mentor' : 'AI Mentor';
+        if(fabText) fabText.textContent = isChatOpen ? 'Close' : 'AI Mentor';
       }
       drawer.className = chatDrawerClass();
       refreshChatIdentity(kb);
@@ -2283,6 +2280,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   // Mount / Unmount API for Department router
   window.mountPortfolioChat = function(teamId){
+    if(typeof page !== 'undefined' && page !== 'Team Portfolio') return;
     if(!teamId) return;
     const drawer = document.getElementById('portfolio-chat-drawer');
     if(drawer && String(activeChatTeamId) === String(teamId)){
@@ -2336,6 +2334,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   // Auto-mount if active team is present on load
   if(typeof window !== 'undefined' && typeof window.addEventListener === 'function'){
     window.addEventListener('DOMContentLoaded', () => {
+      if(typeof page !== 'undefined' && page !== 'Team Portfolio') return;
       const initialTeam = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || '03';
       if(initialTeam){
         window.mountPortfolioChat(initialTeam);
