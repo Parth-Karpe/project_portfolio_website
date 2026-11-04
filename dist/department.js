@@ -1625,7 +1625,7 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-courses">
           <h3>3. Foundation Course Integration</h3>
           <div class="tablewrap">
-            <table class="test-suite-table">
+            <table class="test-suite-table" id="table-courses">
               <thead>
                 <tr>
                   <th style="width:75px">Sl. Number</th>
@@ -1651,7 +1651,7 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-workflow-concept">
           <h3>4. Conceptual Workflow</h3>
           ${hasData && st0.conceptualFlowImage ? `
-            <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
+            <div class="portfolio-diagram-card" id="portfolio-diagram-asis" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
               <img src="${esc(st0.conceptualFlowImage)}" alt="${esc(st0.conceptualFlowCaption || ('Conceptual Flow - ' + title))}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
               ${st0.conceptualFlowCaption ? `<p style="margin:10px 0 0;font-size:12px;font-weight:600;color:var(--muted)">${esc(st0.conceptualFlowCaption)}</p>` : ''}
             </div>
@@ -1659,7 +1659,7 @@ portfolio=function(){
 
           ${hasData && st0.enginesTable && st0.enginesTable.length ? `
           <div class="tablewrap">
-            <table class="test-suite-table">
+            <table class="test-suite-table" id="table-engines">
               <thead>
                 <tr>
                   <th style="min-width:380px;width:40%">Engine</th>
@@ -1668,7 +1668,7 @@ portfolio=function(){
               </thead>
               <tbody>
                 ${(st0.enginesTable || []).map(e=>`
-                  <tr>
+                  <tr id="portfolio-engine-${esc(e.id||'')}">
                     <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag engine-outline-id" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
                     <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
                   </tr>
@@ -1683,7 +1683,7 @@ portfolio=function(){
           <h3>5. Project Scope</h3>
           <div style="display:flex;flex-direction:column;gap:18px">
             <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
-              <table class="test-suite-table">
+              <table class="test-suite-table" id="table-scope">
                 <thead>
                   <tr>
                     <th style="width:40px">#</th>
@@ -1726,7 +1726,7 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-feasibility">
           <h3>6. Feasibility &amp; Constraints</h3>
           <div class="tablewrap">
-            <table class="test-suite-table">
+            <table class="test-suite-table" id="table-feasibility">
               <thead>
                 <tr>
                   <th style="width:200px">Aspect</th>
@@ -1764,7 +1764,7 @@ portfolio=function(){
               </thead>
               <tbody>
                 ${((hasData && st1.frTable) || []).map(fr=>`
-                  <tr>
+                  <tr id="portfolio-fr-${esc(fr.id)}">
                     <td><span class="req-tag">${esc(fr.id)}</span></td>
                     <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
                     <td><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
@@ -1790,7 +1790,7 @@ portfolio=function(){
               </thead>
               <tbody>
                 ${((hasData && st1.nfrTable) || []).map(nfr=>`
-                  <tr>
+                  <tr id="portfolio-nfr-${esc(nfr.id)}">
                     <td><span class="req-tag">${esc(nfr.id)}</span></td>
                     <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
                     <td><span class="requirement-meta-text">${esc(nfr.cat||nfr.category||'')}</span></td>
@@ -1829,7 +1829,7 @@ portfolio=function(){
             </table>
           </div>
           ${hasData && st1.useCaseImage ? `
-          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+          <div class="diagram-frame" id="portfolio-diagram-usecase" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
             <img src="${esc(st1.useCaseImage)}" alt="${esc(st1.useCaseCaption || 'Fig : Use case diagram')}" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">${esc(st1.useCaseCaption || 'Fig : Use case diagram')}</p>
           </div>
@@ -1839,7 +1839,7 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-acceptance">
           <h3>4. Acceptance Criteria</h3>
           <div class="tablewrap">
-            <table class="test-suite-table">
+            <table class="test-suite-table" id="table-testsuite">
               <thead>
                 <tr>
                   <th style="width:110px">Requirement ID</th>

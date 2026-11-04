@@ -52,6 +52,7 @@ const {
   generateVivaQuiz,
   evaluateVivaQuiz,
   formatResponseWithClickableCitations,
+  polishLiveAnswer,
   calcTokenOverlap,
   createPRNG
 } = global.window.PortfolioRAG;
@@ -399,6 +400,40 @@ test('Use case diagram is indexed from stage 1 for Team 01 and Team 03', () => {
   });
   const empty = buildTeamKnowledgeBase('12');
   assert(!empty.chunks.some(chunk => chunk.id === 'diag-usecase'));
+});
+
+test('Markdown comparison tables render as tables and stay intact past 1200 characters', () => {
+  const kb01 = buildTeamKnowledgeBase('01');
+  const wrapped = [
+    'Hardest component – Transaction Management',
+    '| Reason | How it is reflected in the project |',
+    '|--------|------------------------------------|',
+    '| Undo-log and crash recovery. <br> This is the most complex logic. | • UC-06 and UC-09.',
+    'Stage 0 target stays in the same cell [Stage 0: Objectives]. |',
+    '| Concurrency control | • UC-09 [Use Cases]. |',
+    '| **Simplicity vs robustness** | Keep the undo log small. |'
+  ].join('\n');
+  const html = formatResponseWithClickableCitations(wrapped, kb01);
+  assert(html.includes('class="chat-md-table"'));
+  assert(!html.includes('| Reason |'));
+  assert(html.includes('<strong>Simplicity vs robustness</strong>'));
+  assert(html.includes('<br>'));
+  assert(!html.includes('&lt;br&gt;'));
+  assert(html.includes('citation-pill'));
+  assert((html.match(/chat-md-row/g) || []).length === 3);
+
+  const longCell = 'Track every change and rebuild state after a crash. '.repeat(20);
+  const longTable = [
+    '| Reason | How it is reflected |',
+    '|--------|----------------------|',
+    `| Undo log | ${longCell} [Stage 0: Objectives]. |`,
+    '| Locks | Two sessions must wait instead of corrupting rows. |',
+    '| Recovery | Load the last committed copy. |'
+  ].join('\n');
+  assert(longTable.length > 1200);
+  const polished = polishLiveAnswer(longTable);
+  assert(polished.includes('| Recovery | Load the last committed copy. |'));
+  assert(!polished.endsWith('…'));
 });
 
 console.log(`\n====================================================`);

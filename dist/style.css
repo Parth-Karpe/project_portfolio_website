@@ -2819,6 +2819,52 @@ tbody tr:hover {
   color: inherit;
 }
 
+.portfolio-chat-drawer.table-open {
+  width: 560px;
+}
+
+.chat-bubble-wrap.assistant:has(.chat-md-table) {
+  align-self: stretch;
+  max-width: 100%;
+}
+
+.chat-md-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.chat-md-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-subtle);
+}
+
+.chat-bubble .chat-md-label {
+  font-size: 10px !important;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chat-bubble .chat-md-value {
+  font-size: 12.5px !important;
+  line-height: 1.45 !important;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.chat-bubble-content:has(.chat-md-table) {
+  max-height: 460px;
+}
+
 .chat-bubble-meta {
   margin-top: 6px;
   padding-top: 4px;
