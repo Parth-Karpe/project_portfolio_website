@@ -663,60 +663,72 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             Send
           </button>
         </form>
-      </div>
+        <!-- Slide-in Settings Sidebar -->
+        <aside id="portfolio-chat-settings-sidebar" class="chat-settings-sidebar" role="region" aria-label="AI Assistant Settings">
+          <header class="chat-settings-header">
+            <button type="button" class="chat-btn-action" onclick="window.closeChatSettingsModal()">← Back</button>
+            <strong style="font-size:13px;font-weight:700;color:var(--ink)">Assistant Settings</strong>
+            <button type="button" class="chat-btn-action close" onclick="window.closeChatSettingsModal()" aria-label="Close">✕</button>
+          </header>
 
-      <!-- Settings Modal Popover -->
-      <div id="portfolio-chat-settings-modal" class="chat-settings-modal" style="display:none">
-        <div class="chat-settings-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--ink)">AI Chatbot Settings</h3>
-            <button class="chat-btn-action close" onclick="window.closeChatSettingsModal()" aria-label="Close">✕</button>
+          <div class="chat-settings-body">
+            <p class="mini" style="margin:0 0 10px;color:var(--muted);line-height:1.45">Configure model provider and API keys. Settings are stored locally in your browser.</p>
+
+            <div class="chat-settings-group">
+              <label for="chat-set-provider">Generation Provider</label>
+              <select id="chat-set-provider">
+                <option value="auto" ${settings.provider==='auto'?'selected':''}>Auto (Gemini → Ollama Cloud → Offline Fallback)</option>
+                <option value="ollama" ${settings.provider==='ollama'?'selected':''}>Ollama Cloud (gpt-oss:20b, gemma4:31b, etc.)</option>
+                <option value="gemini" ${settings.provider==='gemini'?'selected':''}>Google Gemini</option>
+                <option value="extractive" ${settings.provider==='extractive'?'selected':''}>Smart Extractive RAG (Zero-Compute Offline)</option>
+              </select>
+            </div>
+
+            <div class="chat-settings-group">
+              <label for="chat-set-gemini-key">Google Gemini API Key (Optional)</label>
+              <input id="chat-set-gemini-key" type="password" placeholder="AIzaSy... (optional, saves to your browser)" value="${esc(settings.geminiKey)}">
+            </div>
+
+            <div class="chat-settings-group">
+              <label for="chat-set-gemini-model">Gemini Model Identifier</label>
+              <input id="chat-set-gemini-model" type="text" placeholder="gemini-3.8-flash" value="${esc(settings.geminiModel || 'gemini-3.8-flash')}">
+            </div>
+
+            <div class="chat-settings-divider">
+              <strong style="font-size:12px;font-weight:700;display:block;margin-bottom:8px;color:var(--brand)">Ollama Cloud (Free Usage Models)</strong>
+
+              <div class="chat-settings-group" style="margin-bottom:8px">
+                <label for="chat-set-ollama-url">Ollama Cloud Endpoint URL</label>
+                <input id="chat-set-ollama-url" type="text" placeholder="https://ollama.com/api" value="${esc(settings.ollamaUrl || 'https://ollama.com/api')}">
+              </div>
+
+              <div class="chat-settings-group" style="margin-bottom:8px">
+                <label for="chat-set-ollama-model">Cloud Model</label>
+                <input list="ollama-free-models" id="chat-set-ollama-model" type="text" placeholder="gpt-oss:20b" value="${esc(settings.ollamaModel || 'gpt-oss:20b')}">
+                <datalist id="ollama-free-models">
+                  <option value="gpt-oss:20b">gpt-oss:20b (Recommended - Fast, high reasoning)</option>
+                  <option value="gemma4:31b">gemma4:31b</option>
+                  <option value="gpt-oss:120b">gpt-oss:120b (Heavy reasoning)</option>
+                  <option value="nemotron-3-nano:30b">nemotron-3-nano:30b</option>
+                  <option value="nemotron-3-super">nemotron-3-super</option>
+                  <option value="nemotron-3-ultra">nemotron-3-ultra</option>
+                  <option value="beam">beam</option>
+                </datalist>
+              </div>
+
+              <div class="chat-settings-group">
+                <label for="chat-set-ollama-token">Ollama API Key / Bearer Token</label>
+                <input id="chat-set-ollama-token" type="password" placeholder="Bearer ... or your Ollama API key" value="${esc(settings.ollamaToken || '')}">
+                <small style="color:var(--muted);display:block;margin-top:4px;font-size:10.5px">Connects to <code>https://ollama.com/api</code> using your free credits.</small>
+              </div>
+            </div>
           </div>
-          <p class="mini" style="margin:0 0 12px;color:var(--muted)">Designed for zero-compute Vercel hosting. Select your generation engine:</p>
-          
-          <label style="font-size:11.5px;font-weight:600;display:block;margin-bottom:4px">Generation Provider</label>
-          <select id="chat-set-provider" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);margin-bottom:10px;font-size:12px">
-            <option value="auto" ${settings.provider==='auto'?'selected':''}>Auto (Gemini → Ollama Cloud → Offline Fallback)</option>
-            <option value="ollama" ${settings.provider==='ollama'?'selected':''}>Ollama Cloud (gpt-oss:20b, gemma4:31b, etc.)</option>
-            <option value="gemini" ${settings.provider==='gemini'?'selected':''}>Google Gemini</option>
-            <option value="extractive" ${settings.provider==='extractive'?'selected':''}>Smart Extractive RAG (Zero-Compute Offline)</option>
-          </select>
 
-          <label style="font-size:11.5px;font-weight:600;display:block;margin-bottom:4px">Google Gemini API Key (Optional)</label>
-          <input id="chat-set-gemini-key" type="password" placeholder="AIzaSy... (optional, saves to your browser)" value="${esc(settings.geminiKey)}" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);margin-bottom:8px;font-size:12px">
-          
-          <label style="font-size:11.5px;font-weight:600;display:block;margin-bottom:4px">Gemini Model Identifier</label>
-          <input id="chat-set-gemini-model" type="text" placeholder="gemini-3.8-flash" value="${esc(settings.geminiModel || 'gemini-3.8-flash')}" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);margin-bottom:8px;font-size:12px">
-          
-          <!-- Ollama Cloud Fallback Section -->
-          <div style="border-top:1px solid var(--line);margin:10px 0 8px;padding-top:10px">
-            <strong style="font-size:12px;display:block;margin-bottom:6px;color:var(--brand)">Ollama Cloud (Free Usage Models)</strong>
-            
-            <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Ollama Cloud Endpoint URL</label>
-            <input id="chat-set-ollama-url" type="text" placeholder="https://ollama.com/api" value="${esc(settings.ollamaUrl || 'https://ollama.com/api')}" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);margin-bottom:6px;font-size:12px">
-
-            <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Cloud Model</label>
-            <input list="ollama-free-models" id="chat-set-ollama-model" type="text" placeholder="gpt-oss:20b" value="${esc(settings.ollamaModel || 'gpt-oss:20b')}" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);margin-bottom:6px;font-size:12px">
-            <datalist id="ollama-free-models">
-              <option value="gpt-oss:20b">gpt-oss:20b (Recommended - Fast, high reasoning)</option>
-              <option value="gemma4:31b">gemma4:31b</option>
-              <option value="gpt-oss:120b">gpt-oss:120b (Heavy reasoning)</option>
-              <option value="nemotron-3-nano:30b">nemotron-3-nano:30b</option>
-              <option value="nemotron-3-super">nemotron-3-super</option>
-              <option value="nemotron-3-ultra">nemotron-3-ultra</option>
-              <option value="beam">beam</option>
-            </datalist>
-
-            <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Ollama API Key / Bearer Token</label>
-            <input id="chat-set-ollama-token" type="password" placeholder="Bearer ... or your Ollama API key" value="${esc(settings.ollamaToken || '')}" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);margin-bottom:4px;font-size:12px">
-            <small style="color:var(--muted);display:block;margin-bottom:8px;font-size:10.5px">Connects to <code>https://ollama.com/api</code> using your free usage credits.</small>
-          </div>
-
-          <div style="display:flex;justify-content:flex-end;gap:8px">
-            <button class="btn secondary" style="padding:4px 12px;font-size:11.5px" onclick="window.closeChatSettingsModal()">Cancel</button>
-            <button class="btn" style="padding:4px 12px;font-size:11.5px" onclick="window.saveChatSettingsFromModal()">Save Settings</button>
-          </div>
-        </div>
+          <footer class="chat-settings-footer">
+            <button type="button" class="btn secondary" style="padding:5px 14px;font-size:12px" onclick="window.closeChatSettingsModal()">Cancel</button>
+            <button type="button" class="btn" style="padding:5px 14px;font-size:12px" onclick="window.saveChatSettingsFromModal()">Save Settings</button>
+          </footer>
+        </aside>
       </div>
     `;
 
@@ -745,13 +757,13 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   };
 
   window.openChatSettingsModal = function(){
-    const modal = document.getElementById('portfolio-chat-settings-modal');
-    if(modal) modal.style.display = 'flex';
+    const sidebar = document.getElementById('portfolio-chat-settings-sidebar');
+    if(sidebar) sidebar.classList.add('open');
   };
 
   window.closeChatSettingsModal = function(){
-    const modal = document.getElementById('portfolio-chat-settings-modal');
-    if(modal) modal.style.display = 'none';
+    const sidebar = document.getElementById('portfolio-chat-settings-sidebar');
+    if(sidebar) sidebar.classList.remove('open');
   };
 
   window.saveChatSettingsFromModal = function(){
