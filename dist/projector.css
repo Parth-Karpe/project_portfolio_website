@@ -115,7 +115,8 @@ html body .portfolio-stage-tabs { display:flex!important; flex-wrap:wrap; backgr
 html body .portfolio-stage-tab { min-height:58px; font-size:var(--p-nav)!important; font-weight:700; border:2px solid var(--blue)!important; border-radius:12px; background:var(--surface)!important; color:var(--blue)!important; }
 html body .portfolio-stage-tab span { color:inherit!important; }
 html body .portfolio-stage-tab .tab-badge { background:transparent!important; color:inherit!important; border-color:currentColor!important; }
-html body .portfolio-stage-tab.active { background:var(--blue)!important; color:var(--on-blue)!important; }
+html body .portfolio-stage-tab.active { background:var(--tint, #DCE8FF)!important; color:var(--blue, #1d4ed8)!important; border:2px solid var(--blue, #1d4ed8)!important; font-weight:800!important; }
+html body .portfolio-stage-tab:hover { background:var(--tint, #DCE8FF)!important; }
 html body .portfolio-section { border-top:7px solid var(--blue)!important; padding:26px 34px!important; }
 html body .portfolio-section-title { border-bottom:2px solid var(--soft); }
 html body .portfolio-section-title h2 { font-size:var(--p-h2)!important; }

@@ -51,12 +51,11 @@ const team05Data = {
   "stage0": {
     "problem": "The proposed project is a Persistent Key-Value Storage System for storing and retrieving data using key-value pairs. Unlike temporary storage, the system aims to preserve stored data even after the application is closed or restarted. It provides a practical understanding of data storage, retrieval, and persistence.",
     "objectives": [
-      "To apply fundamental Computer Science concepts related to data organization, storage, retrieval, and persistence in developing the proposed system.",
-      "To incorporate command parsing and validation for correctly interpreting user commands before performing key-value operations.",
-      "To provide a simple mechanism for managing and accessing stored key-value information.",
-      "To develop a persistent key-value storage system for storing and retrieving data reliably.",
-      "To ensure data consistency and reliability while supporting efficient storage, processing, and retrieval of key-value information.",
-      "To integrate relevant foundational Computer Science concepts into the development and implementation of the proposed system."
+      "To design and implement suitable data structures for organizing and efficiently accessing key-value pairs.",
+      "To develop a command interface with parsing and validation for handling basic key-value operations such as insertion, retrieval, updating, and deletion.",
+      "To develop a persistent storage mechanism that preserves key-value data across application restarts.",
+      "To implement mechanisms for maintaining data consistency and recovering from basic storage or application failures.",
+      "To integrate the developed components into a functional key-value storage engine and validate its correctness and performance."
     ],
     "coursesTable": [
       {
@@ -84,7 +83,7 @@ const team05Data = {
         "role": "Supporting"
       }
     ],
-    "conceptualFlowImage": "assets/team05_conceptual_workflow.png",
+    "conceptualFlowImage": "assets/team05_conceptual_workflow.png?v=20261104",
     "conceptualFlowCaption": "Fig 1. Conceptual Workflow of Persistent Key-Value Storage Engine",
     "scopeInTable": [
       {
@@ -318,7 +317,7 @@ const team05Data = {
         "exceptionFlow": "Unknown command, missing key or bad syntax → command rejected with error"
       }
     ],
-    "useCaseImage": "assets/team05_use_case_diagram.png",
+    "useCaseImage": "assets/team05_use_case_diagram.png?v=20261104",
     "useCaseCaption": "Fig 2. System Use Case Diagram",
     "acceptanceTable": [
       {
