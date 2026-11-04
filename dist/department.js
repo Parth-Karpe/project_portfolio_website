@@ -1657,29 +1657,6 @@ portfolio=function(){
             </div>
           ` : ''}
 
-          <div class="tablewrap" style="margin-bottom:12px">
-            <table class="test-suite-table">
-              <thead>
-                <tr>
-                  <th>Input</th>
-                  <th>Processing</th>
-                  <th>User action</th>
-                  <th>Output</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${((hasData && st0.pipelineTable) || []).map(p=>`
-                  <tr>
-                    <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
-                    <td style="color:#000000;font-size:12px">${esc(p.processing || p.assessment)}</td>
-                    <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
-                    <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-
           ${hasData && st0.enginesTable && st0.enginesTable.length ? `
           <div class="tablewrap">
             <table class="test-suite-table">
