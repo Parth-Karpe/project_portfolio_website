@@ -336,3 +336,5 @@ const team12Data = {
 
 window.STATIC_TEAMS_DATA['B-12'] = team12Data;
 window.STATIC_TEAMS_DATA['12'] = team12Data;
+window.STATIC_TEAMS_DATA['HTTP Proxy Server with In-Memory Caching'] = team12Data;
+window.STATIC_TEAMS_DATA['HTTP Proxy Server with Caching'] = team12Data;

@@ -502,11 +502,11 @@ function seedTeams(){
   },
   {
     "id": "B-12",
-    "faculty": "Ms.Sadaf Anjum Savanur",
+    "faculty": "Ms. Sadaf Anjum Savanur",
     "topic": "Theme 4: Networked Systems and Tools",
     "theme_no": 4,
     "theme_name": "Networked Systems and Tools",
-    "title": "HTTP Proxy Server with Caching",
+    "title": "HTTP Proxy Server with In-Memory Caching",
     "members": [
       {
         "name": "Adarsh MR",
