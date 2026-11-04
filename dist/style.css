@@ -2475,10 +2475,6 @@ tbody tr:hover {
   border-radius: 999px;
   box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
   cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2495,14 +2491,10 @@ tbody tr:hover {
 }
 
 .chat-fab-badge {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
   background: rgba(255, 255, 255, 0.2);
   color: #fff;
   padding: 2px 7px;
   border-radius: 999px;
-  letter-spacing: 0.03em;
 }
 
 /* Chat Drawer Container */
@@ -2580,17 +2572,11 @@ tbody tr:hover {
 }
 
 .chat-header-eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--muted);
   line-height: 1.2;
 }
 
 .chat-header-project-name {
-  font-size: 12.5px;
-  font-weight: 700;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
@@ -2612,11 +2598,8 @@ tbody tr:hover {
   color: var(--ink);
   padding: 4px 8px;
   border-radius: 6px;
-  font-size: 11px;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
-  font-family: inherit;
   line-height: 1;
 }
 
@@ -2632,7 +2615,6 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
 }
 
 /* Quick Suggestion Chips - Clean pill scroller with hidden browser scrollbar */
@@ -2659,14 +2641,11 @@ tbody tr:hover {
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.07);
   color: var(--ink);
-  font-size: 11px;
-  font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
-  font-family: inherit;
 }
 
 .prompt-pill:hover {
@@ -2748,7 +2727,6 @@ tbody tr:hover {
 .chat-bubble {
   padding: 10px 14px;
   border-radius: 12px;
-  font-size: 12.5px !important;
   line-height: 1.55 !important;
   word-break: break-word;
 }
@@ -2786,20 +2764,15 @@ tbody tr:hover {
 .chat-bubble li,
 .chat-bubble ul,
 .chat-bubble ol {
-  font-size: 12.5px !important;
   line-height: 1.55 !important;
 }
 
 .chat-bubble strong,
 .chat-bubble b {
-  font-size: 12.5px !important;
-  font-weight: 700;
 }
 
 .chat-bubble .chat-italic-note {
   display: block;
-  font-style: italic;
-  font-size: 11px !important;
   color: var(--muted);
   margin-top: 6px;
   line-height: 1.4 !important;
@@ -2847,15 +2820,10 @@ tbody tr:hover {
 }
 
 .chat-bubble .chat-md-label {
-  font-size: 10px !important;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 
 .chat-bubble .chat-md-value {
-  font-size: 12.5px !important;
   line-height: 1.45 !important;
   white-space: normal;
   word-break: break-word;
@@ -2869,12 +2837,10 @@ tbody tr:hover {
   margin-top: 6px;
   padding-top: 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 10.5px !important;
   color: var(--muted);
 }
 
 .chat-bubble-meta small {
-  font-size: 10.5px !important;
 }
 
 /* Typing Indicator */
@@ -2921,8 +2887,6 @@ tbody tr:hover {
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
   color: var(--ink);
-  font-family: inherit;
-  font-size: 12.5px;
   line-height: 1.4;
   outline: none;
   max-height: 120px;
@@ -2951,12 +2915,9 @@ tbody tr:hover {
   border-radius: 8px;
   padding: 0 16px;
   height: 36px;
-  font-size: 12.5px;
-  font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s ease;
-  font-family: inherit;
 }
 
 .chat-send-btn:hover:not(:disabled) {
@@ -2974,9 +2935,6 @@ tbody tr:hover {
   display: inline-flex;
   align-items: center;
   vertical-align: baseline;
-  font-family: inherit;
-  font-size: 11px !important;
-  font-weight: 700;
   line-height: 1.25 !important;
   color: #60a5fa !important;
   background: rgba(59, 130, 246, 0.15);
@@ -3078,8 +3036,6 @@ tbody tr:hover {
 }
 
 .chat-settings-group label {
-  font-size: 11.5px;
-  font-weight: 600;
   color: var(--ink);
 }
 
@@ -3091,9 +3047,7 @@ tbody tr:hover {
   border: 1px solid var(--line);
   background: var(--bg-subtle);
   color: var(--ink);
-  font-size: 12px;
   outline: none;
-  font-family: inherit;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -3158,10 +3112,6 @@ tbody tr:hover {
 
 .quiz-header-badge {
   display: inline-block;
-  font-size: 10px !important;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
   color: var(--brand);
   background: rgba(99, 102, 241, 0.15);
   padding: 2px 7px;
@@ -3170,26 +3120,19 @@ tbody tr:hover {
 }
 
 .quiz-title {
-  font-size: 13.5px !important;
-  font-weight: 700;
   color: var(--ink);
 }
 
 .quiz-meta {
-  font-size: 11px !important;
   color: var(--muted);
   margin-top: 2px;
 }
 
 .quiz-score-display {
-  font-size: 16px !important;
-  font-weight: 800;
   color: #10b981;
 }
 
 .quiz-badge-name {
-  font-size: 11.5px !important;
-  font-weight: 600;
   color: var(--ink);
   margin-top: 2px;
 }
@@ -3225,13 +3168,10 @@ tbody tr:hover {
 }
 
 .quiz-q-num {
-  font-size: 11px !important;
-  font-weight: 800;
   color: var(--brand);
 }
 
 .quiz-q-type {
-  font-size: 10.5px !important;
   color: var(--muted);
   background: rgba(255, 255, 255, 0.05);
   padding: 1px 6px;
@@ -3239,8 +3179,6 @@ tbody tr:hover {
 }
 
 .quiz-q-prompt {
-  font-size: 12.5px !important;
-  font-weight: 600;
   color: var(--ink);
   line-height: 1.45 !important;
 }
@@ -3263,8 +3201,6 @@ tbody tr:hover {
   color: var(--ink);
   cursor: pointer;
   text-align: left;
-  font-family: inherit;
-  font-size: 12px !important;
   line-height: 1.4 !important;
   transition: all 0.15s ease;
 }
@@ -3291,8 +3227,6 @@ tbody tr:hover {
 }
 
 .quiz-opt-key {
-  font-size: 11px !important;
-  font-weight: 800;
   color: var(--brand);
   background: rgba(99, 102, 241, 0.15);
   width: 18px;
@@ -3311,7 +3245,6 @@ tbody tr:hover {
 
 .quiz-opt-text {
   flex: 1;
-  font-size: 12px !important;
 }
 
 .quiz-footer {
@@ -3324,7 +3257,6 @@ tbody tr:hover {
 }
 
 .quiz-progress-text {
-  font-size: 11px !important;
   color: var(--muted);
 }
 
@@ -3336,7 +3268,6 @@ tbody tr:hover {
 
 .quiz-btn-sm {
   padding: 5px 12px !important;
-  font-size: 12px !important;
   height: auto !important;
   min-height: unset !important;
 }
@@ -3346,7 +3277,6 @@ tbody tr:hover {
   padding: 10px 12px;
   border-radius: 8px;
   background: var(--bg-subtle);
-  font-size: 12px;
 }
 
 .missed-topic-row {
@@ -3383,14 +3313,10 @@ tbody tr:hover {
 }
 
 .eval-q-title {
-  font-size: 11.5px !important;
-  font-weight: 700;
   color: var(--ink);
 }
 
 .eval-status-pill {
-  font-size: 10.5px !important;
-  font-weight: 700;
   padding: 1px 7px;
   border-radius: 4px;
 }
@@ -3406,24 +3332,20 @@ tbody tr:hover {
 }
 
 .eval-prompt {
-  font-size: 12px !important;
   color: var(--ink);
   line-height: 1.4 !important;
 }
 
 .eval-answer-summary {
-  font-size: 11.5px !important;
   line-height: 1.45 !important;
   padding: 4px 0;
 }
 
 .eval-correct-highlight {
   color: #10b981;
-  font-weight: 700;
 }
 
 .eval-explanation {
-  font-size: 11.5px !important;
   line-height: 1.45 !important;
   color: var(--muted);
   border-top: 1px dashed var(--line);
@@ -3445,15 +3367,10 @@ tbody tr:hover {
 }
 
 .viva-tip-label {
-  font-size: 10.5px !important;
-  font-weight: 800;
   color: var(--brand);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
 }
 
 .viva-tip-text {
-  font-size: 11.5px !important;
   color: var(--ink);
   margin-top: 2px;
   line-height: 1.4 !important;
@@ -3469,8 +3386,6 @@ tbody tr:hover {
 
 /* Headings inside chat bubbles */
 .chat-heading-3 {
-  font-size: 14px !important;
-  font-weight: 800;
   color: var(--ink);
   margin-bottom: 6px;
   border-bottom: 1px solid var(--line);
@@ -3478,8 +3393,6 @@ tbody tr:hover {
 }
 
 .chat-heading-4 {
-  font-size: 12.5px !important;
-  font-weight: 700;
   color: var(--brand);
   margin: 8px 0 4px;
 }
@@ -3494,7 +3407,6 @@ tbody tr:hover {
 }
 
 .chat-empty-icon {
-  font-size: 28px;
   margin-bottom: 8px;
 }
 
@@ -3508,5 +3420,4 @@ tbody tr:hover {
   background: rgba(99, 102, 241, 0.15) !important;
   border-color: rgba(99, 102, 241, 0.4) !important;
   color: var(--brand) !important;
-  font-weight: 700 !important;
 }
