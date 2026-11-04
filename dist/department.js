@@ -1419,6 +1419,7 @@ portfolio=function(){
         f2 = isSmartCampus ? (state.forms?.[2] || {}) : {},
         f3 = isSmartCampus ? (state.forms?.[3] || {}) : {},
         topic = isSmartCampus ? (staticTeam?.theme || t.topic || 'Specialization Theme') : (t.topic || 'Specialization Theme'),
+        themeName = (t.theme_name || (staticTeam?.theme) || topic || '').replace(/^Theme\s*\d+\s*:\s*/i, ''),
         title = isSmartCampus ? (staticTeam?.title || t.title) : (t.title || 'Project Portfolio'),
         guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide'),
         repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
@@ -1429,7 +1430,7 @@ portfolio=function(){
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
     <div>
-      <span class="portfolio-theme-pill">Theme: ${esc(topic)}</span>
+      <span class="portfolio-theme-pill">Theme: ${esc(themeName)}</span>
       <h1 class="portfolio-hero-title">${esc(title)}</h1>
       <div class="portfolio-hero-meta">
         <span>Team: <strong>Team ${esc(t.id)}</strong></span>
@@ -1588,14 +1589,11 @@ portfolio=function(){
           ${isSmartCampus ? `
             <div style="display:flex;flex-direction:column;gap:18px">
               <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
-                <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
-                  i) In Scope
-                </div>
                 <table class="test-suite-table">
                   <thead>
                     <tr>
                       <th style="width:40px">#</th>
-                      <th>In-Scope Item</th>
+                      <th>In Scope Item</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1609,9 +1607,6 @@ portfolio=function(){
                 </table>
               </div>
               <div id="sec-scope-out" class="tablewrap" style="scroll-margin-top:100px">
-                <div style="padding:10px 14px;background:var(--bg-subtle);border-bottom:1px solid var(--line);font-weight:700;font-size:13px;color:var(--ink)">
-                  ii) Out of Scope
-                </div>
                 <table class="test-suite-table">
                   <thead>
                     <tr>
