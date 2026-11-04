@@ -275,3 +275,39 @@ body #portfolio-chat-drawer .chat-send-btn {
   padding: 0 16px !important;
 }
 
+
+/* AI Mentor Quiz & Evaluation Typography Isolation */
+body #portfolio-chat-drawer .quiz-container,
+body #portfolio-chat-drawer .quiz-container * {
+  min-height: unset !important;
+}
+
+body #portfolio-chat-drawer .quiz-option-btn {
+  min-height: unset !important;
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+}
+
+body #portfolio-chat-drawer .quiz-opt-key {
+  min-height: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  font-size: 11px !important;
+}
+
+body #portfolio-chat-drawer .quiz-btn-sm {
+  min-height: unset !important;
+  height: auto !important;
+  padding: 5px 12px !important;
+  font-size: 12px !important;
+}
+
+body #portfolio-chat-drawer .quiz-q-prompt,
+body #portfolio-chat-drawer .eval-prompt {
+  font-size: 12.5px !important;
+}
+
+body #portfolio-chat-drawer .viva-tip-card,
+body #portfolio-chat-drawer .viva-tip-card * {
+  font-size: 11.5px !important;
+}
