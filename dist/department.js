@@ -258,7 +258,7 @@ function seedTeams(){
     "topic": "Theme 3: System Software and Development Tools",
     "theme_no": 3,
     "theme_name": "System Software and Development Tools",
-    "title": "Mini Kernel with Process, Memory & File Management",
+    "title": "Mini-kernel with process, memory and file management",
     "members": [
       {
         "name": "BHAVANA",
@@ -1070,9 +1070,9 @@ function ensureDepartment(){
     state.workspaces[ta07.id].guide = ta07.faculty;
     state.workspaces[ta07.id].members = ta07.members;
   }
-  const t14=state.teams?.find(t=>t.id==='A-14'||t.title.includes('Mini Kernel')||t.title.includes('Mini -kernel'));
+  const t14=state.teams?.find(t=>t.id==='A-14'||t.title.includes('Mini Kernel')||t.title.includes('Mini -kernel')||t.title.includes('Mini-kernel'));
   if(t14){
-    t14.title = 'Mini -kernel with process, memory and file management';
+    t14.title = 'Mini-kernel with process, memory and file management';
     t14.faculty = 'Ms. Arundati Aralimatti';
     if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['A-14'] || STATIC_TEAMS_DATA['14'])){
       const s14 = STATIC_TEAMS_DATA['A-14'] || STATIC_TEAMS_DATA['14'];
@@ -2049,7 +2049,7 @@ function getThemePriority(team, themeNo){
     if (id === 'B-10' || id === '10' || title.includes('log processing') || (title.includes('log') && title.includes('analytics engine'))) return 2;
   } else if (th === 3) {
     if (id === 'B-01' || title.includes('incremental build') || (title.includes('incremental') && title.includes('dependency resolution'))) return 1;
-    if (id === 'A-14' || id === '14' || title.includes('mini kernel') || title.includes('mini -kernel')) return 2;
+    if (id === 'A-14' || id === '14' || title.includes('mini kernel') || title.includes('mini -kernel') || title.includes('mini-kernel')) return 2;
     if (id === 'B-07' || id === '07' || title.includes('java compiler')) return 3;
   } else if (th === 4) {
     if (id === 'B-13' || id === '13' || title.includes('resilient multi-peer') || title.includes('peer file distribution')) return 1;

@@ -1,6 +1,6 @@
 /**
  * Static Data File for Team A-14
- * Project: Mini -kernel with process, memory and file management
+ * Project: Mini-kernel with process, memory and file management
  * Source documents: mini-gate0_nov_4.docx & Review 2-Requirements Analysis_nov_4.docx
  * Faculty Mentor: Ms. Arundati Aralimatti
  */
@@ -10,7 +10,7 @@ window.STATIC_TEAMS_DATA = window.STATIC_TEAMS_DATA || {};
 const team14Data = {
   "id": "A-14",
   "theme": "System Software and Development Tools",
-  "title": "Mini -kernel with process, memory and file management",
+  "title": "Mini-kernel with process, memory and file management",
   "guide": "Ms. Arundati Aralimatti",
   "academicYear": "2026–27",
   "repo": "https://github.com/topics/mini-kernel-os",
@@ -78,7 +78,7 @@ const team14Data = {
       }
     ],
     "conceptualFlowImage": "assets/team14_conceptual_workflow.png",
-    "conceptualFlowCaption": "Fig 1. Conceptual Workflow of Mini -kernel with process, memory and file management",
+    "conceptualFlowCaption": "Fig 1. Conceptual Workflow of Mini-kernel with process, memory and file management",
     "scopeInTable": [
       {
         "num": "1",
