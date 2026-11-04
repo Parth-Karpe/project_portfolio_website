@@ -110,10 +110,7 @@ function portfolioSubnav(){
       </button>
     </div>
 
-    <!-- System Design -->
-    <button class="stage-link portfolio-subnav-btn ${activePortfolioTopic==='sec-system-design'?'selected':''}" data-target="sec-system-design" onclick="scrollToPortfolioTopic('sec-system-design')">
-      <span class="nav-label">Stage 2 - System Design</span>
-    </button>
+    <!-- Stage 2 - System Design -->
     <div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-arch'?'selected':''}" data-target="sec-arch" onclick="scrollToPortfolioTopic('sec-arch')">
         <span class="nav-label">1. Architecture</span>

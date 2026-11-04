@@ -112,7 +112,6 @@
   }
   function normalizeInlinePresentation(app) {
     app.querySelectorAll('[style]').forEach(el=>{
-      if(el.closest('#sec-fr,#sec-nfr,.fr-table,.nfr-table,table')) return;
       const size=el.style.fontSize;
       if(size && ((size.endsWith('px')&&parseFloat(size)<16)||(size.endsWith('rem')&&parseFloat(size)<1))) el.style.fontSize='1rem';
       if(el.closest('.diagram-frame,.portfolio-diagram-card,.faculty-diagram-frame')) return;

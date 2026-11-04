@@ -1782,19 +1782,19 @@ portfolio=function(){
             <table class="test-suite-table fr-table" id="table-fr">
               <thead>
                 <tr>
-                  <th style="width:76px;text-align:center">FR ID</th>
-                  <th style="width:52%">Description</th>
-                  <th style="width:105px;text-align:center">Priority</th>
-                  <th style="width:38%">Source Need (from S0)</th>
+                  <th style="width:85px;text-align:center">FR ID</th>
+                  <th style="width:58%">Description</th>
+                  <th style="width:110px">Priority</th>
+                  <th style="width:200px">Source Need (from S0)</th>
                 </tr>
               </thead>
               <tbody>
                 ${((hasData && st1.frTable) || []).map(fr=>`
                   <tr id="portfolio-fr-${esc(fr.id)}">
                     <td style="text-align:center"><span class="req-tag">${esc(fr.id)}</span></td>
-                    <td class="fr-desc" style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-                    <td style="text-align:center"><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
-                    <td class="fr-source" style="font-size:12px;color:var(--muted);line-height:1.45">${esc(fr.sourceNeed||'')}</td>
+                    <td class="fr-desc" style="color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
+                    <td><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
+                    <td class="fr-source" style="color:var(--muted);line-height:1.45">${esc(fr.sourceNeed||'')}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1808,19 +1808,19 @@ portfolio=function(){
             <table class="test-suite-table nfr-table" id="table-nfr">
               <thead>
                 <tr>
-                  <th style="width:80px;text-align:center">NFR ID</th>
-                  <th style="width:45%">Description</th>
-                  <th style="width:155px">Category</th>
-                  <th style="width:42%">Measurable Target</th>
+                  <th style="width:95px;text-align:center">NFR ID</th>
+                  <th style="width:30%">Description</th>
+                  <th style="width:140px">Category</th>
+                  <th style="width:50%">Measurable Target</th>
                 </tr>
               </thead>
               <tbody>
                 ${((hasData && st1.nfrTable) || []).map(nfr=>`
                   <tr id="portfolio-nfr-${esc(nfr.id)}">
                     <td style="text-align:center"><span class="req-tag">${esc(nfr.id)}</span></td>
-                    <td class="nfr-desc" style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
+                    <td class="nfr-desc" style="color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
                     <td><span class="requirement-meta-text">${esc(nfr.cat||nfr.category||'')}</span></td>
-                    <td class="nfr-target" style="font-size:12px;color:var(--brand);font-weight:600;line-height:1.45">${esc(nfr.target||'')}</td>
+                    <td class="nfr-target" style="color:var(--brand);font-weight:600;line-height:1.45">${esc(nfr.target||'')}</td>
                   </tr>
                 `).join('')}
               </tbody>

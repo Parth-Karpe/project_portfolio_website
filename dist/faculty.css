@@ -201,13 +201,69 @@ body #app-sidebar > .school { margin-top:0; margin-bottom:12px; }
   body #app-sidebar .portfolio-subnav { display:block; }
 }
 
-/* Compact space-efficient styling for FR and NFR tables */
+/* Restored font size and space-efficient column layout for FR and NFR tables */
 body :is(#sec-fr,#sec-nfr) table { width:100%!important; }
-body :is(#sec-fr,#sec-nfr) :is(th,td) { padding:8px 12px!important; font-size:12.5px!important; line-height:1.45!important; vertical-align:middle!important; }
-body :is(#sec-fr,#sec-nfr) th { padding:9px 12px!important; font-size:12px!important; font-weight:700!important; letter-spacing:0.3px; text-transform:uppercase; }
-body :is(#sec-fr,#sec-nfr) table:has(.req-tag) :is(th,td):first-child { min-width:76px!important; width:76px!important; text-align:center!important; padding:8px 6px!important; }
-body :is(#sec-fr,#sec-nfr) table .req-tag { min-width:56px!important; padding:2px 6px!important; font-size:12px!important; font-weight:700!important; line-height:1.4!important; }
-body :is(#sec-fr,#sec-nfr) .requirement-meta-text { font-size:12px!important; font-weight:600!important; }
-body :is(#sec-fr,#sec-nfr) td.fr-desc, body :is(#sec-fr,#sec-nfr) td.nfr-desc { font-size:12.5px!important; line-height:1.5!important; color:var(--black)!important; }
-body :is(#sec-fr,#sec-nfr) td.fr-source { font-size:12px!important; line-height:1.45!important; color:var(--ink-secondary)!important; }
-body :is(#sec-fr,#sec-nfr) td.nfr-target { font-size:12px!important; line-height:1.45!important; font-weight:600!important; color:var(--black)!important; }
+body :is(#sec-fr,#sec-nfr) th { padding:10px 14px!important; font-size:1rem!important; font-weight:700!important; letter-spacing:0.4px; text-transform:uppercase; }
+body :is(#sec-fr,#sec-nfr) td { padding:12px 14px!important; font-size:1rem!important; line-height:1.55!important; vertical-align:middle!important; }
+body :is(#sec-fr,#sec-nfr) table:has(.req-tag) :is(th,td):first-child { min-width:85px!important; width:85px!important; text-align:center!important; }
+body :is(#sec-fr,#sec-nfr) table .req-tag { display:inline-flex!important; align-items:center!important; justify-content:center!important; padding:3px 9px!important; font-size:.875rem!important; font-weight:700!important; border-radius:999px!important; line-height:1.4!important; }
+body :is(#sec-fr,#sec-nfr) .requirement-meta-text { font-size:1rem!important; font-weight:600!important; }
+body :is(#sec-fr,#sec-nfr) td.fr-desc, body :is(#sec-fr,#sec-nfr) td.nfr-desc { font-size:1rem!important; line-height:1.55!important; color:var(--ink)!important; }
+body :is(#sec-fr,#sec-nfr) td.fr-source { font-size:1rem!important; line-height:1.5!important; color:var(--muted)!important; }
+body :is(#sec-fr,#sec-nfr) td.nfr-target { font-size:1rem!important; line-height:1.5!important; font-weight:600!important; color:var(--brand)!important; }
+
+/* Ensure AI Mentor and Next stage floating buttons have the EXACT same size, height, and typography */
+html body #portfolio-chat-container .portfolio-chat-fab,
+html body .portfolio-chat-fab,
+html body .faculty-top,
+html body .faculty-next-stage {
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  min-width: 120px !important;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  line-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  background: var(--blue, #1d4ed8) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+  bottom: 24px !important;
+  z-index: 9998 !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+html body #portfolio-chat-container .portfolio-chat-fab:hover,
+html body .portfolio-chat-fab:hover,
+html body .faculty-top:hover,
+html body .faculty-next-stage:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3) !important;
+  background: var(--blue, #1d4ed8) !important;
+  color: #ffffff !important;
+}
+
+html body .faculty-next-stage,
+html body .faculty-top {
+  right: 24px !important;
+}
+
+html body.has-floating-next #portfolio-chat-container .portfolio-chat-fab,
+html body.has-floating-next .portfolio-chat-fab,
+html body:has(.faculty-top:not([hidden])) #portfolio-chat-container .portfolio-chat-fab,
+html body:has(.faculty-top:not([hidden])) .portfolio-chat-fab {
+  right: 156px !important;
+}
+
+html body:not(.has-floating-next) #portfolio-chat-container .portfolio-chat-fab,
+html body:not(.has-floating-next) .portfolio-chat-fab {
+  right: 24px !important;
+}
