@@ -593,9 +593,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     container.innerHTML = `
       <!-- Floating Action Button (FAB) -->
-      <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.togglePortfolioChat()" title="Ask Team AI Assistant" aria-label="Toggle Team AI Chatbot">
-        <span class="chat-fab-icon">${isChatOpen ? '✕' : '💬'}</span>
-        <span class="chat-fab-text">Ask Portfolio AI</span>
+      <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.togglePortfolioChat()" title="Toggle Portfolio Assistant" aria-label="Toggle Portfolio Assistant">
+        <span class="chat-fab-text">${isChatOpen ? 'Close Assistant' : 'AI Assistant'}</span>
         <span class="chat-fab-badge">Team ${esc(kb.teamId)}</span>
       </button>
 
@@ -605,33 +604,32 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           <div class="chat-header-info">
             <span class="chat-header-dot"></span>
             <div>
-              <strong style="display:block;font-size:13.5px;color:var(--ink)">Team ${esc(kb.teamId)} AI Assistant</strong>
+              <strong style="display:block;font-size:13px;font-weight:700;color:var(--ink)">Team ${esc(kb.teamId)} Assistant</strong>
               <small style="color:var(--muted);font-size:11px">${esc(kb.title.length > 36 ? kb.title.slice(0,34)+'…' : kb.title)}</small>
             </div>
           </div>
           <div class="chat-header-actions">
-            <button class="chat-icon-btn" onclick="window.openChatSettingsModal()" title="AI Settings (API Key / Local Model)">⚙️</button>
-            <button class="chat-icon-btn" onclick="window.clearPortfolioChat()" title="Clear Chat History">🗑️</button>
-            <button class="chat-icon-btn" onclick="window.togglePortfolioChat()" title="Minimize Chat">✕</button>
+            <button class="chat-btn-action" onclick="window.openChatSettingsModal()" title="AI Settings">Settings</button>
+            <button class="chat-btn-action" onclick="window.clearPortfolioChat()" title="Clear Chat History">Clear</button>
+            <button class="chat-btn-action close" onclick="window.togglePortfolioChat()" title="Close Assistant" aria-label="Close">✕</button>
           </div>
         </header>
 
         <!-- Quick Suggestions Scroller -->
         <div class="portfolio-chat-suggestions">
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('What are the core functional requirements?')">📋 Functional Requirements</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('What are the non-functional quality targets?')">🎯 Non-Functional Targets</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('Who is working on each engine and what are their roles?')">👥 Team & Engines</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('What is in-scope vs out-of-scope for this project?')">🛡️ Scope Boundaries</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('Explain the system architecture and workflow pipeline')">🏛️ Architecture & Flow</button>
+          <button class="prompt-pill" onclick="window.submitQuickPrompt('What are the core functional requirements?')">Functional Requirements</button>
+          <button class="prompt-pill" onclick="window.submitQuickPrompt('What are the non-functional quality targets?')">Non-Functional Targets</button>
+          <button class="prompt-pill" onclick="window.submitQuickPrompt('Who is working on each engine and what are their roles?')">Team &amp; Engines</button>
+          <button class="prompt-pill" onclick="window.submitQuickPrompt('What is in-scope vs out-of-scope for this project?')">Scope Boundaries</button>
+          <button class="prompt-pill" onclick="window.submitQuickPrompt('Explain the system architecture and workflow pipeline')">Architecture &amp; Workflow</button>
         </div>
 
         <!-- Messages Thread -->
         <div id="portfolio-chat-messages" class="portfolio-chat-messages" aria-live="polite">
           ${chatMessages.length === 0 ? `
             <div class="chat-empty-state">
-              <div class="chat-empty-icon">🤖</div>
-              <strong style="color:var(--ink);font-size:13px">Ask anything about Team ${esc(kb.teamId)}'s Project</strong>
-              <p style="color:var(--muted);font-size:11.5px;margin:4px 0 0">Grounded exclusively in this portfolio's requirements, architecture, tables, and evidence.</p>
+              <strong style="color:var(--ink);font-size:13.5px;font-weight:700">Portfolio Assistant</strong>
+              <p style="color:var(--muted);font-size:12px;margin:6px 0 0;line-height:1.5">Ask questions about Team ${esc(kb.teamId)}'s requirements, architectural pipeline, engines, scope boundaries, or test validation.</p>
             </div>
           ` : chatMessages.map(m => `
             <div class="chat-bubble-wrap ${m.role === 'user' ? 'user' : 'assistant'}">
@@ -662,7 +660,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); window.handleChatSubmit(); }"
           ></textarea>
           <button type="submit" id="portfolio-chat-send-btn" class="chat-send-btn" ${isGenerating ? 'disabled' : ''} aria-label="Send message">
-            ➤
+            Send
           </button>
         </form>
       </div>
@@ -671,8 +669,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       <div id="portfolio-chat-settings-modal" class="chat-settings-modal" style="display:none">
         <div class="chat-settings-card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <h3 style="margin:0;font-size:14px;color:var(--ink)">AI Chatbot Settings</h3>
-            <button class="chat-icon-btn" onclick="window.closeChatSettingsModal()">✕</button>
+            <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--ink)">AI Chatbot Settings</h3>
+            <button class="chat-btn-action close" onclick="window.closeChatSettingsModal()" aria-label="Close">✕</button>
           </div>
           <p class="mini" style="margin:0 0 12px;color:var(--muted)">Designed for zero-compute Vercel hosting. Select your generation engine:</p>
           
@@ -692,7 +690,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           
           <!-- Ollama Cloud Fallback Section -->
           <div style="border-top:1px solid var(--line);margin:10px 0 8px;padding-top:10px">
-            <strong style="font-size:12px;display:block;margin-bottom:6px;color:var(--brand)">☁️ Ollama Cloud (Free Usage Models)</strong>
+            <strong style="font-size:12px;display:block;margin-bottom:6px;color:var(--brand)">Ollama Cloud (Free Usage Models)</strong>
             
             <label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Ollama Cloud Endpoint URL</label>
             <input id="chat-set-ollama-url" type="text" placeholder="https://ollama.com/api" value="${esc(settings.ollamaUrl || 'https://ollama.com/api')}" style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);margin-bottom:6px;font-size:12px">
