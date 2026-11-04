@@ -469,3 +469,245 @@ html body #app .common-page-header + .main { padding-top:19px!important; }
   html body #app .topbar.common-page-header { height:auto!important; min-height:65px!important; padding-block:6px!important; }
   html body #app .common-page-header .school-top-header > strong { font-size:16px!important; }
 }
+/* Dashboard metrics: labels and values share one readable black type style. */
+html body #app.projector-dashboard-page .projector-stat-card {
+  background:#ffffff!important;
+}
+html body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) {
+  font-size:24px!important; font-weight:600!important; color:#000000!important; line-height:1.3;
+}
+@media(min-width:1600px) {
+  html body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) { font-size:28px!important; }
+}
+/* Softer dashboard overview with slightly larger metrics. */
+html body #app.projector-dashboard-page .projector-dashboard-hero {
+  background:#E8EFF7!important; color:#111111!important;
+}
+html body #app.projector-dashboard-page .projector-dashboard-hero :is(h1,p,.faculty-dashboard-lead) {
+  color:#111111!important;
+}
+html body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) {
+  font-size:26px!important;
+}
+@media(min-width:1600px) {
+  html body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) { font-size:30px!important; }
+}
+
+/* Compact theme cards: number, title and project count share the top row. */
+html body #app.projector-dashboard-page .theme-card-item {
+  border-top-width:3px!important; padding:16px 18px!important;
+}
+html body #app.projector-dashboard-page .projector-theme-heading {
+  display:grid!important; grid-template-columns:42px minmax(0,1fr) 84px!important;
+  align-items:start; gap:12px!important; min-height:0!important;
+}
+html body #app.projector-dashboard-page .projector-theme-number {
+  width:42px!important; height:42px!important; min-width:42px!important;
+}
+html body #app.projector-dashboard-page .theme-card-item h3 {
+  font-size:20px!important; line-height:1.3!important; min-width:0; margin:0!important;
+}
+html body #app.projector-dashboard-page .projector-theme-heading > .tag {
+  position:static!important; justify-self:end; align-self:start;
+  width:auto; padding:4px 7px!important; font-size:14px!important;
+  line-height:1.4; white-space:nowrap; text-decoration:none;
+}
+html body #app.projector-dashboard-page .projector-theme-action:empty { display:none!important; }
+@media(min-width:1600px) {
+  html body #app.projector-dashboard-page .theme-card-item h3 { font-size:23px!important; }
+}
+@media(max-width:1100px) and (min-width:901px) {
+  html body #app.projector-dashboard-page .projector-theme-heading { grid-template-columns:36px minmax(0,1fr) 76px!important; gap:8px!important; }
+  html body #app.projector-dashboard-page .projector-theme-number { width:36px!important; height:36px!important; min-width:36px!important; }
+  html body #app.projector-dashboard-page .theme-card-item h3 { font-size:18px!important; }
+}
+/* Two-line theme titles and compact cards without an empty footer. */
+html body #app.projector-dashboard-page .theme-card-item {
+  min-height:0!important; height:auto!important; padding:14px 16px!important;
+  gap:0!important; justify-content:flex-start!important;
+}
+html body #app.projector-dashboard-page .projector-theme-heading {
+  grid-template-columns:38px minmax(0,1fr) 80px!important;
+  gap:10px!important; min-height:0!important;
+}
+html body #app.projector-dashboard-page .projector-theme-number {
+  width:38px!important; height:38px!important; min-width:38px!important;
+}
+html body #app.projector-dashboard-page .theme-card-item h3 {
+  font-size:17px!important; line-height:1.3!important;
+  margin:0!important; min-width:0; text-wrap:balance;
+}
+html body #app.projector-dashboard-page .projector-theme-action {
+  display:none!important; margin:0!important; padding:0!important; border:0!important;
+}
+@media(min-width:1600px) {
+  html body #app.projector-dashboard-page .theme-card-item h3 { font-size:20px!important; }
+}
+@media(max-width:1100px) and (min-width:901px) {
+  html body #app.projector-dashboard-page .theme-card-item h3 { font-size:16px!important; }
+}
+
+html body #app.projector-dashboard-page .theme-card-item h3 { font-size:var(--theme-fit-size,17px)!important; }
+html body #app.projector-dashboard-page .theme-title-line { display:block; white-space:nowrap; font-size:inherit!important; }
+/* Theme number markers use the same outline color as their cards. */
+html body #app.projector-dashboard-page .projector-theme-number {
+  background:transparent!important; color:#000000!important;
+  border:1.5px solid var(--line)!important; border-radius:50%!important;
+  box-sizing:border-box;
+}
+/* Summary cards match the compact theme cards without changing column widths. */
+html body #app.projector-dashboard-page .projector-stat-card {
+  height:auto!important; min-height:64px!important;
+  padding:14px 16px!important; margin-block:0!important;
+  border:1.5px solid var(--line)!important;
+  border-top:3px solid var(--blue)!important;
+  border-radius:20px!important; box-shadow:none!important;
+  align-items:center!important; justify-content:center!important;
+}
+@media(min-width:1600px) {
+  html body #app.projector-dashboard-page .projector-stat-card { min-height:70px!important; }
+}
+
+/* Increase every theme title by two pixels from its fitted size. */
+html body #app.projector-dashboard-page .theme-card-item h3 {
+  font-size:calc(var(--theme-fit-size,17px) + 2px)!important;
+}
+/* More breathing room inside the theme cards. */
+html body #app.projector-dashboard-page .theme-card-item {
+  padding:20px 22px!important;
+}
+
+/* Reserve badge width and a clear gutter instead of allowing title overflow. */
+html body #app.projector-dashboard-page .projector-theme-heading {
+  grid-template-columns:38px minmax(0,1fr) max-content!important;
+  column-gap:16px!important;
+}
+html body #app.projector-dashboard-page .projector-theme-heading > .tag {
+  margin-left:0!important; white-space:nowrap; flex-shrink:0;
+}
+html body #app.projector-dashboard-page .theme-card-item h3 {
+  font-size:var(--theme-fit-size,19px)!important; min-width:0; max-width:100%;
+}
+
+/* All cards share a title size; counts sit flush with the inner right edge. */
+html body #app.projector-dashboard-page .projector-theme-heading {
+  width:100%; box-sizing:border-box; grid-template-columns:38px minmax(0,1fr) max-content!important;
+}
+html body #app.projector-dashboard-page .projector-theme-heading > .tag {
+  justify-self:end!important; margin-right:0!important; right:auto!important;
+}
+/* Slightly larger theme titles; number circles and counts retain their sizes. */
+html body #app.projector-dashboard-page .theme-card-item h3 {
+  font-size:calc(var(--theme-fit-size,19px) + 1px)!important;
+}
+
+/* Theme listing banner matches the dashboard overview. */
+html body #app .projector-theme-banner {
+  background:#E8EFF7!important; color:#111111!important;
+}
+html body #app .projector-theme-banner h1,
+html body #app .projector-theme-banner .projector-back-themes {
+  color:#111111!important;
+}
+/* Project listing rows keep a uniform white background. */
+html body #app #hod-projects-table tbody tr,
+html body #app #hod-projects-table tbody tr:nth-child(even),
+html body #app #hod-projects-table tbody tr:hover,
+html body #app #hod-projects-table tbody td {
+  background:#ffffff!important; color:#111111!important;
+}
+/* Match the project table header to the light overview banner. */
+html body #app #hod-projects-table thead,
+html body #app #hod-projects-table thead tr,
+html body #app #hod-projects-table thead th {
+  background:#E8EFF7!important; color:#111111!important;
+}
+/* Light portfolio actions and a right-aligned theme project count. */
+html body #app #hod-projects-table td button {
+  background:#DCE8FF!important; color:#111111!important;
+  border:1.5px solid var(--line)!important;
+}
+html body #app #hod-projects-table td button:hover { background:#C9DBF7!important; }
+html body #app .projector-theme-banner {
+  display:flex!important; flex-wrap:nowrap!important;
+  align-items:center!important; justify-content:space-between!important; gap:20px!important;
+}
+html body #app .projector-theme-banner > div { flex:1 1 auto; min-width:0; }
+html body #app .projector-theme-banner > .tag {
+  flex:0 0 auto; margin-left:auto!important; align-self:center;
+}
+@media(max-width:600px) {
+  html body #app .projector-theme-banner { gap:12px!important; }
+  html body #app .projector-theme-banner > .tag { font-size:16px!important; padding:4px 8px!important; }
+}
+/* Portfolio actions use a light tint of the hyperlink blue. */
+html body #app #hod-projects-table td button {
+  background:color-mix(in srgb,var(--blue) 12%,white)!important;
+  color:var(--blue)!important; border-color:var(--blue)!important;
+}
+html body #app #hod-projects-table td button:hover {
+  background:color-mix(in srgb,var(--blue) 20%,white)!important;
+}
+/* Project page follows the light overview theme with white reading surfaces. */
+html body #app .portfolio-hero-banner {
+  background:#E8EFF7!important; color:#111111!important;
+}
+html body #app .portfolio-hero-banner :is(.portfolio-hero-title,.portfolio-hero-meta,.portfolio-hero-meta span,.portfolio-hero-meta strong,.projector-project-back) {
+  color:#111111!important;
+}
+html body #app:has(.portfolio-container) .main,
+html body #app .portfolio-container,
+html body #app .portfolio-content,
+html body #app .portfolio-content :is(.portfolio-section,.portfolio-subblock,.portfolio-prose,.notice,.demo-answer,.text-box,.req-card,.techstack-group,.faculty-placeholder),
+html body #app .portfolio-content table :is(tbody,tr,td),
+html body #app .portfolio-member-card {
+  background:#ffffff!important; color:#111111!important;
+}
+html body #app .portfolio-content :is(p,li,td,h2,h3,h4),
+html body #app .portfolio-member-card :is(strong,span,b,p,small) {
+  color:#111111!important;
+}
+html body #app .portfolio-content table th {
+  background:#E8EFF7!important; color:#111111!important;
+}
+
+/* Clean member details and consistently aligned portfolio reading boxes. */
+html body #app .portfolio-member-card { text-align:left; }
+html body #app .portfolio-member-card > div { gap:0!important; align-items:flex-start!important; }
+html body #app .portfolio-member-card > div > div { width:100%; min-width:0; }
+html body #app .portfolio-content :is(.portfolio-prose,.notice,.demo-answer,.text-box),
+html body #app .portfolio-content :is(.portfolio-prose,.notice,.demo-answer,.text-box) :is(p,li),
+html body #app .portfolio-content .portfolio-subblock > p {
+  text-align:justify; text-align-last:left; overflow-wrap:break-word; hyphens:auto;
+}
+html body #app .portfolio-content :is(h2,h3,h4) { text-align:left; }
+html body #app .portfolio-content :is(th,td) { text-align:left; vertical-align:top; }
+html body #app .portfolio-content :is(.req-card,.techstack-group) { text-align:left; }
+
+/* Course roles are text; engine IDs match the outlined theme-number markers. */
+html body #app .portfolio-content .course-role-text {
+  color:#111111!important; font:inherit; background:none; border:0; padding:0;
+}
+html body #app .portfolio-content.portfolio-content .engine-outline-id {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:38px; height:38px; min-width:38px!important; box-sizing:border-box;
+  padding:0!important; background:transparent!important; color:#000000!important;
+  border:1.5px solid var(--line)!important; border-radius:50%!important;
+  font-size:16px!important; font-weight:700!important; line-height:1;
+}
+
+/* Requirement metadata is plain text, with consistent table justification. */
+html body #app .requirement-meta-text {
+  display:inline; background:none!important; border:0!important; padding:0!important;
+  border-radius:0!important; color:#111111!important; font:inherit!important;
+}
+html body #app table :is(th,td),
+html body #app table :is(th,td) :is(p,li,div),
+html body #app .portfolio-content.portfolio-content table :is(th,td) {
+  text-align:justify!important; text-align-last:left!important;
+  hyphens:none!important; word-break:normal!important; overflow-wrap:normal!important;
+}
+html body #app .portfolio-content :is(.portfolio-prose,.notice,.demo-answer,.text-box),
+html body #app .portfolio-content :is(.portfolio-prose,.notice,.demo-answer,.text-box) :is(p,li) {
+  hyphens:none!important;
+}

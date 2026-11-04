@@ -22,10 +22,10 @@
     });
     app.querySelectorAll('.theme-card-item').forEach(card=>{
       const action=card.lastElementChild?.querySelector('span');
-      if(action && /^View Projects\s*&\s*Details/.test(action.textContent.trim())) setText(action,'See projects');
+      if(action && !action.classList.contains('tag') && /^(?:View Projects\s*&\s*Details|See projects)/i.test(action.textContent.trim())) action.remove();
     });
     app.querySelectorAll('#hod-projects-table button').forEach(button=>{
-      if(/^Project Portfolio/.test(button.textContent.trim())) setText(button,'Open portfolio');
+      if(/^(?:Project Portfolio|Open portfolio)/i.test(button.textContent.trim())) setText(button,'View Portfolio');
     });
     app.querySelectorAll('[onclick^="backToThemes"]').forEach(button=>setText(button,'\u2190 Back to themes'));
     app.querySelectorAll('.tag').forEach(badge=>{
@@ -46,8 +46,8 @@
       const heading=stats.previousElementSibling;
       if(heading?.querySelector('h1')) addClass(heading,'projector-dashboard-hero');
       [...stats.children].forEach(card=>{
-        addClass(card,'projector-stat-card');addClass(card.firstElementChild,'projector-stat-number');
-        const label=card.children[1]?.firstElementChild||card.children[1];addClass(label,'projector-stat-label');
+        addClass(card,'projector-stat-card');addClass(card.querySelector('.projector-stat-number') || card.firstElementChild,'projector-stat-number');
+        const label=card.querySelector('.projector-stat-label') || card.children[1]?.firstElementChild || card.children[1];addClass(label,'projector-stat-label');
       });
     }
     const cards=[...app.querySelectorAll('.theme-card-item')];
@@ -69,12 +69,24 @@
         if(title) {
           const topic=title.textContent.replace(/^\s*Theme\s*\d+\s*[:\-\u2013\u2014]\s*/i,'').trim();
           setText(title,topic);
+          if(!title.querySelector('.theme-title-line')) {
+            const words=topic.split(/\s+/);let split=1,best=Infinity;
+            for(let i=1;i<words.length;i++) {
+              const score=Math.max(words.slice(0,i).join(' ').length,words.slice(i).join(' ').length);
+              if(score<best){best=score;split=i;}
+            }
+            const first=document.createElement('span'),second=document.createElement('span');
+            first.className=second.className='theme-title-line';
+            first.textContent=words.slice(0,split).join(' ')+' ';second.textContent=words.slice(split).join(' ');
+            title.replaceChildren(first,second);
+          }
+
           if(title.parentElement!==headingRow) headingRow.append(title);
         }
         const actionRow=card.lastElementChild;
         addClass(actionRow,'projector-theme-action');
         const badge=card.querySelector('.tag');
-        if(badge && badge.parentElement!==actionRow) actionRow.append(badge);
+        if(badge && badge.parentElement!==headingRow) headingRow.append(badge);
         [...headingRow.children].forEach(child=>{
           if(child!==title && child!==icon && !child.textContent.trim() && !child.children.length) child.remove();
         });
@@ -228,10 +240,10 @@
     if(!tabs.length) return;
     tabs.forEach(tab=>{
       if(tab.dataset.tab === '0') {
-        setText(tab, 'STAGE 0');
+        setText(tab, 'Stage 0 - Problem Definition');
         tab.dataset.target = 'stage-0';
       } else if(tab.dataset.tab === '1') {
-        setText(tab, 'STAGE 1');
+        setText(tab, 'Stage 1 - Requirement Analysis');
         tab.dataset.target = 'stage-1';
       } else if(tab.dataset.tab === 'system-design') {
         setText(tab, 'System Design');
@@ -281,7 +293,26 @@
       document.querySelectorAll('.faculty-progress,#pf-progress,.reading-progress').forEach(element=>element.remove());
     } finally {observe();}
   }
+  function fitThemeTitles(){
+    const titles=[...document.querySelectorAll('.theme-card-item h3')];
+    if(!titles.length) return;
+    const canvas=document.createElement('canvas'),context=canvas.getContext('2d');
+    if(!context) return;
+    const base=innerWidth>=1600?22:19;
+    let sharedSize=base;
+    titles.forEach(title=>{
+      if(!title.clientWidth) return;
+      const style=getComputedStyle(title);
+      context.font=`${style.fontWeight} ${base}px ${style.fontFamily}`;
+      const width=Math.max(...[...title.children].map(line=>context.measureText(line.textContent.trim()).width),1);
+      sharedSize=Math.min(sharedSize,base*title.clientWidth/width*.97);
+    });
+    titles.forEach(title=>title.style.setProperty('--theme-fit-size',`${sharedSize}px`));
+  }
+  window.addEventListener('resize',fitThemeTitles);
+  new ResizeObserver(fitThemeTitles).observe(document.getElementById('app'));
   applyPresentation();
+  requestAnimationFrame(fitThemeTitles);
 })();
 
 

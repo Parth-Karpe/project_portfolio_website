@@ -394,7 +394,7 @@ function seedTeams(){
   },
   {
     "id": "B-14",
-    "faculty": "Mr. Amit Kachavimath",
+    "faculty": "Mr.Amit Kachavimath",
     "topic": "Theme 4: Networked Systems and Tools",
     "theme_no": 4,
     "theme_name": "Networked Systems and Tools",
@@ -642,7 +642,7 @@ function seedTeams(){
   },
   {
     "id": "A-03",
-    "faculty": "Mr. Amit Kachavimath",
+    "faculty": "Mr.Amit Kachavimath",
     "topic": "Theme 6: Concurrent and Transactional Systems",
     "theme_no": 6,
     "theme_name": "Concurrent and Transactional Systems",
@@ -934,7 +934,7 @@ function ensureDepartment(){
     state.excelVersion=4;
     state.activeTeamId=state.teams.some(t=>t.id===state.activeTeamId)?state.activeTeamId:'A-03';
     state.workspaces=state.workspaces||{};
-    state.facultyAccount=state.facultyAccount||'Mr. Amit Kachavimath';
+    state.facultyAccount=state.facultyAccount||'Mr.Amit Kachavimath';
     state.teams.forEach(t=>{
       t.department='CSE(AI)';t.hod=state.department.hod;t.facultyAdmin=state.department.facultyAdmin;
       if(!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
@@ -1004,7 +1004,7 @@ function ensureDepartment(){
   const t03=state.teams?.find(t=>t.id==='A-03'||t.id==='03');
   if(t03){
     t03.title = 'Smart Campus Lab and Resource Optimizer';
-    t03.faculty = 'Mr. Amit Kachavimath';
+    t03.faculty = 'Mr.Amit Kachavimath';
     if(typeof STATIC_TEAMS !== 'undefined' && STATIC_TEAMS['03']){
       t03.title = STATIC_TEAMS['03'].title || t03.title;
       t03.faculty = STATIC_TEAMS['03'].faculty || t03.faculty;
@@ -1374,7 +1374,7 @@ function renderRequirementsTable(text, defaultList, type){
             <tr>
               <td><span class="req-tag">${esc(fr.id)}</span></td>
               <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-              <td><span class="tag ${fr.prio==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.prio)}</span></td>
+              <td><span class="requirement-meta-text">${esc(fr.prio)}</span></td>
               <td style="font-size:11.5px;color:var(--muted)">${esc(fr.source||'Automated Profiling')}</td>
             </tr>
           `).join('')}
@@ -1397,7 +1397,7 @@ function renderRequirementsTable(text, defaultList, type){
             <tr>
               <td><span class="req-tag">${esc(nfr.id)}</span></td>
               <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
-              <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||'Reliability')}</span></td>
+              <td><span class="requirement-meta-text">${esc(nfr.cat||'Reliability')}</span></td>
               <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'Defined benchmark threshold')}</td>
             </tr>
           `).join('')}
@@ -1421,8 +1421,7 @@ portfolio=function(){
         topic = isSmartCampus ? (staticTeam?.theme || t.topic || 'Specialization Theme') : (t.topic || 'Specialization Theme'),
         themeName = (t.theme_name || (staticTeam?.theme) || topic || '').replace(/^Theme\s*\d+\s*:\s*/i, ''),
         title = isSmartCampus ? (staticTeam?.title || t.title) : (t.title || 'Project Portfolio'),
-        guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide');
-  if (guide === 'Mr. Amit K' || guide === 'Amit K' || guide === 'Mr.Amit Kachavimath') guide = 'Mr. Amit Kachavimath';
+        guide = isSmartCampus ? (staticTeam?.guide || state.guide || t.faculty) : (t.faculty || 'Faculty Guide'),
         repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
@@ -1437,7 +1436,6 @@ portfolio=function(){
         <span>Team: <strong>Team ${esc(t.id)}</strong></span>
         <span>Faculty Guide: <strong>${esc(guide)}</strong></span>
         <span>Academic Year: <strong>2026–27</strong></span>
-        ${isSmartCampus ? `<a href="${repoUrl}" target="_blank" rel="noopener" class="btn secondary" style="margin-left:auto">GitHub Repository ↗</a>` : ''}
       </div>
     </div>
 
@@ -1446,7 +1444,6 @@ portfolio=function(){
       ${(staticTeam?.members||t.members||[]).map((m,i)=>`
         <article class="portfolio-member-card" style="padding:14px 16px;">
           <div style="display:flex;align-items:center;gap:12px">
-            ${avatar(m)}
             <div>
               <strong style="display:block;font-size:14px;color:var(--ink);line-height:1.25">${esc(m.name)}</strong>
               <div style="margin-top:4px">
@@ -1526,7 +1523,7 @@ portfolio=function(){
                       <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
                       <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
                       <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
-                      <td><span class="tag ${String(c.role).includes('Core')||String(c.role).includes('Dominant')?'':'gray'}" style="font-size:10.5px">${esc(c.role)}</span></td>
+                      <td><span class="course-role-text">${esc(c.role)}</span></td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -1575,7 +1572,7 @@ portfolio=function(){
                 <tbody>
                   ${(st0.enginesTable || []).map(e=>`
                     <tr>
-                      <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
+                      <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag engine-outline-id" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
                       <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
                     </tr>
                   `).join('')}
@@ -1594,7 +1591,7 @@ portfolio=function(){
                   <thead>
                     <tr>
                       <th style="width:40px">#</th>
-                      <th>In Scope Item</th>
+                      <th>In Scope</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1612,7 +1609,7 @@ portfolio=function(){
                   <thead>
                     <tr>
                       <th style="width:40px">#</th>
-                      <th>Out-of-Scope Item</th>
+                      <th>Out-of-Scope</th>
                       <th>Reason</th>
                     </tr>
                   </thead>
@@ -1678,7 +1675,7 @@ portfolio=function(){
                     <tr>
                       <td><span class="req-tag">${esc(fr.id)}</span></td>
                       <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-                      <td><span class="tag ${fr.priority==='Mandatory'?'':'amber'}" style="font-size:11px">${esc(fr.priority||'Mandatory')}</span></td>
+                      <td><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
                       <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
                     </tr>
                   `).join('')}
@@ -1706,7 +1703,7 @@ portfolio=function(){
                     <tr>
                       <td><span class="req-tag">${esc(nfr.id)}</span></td>
                       <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
-                      <td><span class="tag gray" style="font-size:11px">${esc(nfr.cat||nfr.category||'')}</span></td>
+                      <td><span class="requirement-meta-text">${esc(nfr.cat||nfr.category||'')}</span></td>
                       <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
                     </tr>
                   `).join('')}
@@ -2012,7 +2009,7 @@ function department(){
             <thead style="position: sticky; top: 0; z-index: 10; background:var(--surface)">
               <tr>
                 <th style="padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Project Title</th>
-                <th style="width:220px; padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Name of faculty member</th>
+                <th style="width:220px; padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Faculty Mentor</th>
                 <th style="width:300px; padding: 12px 16px; font-size: 13px; color:#000000; text-align:left">Team Members</th>
                 <th style="width:160px; text-align:center; padding: 12px 16px; font-size: 13px; color:#000000">Project Portfolio</th>
               </tr>
@@ -2037,39 +2034,13 @@ function department(){
       
     </div>
 
-    <div class="stat-cards-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 6px 0 16px;">
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 16px 22px; display:flex; align-items:center; gap: 16px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:30px; font-weight:800; color:var(--brand); min-width:42px; line-height:1">
-          06
+    <div class="stat-cards-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:6px 0 16px;">
+      ${[['Themes',6],['Faculty Mentors',facultyList.length],['Teams',all.length]].map(([label,count])=>`
+        <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 22px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow-xs);">
+          <div class="projector-stat-label" style="font-weight:700; line-height:1.25">${label} -</div>
+          <div class="projector-stat-number" style="font-weight:800; color:var(--brand); line-height:1">${count}</div>
         </div>
-        <div style="flex:1; min-width:0">
-          <div style="font-size:16.5px; font-weight:700; color:#000000; line-height:1.25">
-            Number of Themes
-          </div>
-        </div>
-      </div>
-
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 16px 22px; display:flex; align-items:center; gap: 16px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:30px; font-weight:800; color:var(--brand); min-width:42px; line-height:1">
-          ${String(facultyList.length).padStart(2,'0')}
-        </div>
-        <div style="flex:1; min-width:0">
-          <div style="font-size:16.5px; font-weight:700; color:#000000; line-height:1.25">
-            Number of Faculty Mentors
-          </div>
-        </div>
-      </div>
-
-      <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 16px 22px; display:flex; align-items:center; gap: 16px; box-shadow:var(--shadow-xs);">
-        <div style="font-size:30px; font-weight:800; color:var(--brand); min-width:42px; line-height:1">
-          ${String(all.length).padStart(2,'0')}
-        </div>
-        <div style="flex:1; min-width:0">
-          <div style="font-size:16.5px; font-weight:700; color:#000000; line-height:1.25">
-            Number of Teams
-          </div>
-        </div>
-      </div>
+      `).join('')}
     </div>
 
     <section class="card" style="padding: 20px 22px; margin-bottom: 8px; border-radius: 12px;">
@@ -2097,9 +2068,6 @@ function department(){
                 </div>
               </div>
               <div style="display:flex; align-items:center; justify-content:flex-end; padding-top:10px; border-top:1px solid var(--line);">
-                <span style="color:var(--brand); font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:4px">
-                  View Projects &amp; Details →
-                </span>
               </div>
             </article>
           `;
