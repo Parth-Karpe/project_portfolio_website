@@ -2027,6 +2027,12 @@ tbody tr:hover {
   scroll-margin-top: 90px;
 }
 
+.portfolio-stage-next {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
 .portfolio-section-title {
   display: flex;
   align-items: center;
@@ -3420,4 +3426,105 @@ tbody tr:hover {
   background: rgba(99, 102, 241, 0.15) !important;
   border-color: rgba(99, 102, 241, 0.4) !important;
   color: var(--brand) !important;
+}
+
+/* Mentor drawer stays chat-sized. Portfolio projector type does not apply here. */
+html body #portfolio-chat-container {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+html body #portfolio-chat-container :is(p, li, label, input, select, textarea, button, .btn, summary, small, .mini, .tiny) {
+  font-size: 14px !important;
+  font-weight: 500;
+  line-height: 1.45;
+  min-height: 0;
+}
+html body #portfolio-chat-container :is(button, .btn) {
+  min-height: 0 !important;
+  border-radius: 8px;
+}
+html body #portfolio-chat-container .chat-header-eyebrow {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  line-height: 1.2 !important;
+}
+html body #portfolio-chat-container .chat-header-project-name {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  max-width: none;
+}
+html body #portfolio-chat-container .chat-btn-action {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  min-height: 28px !important;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 6px;
+}
+html body #portfolio-chat-container .chat-btn-action.close {
+  width: 28px;
+  min-height: 28px !important;
+  padding: 0;
+}
+html body #portfolio-chat-container .prompt-pill {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  min-height: 0 !important;
+  height: auto;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+html body #portfolio-chat-container .portfolio-chat-fab {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  min-height: 0 !important;
+  height: auto;
+  padding: 8px 14px;
+  border-radius: 999px;
+}
+html body #portfolio-chat-container .chat-send-btn {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  height: 36px;
+  min-height: 36px !important;
+  padding: 0 14px;
+}
+html body #portfolio-chat-container .portfolio-chat-input-form textarea {
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+html body #portfolio-chat-container .chat-bubble,
+html body #portfolio-chat-container .chat-bubble :is(p, div, span, li) {
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+html body #portfolio-chat-container .chat-empty-state strong {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+html body #portfolio-chat-container .chat-empty-state p {
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+html body #portfolio-chat-container .quiz-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+html body #portfolio-chat-container .quiz-q-prompt,
+html body #portfolio-chat-container .quiz-option-btn {
+  font-size: 13px !important;
+  min-height: 0 !important;
+}
+html body #portfolio-chat-container .quiz-btn-sm,
+html body #portfolio-chat-container .chat-settings-footer .btn {
+  font-size: 13px !important;
+  min-height: 32px !important;
+  height: auto;
+  padding: 4px 12px;
+}
+html body #portfolio-chat-container .chat-settings-group :is(input, select, label) {
+  font-size: 13px !important;
 }

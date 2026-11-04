@@ -1744,6 +1744,9 @@ portfolio=function(){
             </table>
           </div>
         </article>
+        <div class="portfolio-stage-next">
+          <button type="button" class="btn" onclick="switchPortfolioStage('1', true)">Next stage</button>
+        </div>
       </section>
 
       <!-- STAGE 1: Requirement Analysis -->
@@ -1859,6 +1862,9 @@ portfolio=function(){
             </table>
           </div>
         </article>
+        <div class="portfolio-stage-next">
+          <button type="button" class="btn" onclick="switchPortfolioStage('system-design', true)">Next stage</button>
+        </div>
       </section>
 
       <!-- System Design -->
@@ -1909,6 +1915,9 @@ portfolio=function(){
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
         </div>
         `}
+        <div class="portfolio-stage-next">
+          <button type="button" class="btn" onclick="switchPortfolioStage('2', true)">Next stage</button>
+        </div>
       </section>
 
       <!-- Implementation and Integration -->
@@ -1918,6 +1927,9 @@ portfolio=function(){
         </div>
         <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
+        </div>
+        <div class="portfolio-stage-next">
+          <button type="button" class="btn" onclick="switchPortfolioStage('3', true)">Next stage</button>
         </div>
       </section>
 

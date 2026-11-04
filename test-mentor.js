@@ -53,6 +53,9 @@ const {
   evaluateVivaQuiz,
   formatResponseWithClickableCitations,
   polishLiveAnswer,
+  narrowChunkToAskedPoint,
+  focusAskedPoint,
+  guardGroundedAnswer,
   calcTokenOverlap,
   createPRNG
 } = global.window.PortfolioRAG;
@@ -266,16 +269,16 @@ test('Industry question routes to core sections, not the canned overview', () =>
   assert(route.chunks.some(chunk => chunk.id === 'stage0-problem'));
 });
 
-test('Industry question with a successful provider uses the core-sections label', () => {
+test('Industry question does not publish a substitute model answer', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   const chunks = buildCoreSectionPacket(industryQuestion, kb03);
   const result = resolveCoreSectionAnswer({
     answer: 'The documented problem is manual scheduling conflicts [Stage 0: Problem Statement].',
     provider: 'Stub'
   }, chunks);
-  assert.strictEqual(result.provider, 'AI Mentor (Core sections)');
-  assert(result.answer.includes('General answer based on the core portfolio sections'));
-  assert(!result.answer.includes('Executive Base Context'));
+  assert(result.answer.includes('does not discuss this directly'));
+  assert(!result.answer.includes('manual scheduling conflicts'));
+  assert(!result.answer.includes('General answer based on the core portfolio sections'));
 });
 
 test('Industry question offline and in extractive mode stays a short closest-sections reply', () => {
@@ -434,6 +437,32 @@ test('Markdown comparison tables render as tables and stay intact past 1200 char
   const polished = polishLiveAnswer(longTable);
   assert(polished.includes('| Recovery | Load the last committed copy. |'));
   assert(!polished.endsWith('…'));
+});
+
+test('Objective 2 returns only that objective, and a missing point does not dump the section', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const objectives = kb03.chunks.find(chunk => chunk.id === 'stage0-objectives');
+  const second = narrowChunkToAskedPoint('what is objective 2', objectives);
+  assert(second.text.includes('capacity, time-slot and eligibility rules'));
+  assert(!second.text.includes('overlapping booking requests'));
+  assert(!second.text.includes('generate reports'));
+  const missing = narrowChunkToAskedPoint('objective 20', objectives);
+  assert(missing.missingPoint);
+  assert(missing.text.includes('not in'));
+  assert(!missing.text.includes('capacity, time-slot'));
+  const whole = focusAskedPoint('list all objectives', [objectives]);
+  assert.strictEqual(whole[0].text, objectives.text);
+});
+
+test('A ranking the portfolio does not state is replaced with the closest-sections reply', () => {
+  const kb01 = buildTeamKnowledgeBase('01');
+  const objectives = kb01.chunks.find(chunk => chunk.id === 'stage0-objectives');
+  const guarded = guardGroundedAnswer('which is the toughest part', {
+    answer: 'Transaction management is the toughest. Relative difficulty: high.',
+    provider: 'Stub'
+  }, [objectives]);
+  assert(guarded.answer.includes('does not discuss this directly'));
+  assert(!guarded.answer.includes('Transaction management is the toughest'));
 });
 
 console.log(`\n====================================================`);
