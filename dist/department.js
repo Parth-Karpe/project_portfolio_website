@@ -1044,6 +1044,19 @@ function ensureDepartment(){
     state.workspaces[t07.id].guide = t07.faculty;
     state.workspaces[t07.id].members = t07.members;
   }
+  const ta07=state.teams?.find(t=>t.id==='A-07'||t.title.includes('Network Traffic Monitoring'));
+  if(ta07){
+    ta07.title = 'Network Traffic Monitoring & Protocol Analysis Tool';
+    ta07.faculty = 'Ms. Pooja P Shettar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && STATIC_TEAMS_DATA['A-07']){
+      const sa07 = STATIC_TEAMS_DATA['A-07'];
+      ta07.members = sa07.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[ta07.id]) state.workspaces[ta07.id] = newTeamWorkspace(ta07);
+    state.workspaces[ta07.id].guide = ta07.faculty;
+    state.workspaces[ta07.id].members = ta07.members;
+  }
   const t14=state.teams?.find(t=>t.id==='A-14'||t.title.includes('Mini Kernel')||t.title.includes('Mini -kernel'));
   if(t14){
     t14.title = 'Mini -kernel with process, memory and file management';
