@@ -96,14 +96,14 @@
 
     // Chunk: Table 0.1 Foundation Course Integration
     if(st0.coursesTable && st0.coursesTable.length){
-      const coursesText = st0.coursesTable.map(c => `${c.course} (Role: ${c.role}): ${c.concepts}`).join('. ');
+      const coursesLines = st0.coursesTable.map(c => `• ${c.course} (${c.role}): ${c.concepts}`).join('\n');
       chunks.push({
         id: 'table-0-1',
         elementId: 'table-courses',
         type: 'Foundations',
-        label: 'Foundation Course Integration (Table 0.1)',
-        citation: '[Table 0.1: Courses]',
-        text: `Academic Foundation Course Integration (Table 0.1): ${coursesText}`
+        label: 'Foundation Courses',
+        citation: '[Table 0.1]',
+        text: `Academic Foundation Course Integration:\n${coursesLines}`
       });
     }
 
@@ -114,9 +114,9 @@
         id: 'table-0-2',
         elementId: 'table-pipeline',
         type: 'Pipeline',
-        label: 'Conceptual Pipeline Flow (Table 0.2)',
-        citation: '[Table 0.2: Pipeline]',
-        text: `Conceptual Pipeline (Table 0.2): Input: ${pipe.input}. Assessment: ${pipe.assessment}. User Action: ${pipe.userAction}. Output: ${pipe.output}.`
+        label: 'Conceptual Pipeline Flow',
+        citation: '[Table 0.2]',
+        text: `Input: ${pipe.input}\nAssessment: ${pipe.assessment}\nUser Action: ${pipe.userAction}\nOutput: ${pipe.output}`
       });
     }
 
@@ -127,37 +127,45 @@
           id: `engine-${e.id}`,
           elementId: `portfolio-engine-${e.id}`,
           type: 'Engine',
-          label: `Engine ${e.id}: ${e.name || e.engine}`,
+          label: e.name || e.engine || `Engine ${e.id}`,
           citation: `[Engine ${e.id}]`,
-          text: `Engine ${e.id} (${e.name || e.engine}): ${e.desc}`
+          text: `${e.desc}`
         });
       });
     }
 
     // Chunk: Table 0.4 Project Scope (In-Scope & Out-of-Scope)
-    const inScope = (st0.scopeInTable || []).map(s => `#${s.num}: ${s.item}`).join('; ');
-    const outScope = (st0.scopeOutTable || []).map(s => `#${s.num}: ${s.item} (Reason: ${s.reason})`).join('; ');
-    if(inScope || outScope){
+    const scopeLines = [];
+    if(st0.scopeInTable && st0.scopeInTable.length){
+      scopeLines.push('In-Scope Deliverables:');
+      st0.scopeInTable.forEach(s => scopeLines.push(`• ${s.item}`));
+    }
+    if(st0.scopeOutTable && st0.scopeOutTable.length){
+      if(scopeLines.length) scopeLines.push('');
+      scopeLines.push('Out-of-Scope Exclusions:');
+      st0.scopeOutTable.forEach(s => scopeLines.push(`• ${s.item} (${s.reason})`));
+    }
+    if(scopeLines.length){
       chunks.push({
         id: 'table-0-4',
         elementId: 'table-scope',
         type: 'Scope',
-        label: 'Scope Boundaries (Table 0.4)',
-        citation: '[Table 0.4: Scope Boundaries]',
-        text: `In-Scope Items: ${inScope}. Out-of-Scope Exclusions: ${outScope}.`
+        label: 'Scope Boundaries',
+        citation: '[Table 0.4]',
+        text: scopeLines.join('\n')
       });
     }
 
     // Chunk: Table 0.5 Feasibility
     if(st0.feasibilityTable && st0.feasibilityTable.length){
-      const feasText = st0.feasibilityTable.map(f => `${f.aspect}: ${f.assessment}`).join('; ');
+      const feasLines = st0.feasibilityTable.map(f => `• ${f.aspect}: ${f.assessment}`).join('\n');
       chunks.push({
         id: 'table-0-5',
         elementId: 'table-feasibility',
         type: 'Feasibility',
-        label: 'Feasibility Assessment (Table 0.5)',
-        citation: '[Table 0.5: Feasibility]',
-        text: `Feasibility & Resource Assessment (Table 0.5): ${feasText}`
+        label: 'Feasibility Assessment',
+        citation: '[Table 0.5]',
+        text: `Feasibility & Resource Assessment:\n${feasLines}`
       });
     }
 
@@ -550,10 +558,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       return `<span class="citation-pill static">${match}</span>`;
     });
 
-    // Markdown formatting: bold, italic footnote, and clean spacing
+    // Markdown formatting: bold, italic footnote, clean sub-bullets, and spacing
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     formatted = formatted.replace(/\*([^\*\n]+)\*/g, '<span class="chat-italic-note">$1</span>');
     formatted = formatted.replace(/\n\n/g, '<div class="chat-spacer"></div>');
+    formatted = formatted.replace(/\n\s{2,}[•\-] /g, '<div class="chat-subbullet">◦ ');
     formatted = formatted.replace(/\n[•\-] /g, '<div class="chat-bullet-break"></div>• ');
     formatted = formatted.replace(/\n/g, '<br>');
 
@@ -586,25 +595,25 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         <header class="portfolio-chat-header">
           <div class="chat-header-info">
             <span class="chat-header-dot"></span>
-            <div>
-              <strong style="display:block;font-size:13px;font-weight:700;color:var(--ink)">Team ${esc(kb.teamId)} Assistant</strong>
-              <small style="color:var(--muted);font-size:11px">${esc(kb.title.length > 36 ? kb.title.slice(0,34)+'…' : kb.title)}</small>
+            <div class="chat-header-titles">
+              <div class="chat-header-eyebrow">Team ${esc(kb.teamId)} Assistant</div>
+              <div class="chat-header-project-name" title="${esc(kb.title)}">${esc(kb.title)}</div>
             </div>
           </div>
           <div class="chat-header-actions">
-            <button class="chat-btn-action" onclick="window.openChatSettingsModal()" title="AI Settings">Settings</button>
-            <button class="chat-btn-action" onclick="window.clearPortfolioChat()" title="Clear Chat History">Clear</button>
-            <button class="chat-btn-action close" onclick="window.togglePortfolioChat()" title="Close Assistant" aria-label="Close">✕</button>
+            <button type="button" class="chat-btn-action" onclick="window.openChatSettingsModal()" title="AI Settings">Settings</button>
+            <button type="button" class="chat-btn-action" onclick="window.clearPortfolioChat()" title="Clear Chat History">Clear</button>
+            <button type="button" class="chat-btn-action close" onclick="window.togglePortfolioChat()" title="Close Assistant" aria-label="Close">✕</button>
           </div>
         </header>
 
         <!-- Quick Suggestions Scroller -->
         <div class="portfolio-chat-suggestions">
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('What are the core functional requirements?')">Functional Requirements</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('What are the non-functional quality targets?')">Non-Functional Targets</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('Who is working on each engine and what are their roles?')">Team &amp; Engines</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('What is in-scope vs out-of-scope for this project?')">Scope Boundaries</button>
-          <button class="prompt-pill" onclick="window.submitQuickPrompt('Explain the system architecture and workflow pipeline')">Architecture &amp; Workflow</button>
+          <button type="button" class="prompt-pill" onclick="window.submitQuickPrompt('What are the core functional requirements?')">Requirements</button>
+          <button type="button" class="prompt-pill" onclick="window.submitQuickPrompt('What are the non-functional quality targets?')">NFR Targets</button>
+          <button type="button" class="prompt-pill" onclick="window.submitQuickPrompt('What is in-scope vs out-of-scope for this project?')">Project Scope</button>
+          <button type="button" class="prompt-pill" onclick="window.submitQuickPrompt('Explain the system architecture and workflow pipeline')">Architecture</button>
+          <button type="button" class="prompt-pill" onclick="window.submitQuickPrompt('Who is working on each engine and what are their roles?')">Engines &amp; Team</button>
         </div>
 
         <!-- Messages Thread -->
