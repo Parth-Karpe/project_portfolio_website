@@ -33,8 +33,9 @@
       if(match) setText(badge,`${match[1]} projects`);
     });
     app.querySelectorAll('.nav-label,.portfolio-section-title h2,.faculty-accordion > summary').forEach(stripHeadingMarkers);
-    app.querySelectorAll('.faculty-dashboard-heading h1').forEach(heading=>{
-      heading.textContent=heading.textContent.replace(/\s+/g,' ').trim();
+    app.querySelectorAll('.faculty-dashboard-heading').forEach(heading=>{
+      setText(heading.querySelector('h1'),'HOD Mini-Project Dashboard');
+      heading.querySelector('.faculty-dashboard-lead')?.remove();
     });
   }
   function dashboardPresentation(app) {
@@ -133,7 +134,7 @@
         const copy=section.cloneNode(true);copy.querySelectorAll('h2,h3,.portfolio-section-title').forEach(el=>el.remove());
         if(!copy.textContent.trim() && !copy.querySelector('img,svg,table,video,input,textarea,select,button,a[href]')) {
           placeholder=document.createElement('div');placeholder.className='faculty-placeholder';
-          placeholder.textContent='This section will be updated soon.';
+          placeholder.innerHTML='<span class="tag">In progress</span><p>This section is in progress and will be updated soon.</p>';
           section.append(placeholder);
         }
       }
@@ -198,8 +199,9 @@
       }
     }
   }
-  window.refreshPortfolioStageNav=function() {
+  window.refreshPortfolioStageNav=function(stage) {
     const app=document.getElementById('app');
+    const host=app?.querySelector('.portfolio-sidebar-nav');
     const panel=app?.querySelector('#app-sidebar');
     const layout=app?.querySelector('.portfolio-layout');
     if(!host || !panel || !layout) return;
