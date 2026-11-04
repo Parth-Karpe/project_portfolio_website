@@ -985,7 +985,7 @@ function ensureDepartment(){
     }
   };
 
-  const t08=state.teams?.find(t=>t.id==='08');
+  const t08=state.teams?.find(t=>t.id==='A-08'||t.id==='08');
   if(t08){
     t08.faculty='Mrs. Sneha Varur';t08.topic='Data Engineering & Quality Engines';t08.title='Large-Scale Dataset Profiling & Data Quality Engine';
     t08.members=[{name:'Anupriya Savant',usn:'01FE24BCI046',role:'Team Lead · Full-stack & Profiling Engine',skills:'Full-Stack · Schema Profiling',contribution:'Lead architecture modeling, ingestion pipeline, and full-stack integration.'},{name:'Pavitra Jalibenchi',usn:'01FE24BCI049',role:'Core Member · Anomaly & Duplicate Detection',skills:'DAA · Hash Deduplication',contribution:'Duplicate row detection algorithms and data consistency constraint rules.'},{name:'Anushree Angadi',usn:'01FE24BCI050',role:'Core Member · Statistical Analysis & Outliers',skills:'Probability & Stats · IQR Outliers',contribution:'Descriptive statistics, distribution modeling, and IQR outlier screening.'},{name:'Sahana Awaradi',usn:'01FE24BCI030',role:'Core Member · Revalidation & Reporting',skills:'Data Integrity · PDF/Excel Export',contribution:'Copy-on-write remediation, revalidation pipeline, and multi-format report exports.'}];
@@ -1056,6 +1056,72 @@ function ensureDepartment(){
     if(!state.workspaces[t14.id]) state.workspaces[t14.id] = newTeamWorkspace(t14);
     state.workspaces[t14.id].guide = t14.faculty;
     state.workspaces[t14.id].members = t14.members;
+  }
+  const t06=state.teams?.find(t=>t.id==='A-06'||t.title.includes('Constraint-Based'));
+  if(t06){
+    t06.title = 'Constraint-Based Academic Timetable Scheduling';
+    t06.faculty = 'Mr. Mallikarjun Akki';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['A-06'] || STATIC_TEAMS_DATA['06'])){
+      const s06 = STATIC_TEAMS_DATA['A-06'] || STATIC_TEAMS_DATA['06'];
+      t06.members = s06.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t06.id]) state.workspaces[t06.id] = newTeamWorkspace(t06);
+    state.workspaces[t06.id].guide = t06.faculty;
+    state.workspaces[t06.id].members = t06.members;
+  }
+
+  const t12=state.teams?.find(t=>t.id==='B-12'||t.title.includes('HTTP Proxy Server'));
+  if(t12){
+    t12.title = 'HTTP Proxy Server with In-Memory Caching';
+    t12.faculty = 'Ms. Sadaf Anjum Savanur';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-12'] || STATIC_TEAMS_DATA['12'])){
+      const s12 = STATIC_TEAMS_DATA['B-12'] || STATIC_TEAMS_DATA['12'];
+      t12.members = s12.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t12.id]) state.workspaces[t12.id] = newTeamWorkspace(t12);
+    state.workspaces[t12.id].guide = t12.faculty;
+    state.workspaces[t12.id].members = t12.members;
+  }
+  const t13=state.teams?.find(t=>t.id==='B-13'||t.title.includes('Resilient Multi-Peer'));
+  if(t13){
+    t13.title = 'Resilient Multi-Peer File Distribution & Recovery Engine';
+    t13.faculty = 'Ms. Pooja P Shettar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-13'] || STATIC_TEAMS_DATA['13'])){
+      const s13 = STATIC_TEAMS_DATA['B-13'] || STATIC_TEAMS_DATA['13'];
+      t13.members = s13.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t13.id]) state.workspaces[t13.id] = newTeamWorkspace(t13);
+    state.workspaces[t13.id].guide = t13.faculty;
+    state.workspaces[t13.id].members = t13.members;
+  }
+  const t01=state.teams?.find(t=>t.id==='A-01'||t.title.includes('Mini RDBMS'));
+  if(t01){
+    t01.title = 'Mini RDBMS Engine with Query Processing & Transaction Support';
+    t01.faculty = 'Ms. Jyothi Patil';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['A-01'] || STATIC_TEAMS_DATA['01'])){
+      const s01 = STATIC_TEAMS_DATA['A-01'] || STATIC_TEAMS_DATA['01'];
+      t01.members = s01.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t01.id]) state.workspaces[t01.id] = newTeamWorkspace(t01);
+    state.workspaces[t01.id].guide = t01.faculty;
+    state.workspaces[t01.id].members = t01.members;
+  }
+  const t05=state.teams?.find(t=>t.id==='B-05'||t.title.includes('Persistent Key-Value'));
+  if(t05){
+    t05.title = 'Persistent Key-Value Storage Engine';
+    t05.faculty = 'Ms. Shrushti Gani';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-05'] || STATIC_TEAMS_DATA['05'])){
+      const s05 = STATIC_TEAMS_DATA['B-05'] || STATIC_TEAMS_DATA['05'];
+      t05.members = s05.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t05.id]) state.workspaces[t05.id] = newTeamWorkspace(t05);
+    state.workspaces[t05.id].guide = t05.faculty;
+    state.workspaces[t05.id].members = t05.members;
   }
 
   [state,...Object.values(state.workspaces||{})].forEach(w=>{
