@@ -934,7 +934,7 @@ function ensureDepartment(){
     state.excelVersion=4;
     state.activeTeamId=state.teams.some(t=>t.id===state.activeTeamId)?state.activeTeamId:'A-03';
     state.workspaces=state.workspaces||{};
-    state.facultyAccount=state.facultyAccount||'Mr.Amit Kachavimath';
+    state.facultyAccount=state.facultyAccount||'Mr. Amit Kachavimath';
     state.teams.forEach(t=>{
       t.department='CSE(AI)';t.hod=state.department.hod;t.facultyAdmin=state.department.facultyAdmin;
       if(!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
@@ -1004,7 +1004,7 @@ function ensureDepartment(){
   const t03=state.teams?.find(t=>t.id==='A-03'||t.id==='03');
   if(t03){
     t03.title = 'Smart Campus Lab and Resource Optimizer';
-    t03.faculty = 'Mr.Amit Kachavimath';
+    t03.faculty = 'Mr. Amit Kachavimath';
     if(typeof STATIC_TEAMS !== 'undefined' && STATIC_TEAMS['03']){
       t03.title = STATIC_TEAMS['03'].title || t03.title;
       t03.faculty = STATIC_TEAMS['03'].faculty || t03.faculty;
@@ -1030,6 +1030,19 @@ function ensureDepartment(){
     if(!state.workspaces[t04.id]) state.workspaces[t04.id] = newTeamWorkspace(t04);
     state.workspaces[t04.id].guide = t04.faculty;
     state.workspaces[t04.id].members = t04.members;
+  }
+  const t07=state.teams?.find(t=>t.id==='B-07'||t.title==='Java Compiler & Bytecode Generation Engine'||t.title==='Java Compiler and Bytecode Generation Engine');
+  if(t07){
+    t07.title = 'Java Compiler and Bytecode Generation Engine';
+    t07.faculty = 'Ms.N D Kulenavar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && (STATIC_TEAMS_DATA['B-07'] || STATIC_TEAMS_DATA['07'])){
+      const s07 = STATIC_TEAMS_DATA['B-07'] || STATIC_TEAMS_DATA['07'];
+      t07.members = s07.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[t07.id]) state.workspaces[t07.id] = newTeamWorkspace(t07);
+    state.workspaces[t07.id].guide = t07.faculty;
+    state.workspaces[t07.id].members = t07.members;
   }
 
   [state,...Object.values(state.workspaces||{})].forEach(w=>{
@@ -1441,7 +1454,7 @@ portfolio=function(){
         topic = (staticTeam?.theme || t.topic || 'Specialization Theme'),
         themeName = (t.theme_name || (staticTeam?.theme) || topic || '').replace(/^Theme\s*\d+\s*:\s*/i, ''),
         title = (staticTeam?.title || t.title || 'Project Portfolio'),
-        guide = (staticTeam?.guide || state.guide || t.faculty || 'Faculty Guide'),
+        guide = (staticTeam?.guide || state.guide || t.faculty || 'Faculty Mentor'),
         repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
@@ -1454,7 +1467,7 @@ portfolio=function(){
       <h1 class="portfolio-hero-title">${esc(title)}</h1>
       <div class="portfolio-hero-meta">
         <span>Team: <strong>Team ${esc(t.id)}</strong></span>
-        <span>Faculty Guide: <strong>${esc(guide)}</strong></span>
+        <span>Faculty Mentor: <strong>${esc(guide)}</strong></span>
         <span>Academic Year: <strong>2026–27</strong></span>
       </div>
     </div>

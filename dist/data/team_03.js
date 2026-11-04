@@ -6,7 +6,7 @@
  * 3. System Design.docx
  * Project: Smart Campus Lab and Resource Optimizer
  * Theme: Concurrent and Transactional Systems (Theme 22)
- * Guide: Mr. Amit K
+ * Mentor: Mr. Amit Kachavimath
  */
 
 window.STATIC_TEAMS_DATA = window.STATIC_TEAMS_DATA || {};
@@ -15,7 +15,7 @@ const team03Data = {
   id: '03',
   theme: 'Concurrent and Transactional Systems',
   title: 'Smart Campus Lab and Resource Optimizer',
-  guide: 'Mr. Amit K',
+  guide: 'Mr. Amit Kachavimath',
   academicYear: '2026–27',
   repo: 'https://github.com/topics/campus-resource-optimizer',
   members: [
