@@ -49,7 +49,7 @@ const team01Data = {
     }
   ],
   "stage0": {
-    "problem": "In real-world applications, databases handle data creation, queries, modifications and security, but internal processes such as query processing, optimization, concurrency control and crash recovery often remain a black box to students. The proposed Mini RDBMS Engine with Query Processing & Transaction Support aims to demonstrate these processes by implementing a SQL-like query processor, semantic validation, indexing, query execution and transaction management with commit, rollback and simulated crash recovery. The project integrates concepts from Principles of Compiler Design (lexical analysis and parsing), Design & Analysis of Algorithms (indexing and searching), Operating System Principles (locking and concurrency control), and Database Management Systems (relational models, constraints and ACID properties).\n\n\n\n",
+    "problem": "In real-world applications, databases handle data creation, queries, modifications and security, but internal processes such as query processing, optimization, concurrency control and crash recovery often remain a black box to students. The proposed Mini RDBMS Engine with Query Processing & Transaction Support aims to demonstrate these processes by implementing a SQL-like query processor, semantic validation, indexing, query execution and transaction management with commit, rollback and simulated crash recovery. The project integrates concepts from Principles of Compiler Design (lexical analysis and parsing), Design & Analysis of Algorithms (indexing and searching), Operating System Principles (locking and concurrency control), and Database Management Systems (relational models, constraints and ACID properties).",
     "objectives": [
       "To implement a lexer, parser and semantic checker that convert SQL text into a validated parse tree and reject invalid queries with clear, position-aware error messages.",
       "To design a storage engine that supports DML commands on the stored tables.",
@@ -151,79 +151,79 @@ const team01Data = {
     "frTable": [
       {
         "id": "FR-01",
-        "desc": "Tokenize & parsing  the system shall split each query into tokens and build a parse tree (AST) using a fixed grammar, and reject any query that breaks the grammar.",
+        "desc": "Tokenize & parsing: The system shall split each query into tokens and build a parse tree (AST) using a fixed grammar, and reject any query that breaks the grammar.",
         "priority": "Mandatory",
         "sourceNeed": "SN-1, SN-3"
       },
       {
         "id": "FR-02",
-        "desc": "Semantic checking of the system shall check that every table and column exists and every value matches its column type before any data is touched.",
+        "desc": "Semantic checking: The system shall check that every table and column exists and every value matches its column type before any data is touched.",
         "priority": "Mandatory",
         "sourceNeed": "SN-4"
       },
       {
         "id": "FR-03",
-        "desc": "For every rejected query the system shall show what went wrong, where (token / position) and a hint to fix it.",
+        "desc": "Query error reporting: For every rejected query, the system shall show what went wrong, where (token / position) and a hint to fix it.",
         "priority": "Mandatory",
         "sourceNeed": "SN-4"
       },
       {
         "id": "FR-04",
-        "desc": "Table Management, Data Manipulation and Indexing the system shall support table creation, validated record insertion, retrieval using SELECT and WHERE conditions, updating and deleting records, and creating and maintaining hash and sorted indexes consistently across INSERT, UPDATE, DELETE and ROLLBACK operations.",
+        "desc": "Table Management, Data Manipulation and Indexing: The system shall support table creation, validated record insertion, retrieval using SELECT and WHERE conditions, updating and deleting records, and creating and maintaining hash and sorted indexes consistently across INSERT, UPDATE, DELETE and ROLLBACK operations.",
         "priority": "Mandatory",
         "sourceNeed": "SN-2, SN-3, SN-7"
       },
       {
         "id": "FR-05",
-        "desc": "Choose access path For each SELECT / UPDATE / DELETE : the system shall choose index lookup, index range or full scan, picking the option that reads the fewest rows.",
+        "desc": "Choose access path: For each SELECT / UPDATE / DELETE, the system shall choose index lookup, index range or full scan, picking the option that reads the fewest rows.",
         "priority": "Mandatory",
         "sourceNeed": "SN-7"
       },
       {
         "id": "FR-06",
-        "desc": "EXPLAIN (learning mode) when the user types EXPLAIN <query>, the system shall show the tokens, parse tree, chosen plan and the reason for the choice, without changing any data.",
+        "desc": "EXPLAIN (learning mode): When the user types EXPLAIN <query>, the system shall show the tokens, parse tree, chosen plan and the reason for the choice, without changing any data.",
         "priority": "Mandatory",
         "sourceNeed": "SN-1"
       },
       {
         "id": "FR-07",
-        "desc": "Safe UPDATE / DELETE preview Before an UPDATE or DELETE runs, the system shall show how many rows will be affected and ask for Y/N confirmation, with an extra warning when there is no WHERE clause.",
+        "desc": "Safe UPDATE / DELETE preview: Before an UPDATE or DELETE runs, the system shall show how many rows will be affected and ask for Y/N confirmation, with an extra warning when there is no WHERE clause.",
         "priority": "Mandatory",
         "sourceNeed": "SN-5"
       },
       {
         "id": "FR-08",
-        "desc": "BEGIN / COMMIT / ROLLBACK The system shall support BEGIN, COMMIT and ROLLBACK, a single statement outside BEGIN shall run as its own transaction (auto-commit).",
+        "desc": "BEGIN / COMMIT / ROLLBACK: The system shall support BEGIN, COMMIT and ROLLBACK, a single statement outside BEGIN shall run as its own transaction (auto-commit).",
         "priority": "Mandatory",
         "sourceNeed": "SN-6"
       },
       {
         "id": "FR-09",
-        "desc": "Undo log & rollback The system shall record the old value of every change before applying it, and on ROLLBACK or any error shall restore all of them so no partial change remains.",
+        "desc": "Undo log & rollback: The system shall record the old value of every change before applying it, and on ROLLBACK or any error shall restore all of them so no partial change remains.",
         "priority": "Mandatory",
         "sourceNeed": "SN-6"
       },
       {
         "id": "FR-10",
-        "desc": "Saving & reloading data of the system shall save committed tables to files on disk and load them again when it starts.",
+        "desc": "Saving & reloading data: The system shall save committed tables to files on disk and load them again when it starts.",
         "priority": "Mandatory",
         "sourceNeed": "SN-8, SN-9"
       },
       {
         "id": "FR-11",
-        "desc": "Crash recovery, If the program stops in the middle of a transaction, on restart the system shall keep only committed data and discard unfinished changes.",
+        "desc": "Crash recovery: If the program stops in the middle of a transaction, on restart the system shall keep only committed data and discard unfinished changes.",
         "priority": "Challenge",
         "sourceNeed": "SN-8"
       },
       {
         "id": "FR-12",
-        "desc": "Concurrency control of the system shall use shared / exclusive table locks so two sessions cannot corrupt the same table, and shall detect a deadlock (or 2 s timeout) and abort one transaction.",
+        "desc": "Concurrency control: The system shall use shared / exclusive table locks so two sessions cannot corrupt the same table, and shall detect a deadlock (or 2 s timeout) and abort one transaction.",
         "priority": "Challenge",
         "sourceNeed": "SN-8"
       },
       {
         "id": "FR-13",
-        "desc": "Command-line interface of the system shall accept queries ending with ';' (also multi-line), show results as a table with row count and time taken, and show errors without crashing.",
+        "desc": "Command-line interface: The system shall accept queries ending with ';' (also multi-line), show results as a table with row count and time taken, and show errors without crashing.",
         "priority": "Mandatory",
         "sourceNeed": "SN-1, SN-9"
       }
@@ -397,5 +397,3 @@ const team01Data = {
 };
 
 window.STATIC_TEAMS_DATA['A-01'] = team01Data;
-window.STATIC_TEAMS_DATA['01'] = team01Data;
-window.STATIC_TEAMS_DATA['1'] = team01Data;

@@ -502,11 +502,11 @@ function seedTeams(){
   },
   {
     "id": "B-12",
-    "faculty": "Ms.Sadaf Anjum Savanur",
+    "faculty": "Ms. Sadaf Anjum Savanur",
     "topic": "Theme 4: Networked Systems and Tools",
     "theme_no": 4,
     "theme_name": "Networked Systems and Tools",
-    "title": "HTTP Proxy Server with Caching",
+    "title": "HTTP Proxy Server with In-Memory Caching",
     "members": [
       {
         "name": "Adarsh MR",
@@ -1044,6 +1044,19 @@ function ensureDepartment(){
     state.workspaces[t07.id].guide = t07.faculty;
     state.workspaces[t07.id].members = t07.members;
   }
+  const ta07=state.teams?.find(t=>t.id==='A-07'||t.title.includes('Network Traffic Monitoring'));
+  if(ta07){
+    ta07.title = 'Network Traffic Monitoring & Protocol Analysis Tool';
+    ta07.faculty = 'Ms. Pooja P Shettar';
+    if(typeof STATIC_TEAMS_DATA !== 'undefined' && STATIC_TEAMS_DATA['A-07']){
+      const sa07 = STATIC_TEAMS_DATA['A-07'];
+      ta07.members = sa07.members.map(m=>({name:m.name,usn:m.usn}));
+    }
+    state.workspaces = state.workspaces || {};
+    if(!state.workspaces[ta07.id]) state.workspaces[ta07.id] = newTeamWorkspace(ta07);
+    state.workspaces[ta07.id].guide = ta07.faculty;
+    state.workspaces[ta07.id].members = ta07.members;
+  }
   const t14=state.teams?.find(t=>t.id==='A-14'||t.title.includes('Mini Kernel')||t.title.includes('Mini -kernel'));
   if(t14){
     t14.title = 'Mini -kernel with process, memory and file management';
@@ -1514,12 +1527,10 @@ function renderRequirementsTable(text, defaultList, type){
 
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
-        cleanId = (t.id || '').replace(/^[AB]-/, ''),
         staticTeam = (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (
           window.STATIC_TEAMS_DATA[t.id] ||
-          window.STATIC_TEAMS_DATA[cleanId] ||
-          window.STATIC_TEAMS_DATA[cleanId.padStart(2, '0')] ||
-          Object.values(window.STATIC_TEAMS_DATA).find(st => st.title === t.title || st.id === t.id)
+          (t.id === 'A-03' ? (window.STATIC_TEAMS_DATA['A-03'] || window.STATIC_TEAMS_DATA['03']) : null) ||
+          Object.values(window.STATIC_TEAMS_DATA).find(st => st && (st.id === t.id || (st.title && t.title && st.title.toLowerCase().trim() === t.title.toLowerCase().trim())))
         )) || null,
         hasData = Boolean(staticTeam),
         isSmartCampus = (t.id === 'A-03' || t.title === 'Smart Campus Lab and Resource Optimizer' || t.title === 'Smart Campus Lab & Resource Optimizer'),
@@ -1575,24 +1586,19 @@ portfolio=function(){
       <!-- Stage Switcher Tabs -->
       <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
         <button type="button" class="portfolio-stage-tab ${(window.activePortfolioStage||'0')==='0'?'active':''}" data-tab="0" data-target="stage-0" onclick="switchPortfolioStage('0',true)">
-          <span class="tab-badge">STAGE 0</span>
-          <span>Problem Statement &amp; Need Identification</span>
+          Stage 0 – Problem Definition and Scope
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='1'?'active':''}" data-tab="1" data-target="stage-1" onclick="switchPortfolioStage('1',true)">
-          <span class="tab-badge">STAGE 1</span>
-          <span>Requirement Analysis</span>
+          Stage 1 - Requirement Analysis
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='system-design'?'active':''}" data-tab="system-design" data-target="sec-system-design" onclick="switchPortfolioStage('system-design',true)">
-          <span class="tab-badge">DESIGN</span>
-          <span>System Design</span>
+          Stage 2 - System Design
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='2'?'active':''}" data-tab="2" data-target="stage-2" onclick="switchPortfolioStage('2',true)">
-          <span class="tab-badge">STAGE 2</span>
-          <span>Implementation and Integration</span>
+          Stage 3 - Implementation and Integration
         </button>
         <button type="button" class="portfolio-stage-tab ${window.activePortfolioStage==='3'?'active':''}" data-tab="3" data-target="stage-3" onclick="switchPortfolioStage('3',true)">
-          <span class="tab-badge">STAGE 3</span>
-          <span>Testing and Validations</span>
+          Stage 4 - Testing and Validations
         </button>
       </div>
 
@@ -1602,7 +1608,7 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
-          ${hasData && st0.problem ? `<p class="portfolio-prose" style="white-space:pre-line">${esc(st0.problem || '')}</p>` : ''}
+          ${hasData && st0.problem ? `<p class="portfolio-prose" style="white-space:pre-line">${esc((st0.problem || '').trim())}</p>` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-objectives">
@@ -1618,157 +1624,125 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-courses">
           <h3>3. Foundation Course Integration</h3>
-          ${hasData && st0.coursesTable ? `
-            <div class="tablewrap">
-              <table class="test-suite-table" id="table-courses">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:75px">Sl. Number</th>
+                  <th style="width:230px">Foundation Course</th>
+                  <th>Concepts Used</th>
+                  <th style="width:110px">Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st0.coursesTable) || []).map(c=>`
                   <tr>
-                    <th style="width:85px">Sl. Number</th>
-                    <th style="width:230px">Foundation Course</th>
-                    <th>Concepts Used</th>
-                    <th style="width:130px">Role</th>
+                    <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
+                    <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
+                    <td><span class="course-role-text">${esc(c.role)}</span></td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st0.coursesTable || []).map(c=>`
-                    <tr>
-                      <td style="font-weight:700;color:var(--muted)">${esc(c.sl)}</td>
-                      <td style="font-weight:600;color:var(--ink)">${esc(c.course)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(c.concepts)}</td>
-                      <td><span class="course-role-text">${esc(c.role)}</span></td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-workflow-concept">
           <h3>4. Conceptual Workflow</h3>
-          ${hasData && (st0.conceptualFlowImage || (st0.pipelineTable && st0.pipelineTable.length)) ? `
-            ${st0.conceptualFlowImage ? `
+          ${hasData && st0.conceptualFlowImage ? `
             <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
               <img src="${esc(st0.conceptualFlowImage)}" alt="${esc(st0.conceptualFlowCaption || ('Conceptual Flow - ' + title))}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
               ${st0.conceptualFlowCaption ? `<p style="margin:10px 0 0;font-size:12px;font-weight:600;color:var(--muted)">${esc(st0.conceptualFlowCaption)}</p>` : ''}
             </div>
-            ` : ''}
+          ` : ''}
 
-            ${(st0.pipelineTable && st0.pipelineTable.length) ? `
-            <div class="tablewrap" style="margin-bottom:12px">
-              <table class="test-suite-table" id="table-pipeline">
-                <thead>
+          ${hasData && st0.enginesTable && st0.enginesTable.length ? `
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="min-width:380px;width:40%">Engine</th>
+                  <th style="width:60%">Conceptual responsibility</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(st0.enginesTable || []).map(e=>`
                   <tr>
-                    <th>Input</th>
-                    <th>Processing</th>
-                    <th>User action</th>
-                    <th>Output</th>
+                    <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag engine-outline-id" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
+                    <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st0.pipelineTable || []).map(p=>`
-                    <tr>
-                      <td style="font-weight:600;color:var(--ink)">${esc(p.input)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(p.processing || p.assessment)}</td>
-                      <td style="color:var(--brand);font-weight:500;font-size:12px">${esc(p.userAction)}</td>
-                      <td style="font-weight:600;color:var(--success)">${esc(p.output)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            ` : ''}
-            ${(st0.enginesTable && st0.enginesTable.length) ? `
-            <div class="tablewrap">
-              <table class="test-suite-table" id="table-engines">
-                <thead>
-                  <tr>
-                    <th style="min-width:380px;width:40%">Engine</th>
-                    <th style="width:60%">Conceptual responsibility</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${(st0.enginesTable || []).map(e=>`
-                    <tr id="portfolio-engine-${esc(e.id||'')}">
-                      <td style="font-weight:700;color:var(--ink)"><div style="display:flex;align-items:center;gap:10px;white-space:nowrap"><span class="req-tag engine-outline-id" style="flex-shrink:0;margin:0">${esc(e.id||'')}</span><span style="color:#000000;font-weight:700">${esc(e.name||e.engine)}</span></div></td>
-                      <td style="color:#000000;font-size:12px">${esc(e.desc)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
           ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-scope">
           <h3>5. Project Scope</h3>
-          ${hasData && (st0.scopeInTable || st0.scopeOutTable) ? `
-            <div style="display:flex;flex-direction:column;gap:18px">
-              <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
-                <table class="test-suite-table">
-                  <thead>
-                    <tr>
-                      <th style="width:40px">#</th>
-                      <th>In Scope</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${(st0.scopeInTable || []).map(s=>`
-                      <tr>
-                        <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
-                        <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-              <div id="sec-scope-out" class="tablewrap" style="scroll-margin-top:100px">
-                <table class="test-suite-table">
-                  <thead>
-                    <tr>
-                      <th style="width:40px">#</th>
-                      <th>Out-of-Scope</th>
-                      <th>Reason</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${(st0.scopeOutTable || []).map(s=>`
-                      <tr>
-                        <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
-                        <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
-                        <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
-                      </tr>
-                    `).join('')}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ` : ''}
-        </article>
-
-        <article class="portfolio-subblock" id="sec-feasibility">
-          <h3>6. Feasibility &amp; Constraints</h3>
-          ${hasData && st0.feasibilityTable ? `
-            <div class="tablewrap">
-              <table class="test-suite-table" id="table-feasibility">
+          <div style="display:flex;flex-direction:column;gap:18px">
+            <div id="sec-scope-in" class="tablewrap" style="scroll-margin-top:100px">
+              <table class="test-suite-table">
                 <thead>
                   <tr>
-                    <th style="width:230px">Aspect</th>
-                    <th>Assessment</th>
+                    <th style="width:40px">#</th>
+                    <th>In Scope</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${(st0.feasibilityTable || []).map(f=>`
+                  ${((hasData && st0.scopeInTable) || []).map(s=>`
                     <tr>
-                      <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
-                      <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
+                      <td style="font-weight:700;color:var(--brand)">${esc(s.num)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
                     </tr>
                   `).join('')}
                 </tbody>
               </table>
             </div>
-          ` : ''}
+            <div id="sec-scope-out" class="tablewrap" style="scroll-margin-top:100px">
+              <table class="test-suite-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px">#</th>
+                    <th>Out-of-Scope</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${((hasData && st0.scopeOutTable) || []).map(s=>`
+                    <tr>
+                      <td style="font-weight:700;color:var(--muted)">${esc(s.num)}</td>
+                      <td style="color:#000000;font-size:12px">${esc(s.item)}</td>
+                      <td style="color:#000000;font-size:11.5px">${esc(s.reason)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </article>
+
+        <article class="portfolio-subblock" id="sec-feasibility">
+          <h3>6. Feasibility &amp; Constraints</h3>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:200px">Aspect</th>
+                  <th>Assessment</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st0.feasibilityTable) || []).map(f=>`
+                  <tr>
+                    <td style="font-weight:600;color:var(--ink)">${esc(f.aspect)}</td>
+                    <td style="color:#000000;font-size:12px">${esc(f.assessment)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
       </section>
 
@@ -1778,129 +1752,119 @@ portfolio=function(){
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
-          ${hasData && st1.frTable ? `
-            <div class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:80px">FR ID</th>
+                  <th>Description</th>
+                  <th style="width:110px">Priority</th>
+                  <th style="width:160px">Source Need (from S0)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.frTable) || []).map(fr=>`
                   <tr>
-                    <th style="width:85px">FR ID</th>
-                    <th>Description</th>
-                    <th style="width:140px">Priority</th>
-                    <th style="width:280px">Source Need (from S0)</th>
+                    <td><span class="req-tag">${esc(fr.id)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
+                    <td><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
+                    <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.frTable || []).map(fr=>`
-                    <tr id="portfolio-fr-${esc(fr.id)}">
-                      <td><span class="req-tag">${esc(fr.id)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(fr.desc)}</td>
-                      <td><span class="requirement-meta-text">${esc(fr.priority||'Mandatory')}</span></td>
-                      <td style="font-size:12px;color:var(--muted)">${esc(fr.sourceNeed||'')}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-nfr">
           <h3>2. Non - Functional Requirements</h3>
-          ${hasData && st1.nfrTable ? `
-            <div class="tablewrap">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:95px">NFR ID</th>
+                  <th>Description</th>
+                  <th style="width:140px">Category</th>
+                  <th style="width:260px">Measurable Target</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.nfrTable) || []).map(nfr=>`
                   <tr>
-                    <th style="width:95px">NFR ID</th>
-                    <th>Description</th>
-                    <th style="width:140px">Category</th>
-                    <th style="width:260px">Measurable Target</th>
+                    <td><span class="req-tag">${esc(nfr.id)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
+                    <td><span class="requirement-meta-text">${esc(nfr.cat||nfr.category||'')}</span></td>
+                    <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.nfrTable || []).map(nfr=>`
-                    <tr id="portfolio-nfr-${esc(nfr.id)}">
-                      <td><span class="req-tag">${esc(nfr.id)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(nfr.desc)}</td>
-                      <td><span class="requirement-meta-text">${esc(nfr.cat||nfr.category||'')}</span></td>
-                      <td style="font-size:12px;color:var(--brand);font-weight:600">${esc(nfr.target||'')}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
 
         <article class="portfolio-subblock" id="sec-usecase">
           <h3>3. Use Cases</h3>
-          ${hasData && (st1.userStoryTable || st1.useCaseImage) ? `
-            ${st1.userStoryTable ? `
-            <div class="tablewrap" style="margin-bottom:14px">
-              <table class="test-suite-table">
-                <thead>
+          <div class="tablewrap" style="margin-bottom:14px">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:50px">ID</th>
+                  <th style="width:110px">Actor</th>
+                  <th style="width:220px">Description / User Story</th>
+                  <th>Main Flow</th>
+                  <th>Exception Flow</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.userStoryTable) || []).map(u=>`
                   <tr>
-                    <th style="width:50px">ID</th>
-                    <th style="width:170px">Actor</th>
-                    <th style="width:220px">Description / User Story</th>
-                    <th>Main Flow</th>
-                    <th>Exception Flow</th>
+                    <td><span class="req-tag">${esc(u.id)}</span></td>
+                    <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
+                    <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
+                    <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
+                    <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.userStoryTable || []).map(u=>`
-                    <tr>
-                      <td><span class="req-tag">${esc(u.id)}</span></td>
-                      <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
-                      <td style="font-weight:600;font-size:12px;color:var(--ink)">${esc(u.desc)}</td>
-                      <td style="font-size:11.5px;color:#000000">${esc(u.mainFlow)}</td>
-                      <td style="font-size:11.5px;color:var(--amber,#b45309)">${esc(u.exceptionFlow)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            ` : ''}
-            ${st1.useCaseImage ? `
-            <div class="diagram-frame" id="portfolio-diagram-usecase" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-              <img src="${esc(st1.useCaseImage)}" alt="${esc(st1.useCaseCaption || 'Fig : Use case diagram')}" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
-              <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">${esc(st1.useCaseCaption || 'Fig : Use case diagram')}</p>
-            </div>
-            ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${hasData && st1.useCaseImage ? `
+          <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+            <img src="${esc(st1.useCaseImage)}" alt="${esc(st1.useCaseCaption || 'Fig : Use case diagram')}" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#000000">${esc(st1.useCaseCaption || 'Fig : Use case diagram')}</p>
+          </div>
           ` : ''}
         </article>
 
         <article class="portfolio-subblock" id="sec-acceptance">
           <h3>4. Acceptance Criteria</h3>
-          ${hasData && st1.acceptanceTable ? `
-            <div class="tablewrap">
-              <table class="test-suite-table" id="table-testsuite">
-                <thead>
+          <div class="tablewrap">
+            <table class="test-suite-table">
+              <thead>
+                <tr>
+                  <th style="width:110px">Requirement ID</th>
+                  <th>Acceptance Criteria</th>
+                  <th style="width:240px">Test / Verification Method</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${((hasData && st1.acceptanceTable) || []).map(tc=>`
                   <tr>
-                    <th style="width:110px">Requirement ID</th>
-                    <th>Acceptance Criteria</th>
-                    <th style="width:340px">Test / Verification Method</th>
+                    <td><span class="req-tag">${esc(tc.req)}</span></td>
+                    <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
+                    <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  ${(st1.acceptanceTable || []).map(tc=>`
-                    <tr>
-                      <td><span class="req-tag">${esc(tc.req)}</span></td>
-                      <td style="font-size:12.5px;color:var(--ink);line-height:1.5">${esc(tc.criteria)}</td>
-                      <td style="font-size:12px;color:#000000">${esc(tc.method)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-          ` : ''}
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         </article>
       </section>
 
       <!-- System Design -->
       <section class="portfolio-section" id="sec-system-design">
         <div class="portfolio-section-title">
-          <h2>System Design</h2>
+          <h2>Stage 2 - System Design</h2>
         </div>
 
         ${hasData && sys && sys.architecturePoints && sys.architecturePoints.length ? `
@@ -1950,7 +1914,7 @@ portfolio=function(){
       <!-- Implementation and Integration -->
       <section class="portfolio-section" id="stage-2">
         <div class="portfolio-section-title">
-          <h2>Implementation and Integration</h2>
+          <h2>Stage 3 - Implementation and Integration</h2>
         </div>
         <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
@@ -1960,7 +1924,7 @@ portfolio=function(){
       <!-- Testing and Validations -->
       <section class="portfolio-section" id="stage-3">
         <div class="portfolio-section-title">
-          <h2>Testing and Validations</h2>
+          <h2>Stage 4 - Testing and Validations</h2>
         </div>
         <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
@@ -2049,12 +2013,37 @@ function formatTeamMembers(members){
   </div>`;
 }
 
+function getThemePriority(team, themeNo){
+  const id = team.id || '';
+  const title = (team.title || '').toLowerCase();
+  const th = Number(themeNo);
+  
+  if (th === 2) {
+    if (id === 'A-08' || id === '08' || title.includes('profiling') || title.includes('data quality')) return 1;
+  } else if (th === 3) {
+    if (id === 'B-01' || title.includes('incremental build') || (title.includes('incremental') && title.includes('dependency resolution'))) return 1;
+    if (id === 'A-14' || id === '14' || title.includes('mini kernel') || title.includes('mini -kernel')) return 2;
+    if (id === 'B-07' || id === '07' || title.includes('java compiler')) return 3;
+  } else if (th === 4) {
+    if (id === 'B-13' || id === '13' || title.includes('resilient multi-peer') || title.includes('peer file distribution')) return 1;
+    if (id === 'A-07' || id === 'a07' || (title.includes('network traffic') && title.includes('protocol analysis'))) return 2;
+    if (id === 'B-12' || id === '12' || title.includes('http proxy')) return 3;
+  }
+  return 999;
+}
+
 function hodProjectRowsForTheme(tab){
   let list = state.teams || [];
   if(tab !== 'all'){
     list = list.filter(t => t.theme_no === Number(tab) || (t.topic||'').startsWith(`Theme ${tab}:`));
   }
-  list = list.slice().sort((a,b) => (a.excel_order || 0) - (b.excel_order || 0));
+  const thNum = Number(tab);
+  list = list.slice().sort((a,b) => {
+    const pA = getThemePriority(a, thNum || a.theme_no);
+    const pB = getThemePriority(b, thNum || b.theme_no);
+    if(pA !== pB) return pA - pB;
+    return (a.excel_order || 0) - (b.excel_order || 0);
+  });
 
   if(!list.length){
     return '<tr><td colspan="4" style="text-align:center;padding:24px;color:#000000;font-size:13.5px">No projects found in this theme.</td></tr>';

@@ -370,5 +370,3 @@ const team04Data = {
 };
 
 window.STATIC_TEAMS_DATA['B-04'] = team04Data;
-window.STATIC_TEAMS_DATA['04'] = team04Data;
-window.STATIC_TEAMS_DATA['4'] = team04Data;

@@ -408,4 +408,3 @@ const team14Data = {
 };
 
 window.STATIC_TEAMS_DATA['A-14'] = team14Data;
-window.STATIC_TEAMS_DATA['14'] = team14Data;
