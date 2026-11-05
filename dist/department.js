@@ -2035,6 +2035,10 @@ function hasTeamPortfolioData(t){
   if (id === 'B-12' || title.includes('http proxy server with in-memory caching') || title.includes('http proxy server')) {
     return false;
   }
+  // Specifically disable Large-Scale Log Processing & Analytics Engine per user requirement
+  if (id === 'B-10' || id === '10' || title.includes('large-scale log processing') || (title.includes('log processing') && title.includes('analytics engine'))) {
+    return false;
+  }
   if (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA) {
     const staticTeam = window.STATIC_TEAMS_DATA[id] ||
       (id === 'A-03' ? (window.STATIC_TEAMS_DATA['A-03'] || window.STATIC_TEAMS_DATA['03']) : null) ||
