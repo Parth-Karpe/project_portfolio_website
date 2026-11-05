@@ -3781,8 +3781,7 @@ html body:has(.mentor-dashboard) #portfolio-chat-container #portfolio-chat-drawe
   display: none !important;
 }
 html body:has(.mentor-split) #portfolio-chat-container .portfolio-chat-fab {
-  display: inline-flex !important;
-  bottom: calc(var(--mentor-bottom-offset, 50vh) + 16px) !important;
+  display: none !important;
 }
 html body .shell.mentor-split,
 html body .shell.mentor-split.projector-contextual-shell {
@@ -3792,6 +3791,24 @@ html body .shell.mentor-split.projector-contextual-shell {
   height: 100vh;
   min-height: 0;
   overflow: hidden;
+}
+html body .shell.mentor-split .mentor-split-left,
+html body .shell.mentor-split .mentor-split-handle {
+  display: none !important;
+}
+.mentor-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+.mentor-page-head h1 {
+  margin: 0;
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  line-height: 1.2;
+  color: var(--ink);
 }
 .mentor-split-left {
   flex: 0 0 var(--mentor-top, 50%);
@@ -3876,7 +3893,7 @@ html body:has(.mentor-split) .faculty-top {
 html body:has(.mentor-split) #portfolio-chat-container .portfolio-chat-fab { right:24px!important; }
 .mentor-split-pane { overflow:hidden; min-height:0; }
 .mentor-split-pane > .mentor-dashboard { height:100%; min-height:0; }
-.mentor-split-pane .mentor-layout { flex:1; height:100%; min-height:0; grid-template-rows:minmax(0,1fr); }
+.mentor-split-pane .mentor-layout { flex:1; height:auto; min-height:0; grid-template-rows:minmax(0,1fr); }
 .mentor-split-pane .mentor-navigation-column { height:100%; min-height:0; overflow:hidden; }
 .mentor-split-pane .mentor-menu { flex:0 0 auto; }
 .mentor-split-pane .mentor-stage-navigation { flex:1 1 auto; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain; padding:2px 4px 4px 2px; }

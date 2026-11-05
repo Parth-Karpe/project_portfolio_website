@@ -3883,9 +3883,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
         <!-- Floating Action Button (FAB) -->
 
-        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.openMentorSplit()" title="${window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor'}" aria-label="${window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor'}" ${typeof page!=='undefined'&&page!=='Team Portfolio'?'hidden':''}>
+        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.openMentorSplit()" title="AI Mentor" aria-label="AI Mentor" ${typeof page!=='undefined'&&page!=='Team Portfolio'?'hidden':''}>
 
-          <span class="chat-fab-text">${window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor'}</span>
+          <span class="chat-fab-text">AI Mentor</span>
 
         </button>
 
@@ -4125,10 +4125,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
         const fabText = fab.querySelector('.chat-fab-text');
 
-        const actionLabel = window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor';
-        if(fabText) fabText.textContent = actionLabel;
-        fab.title = actionLabel;
-        fab.setAttribute('aria-label', actionLabel);
+        if(fabText) fabText.textContent = 'AI Mentor';
+        fab.title = 'AI Mentor';
+        fab.setAttribute('aria-label', 'AI Mentor');
 
       }
 
@@ -4361,7 +4360,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     if(!card){
 
-      updateChatMessagesThread();
+    updateChatMessagesThread();
 
       return;
 
@@ -4908,10 +4907,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function syncMentorViewButton(){
     const fab = document.getElementById('portfolio-chat-fab');
-    const label = window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor';
     const text = fab?.querySelector('.chat-fab-text');
-    if(text) text.textContent = label;
-    if(fab){ fab.title = label; fab.setAttribute('aria-label',label); }
+    if(text) text.textContent = 'AI Mentor';
+    if(fab){ fab.title = 'AI Mentor'; fab.setAttribute('aria-label', 'AI Mentor'); }
   }
 
   window.openMentorSplit = function(){
@@ -5040,8 +5038,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     { name: 'Foundational CS Knowledge', help: 'Connect a course idea to this project.', match: ['table-0-1', 'table-0-3', 'engine-'] },
     { name: 'Faculty Expertise', help: 'Prepare the defense a guide would ask, using only these sections.', match: ['stage0-objectives', 'fr-', 'nfr-', 'table-testsuite'] },
     { name: 'Engineering Standards', help: 'Check the quality targets and how the project says they are verified.', match: ['nfr-', 'table-testsuite'] },
-    { name: 'Theme-Based Expertise', help: 'Explain why this project belongs to its theme.', match: ['team-meta', 'table-0-3', 'engine-', 'table-0-2', 'diag-asis'] },
-    { name: 'Project-Specific Knowledge', help: 'State what this project actually does.', match: ['stage0-objectives', 'table-0-3', 'engine-', 'fr-', 'table-use-cases', 'diag-usecase'] }
+    { name: 'Theme-Based Expertise', help: 'Explain why this project belongs to its theme.', match: ['team-meta', 'table-0-3', 'engine-', 'table-0-2', 'diag-asis'] }
   ];
 
   const STAGE_KEEP = {
@@ -5253,8 +5250,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       'Foundational CS Knowledge': 'Which course idea does this line use?',
       'Faculty Expertise': 'How would you defend this documented requirement?',
       'Engineering Standards': 'How does this project say this quality target is verified?',
-      'Theme-Based Expertise': 'Why does this line show the project belongs to its theme?',
-      'Project-Specific Knowledge': 'What does this project actually do in this line?'
+      'Theme-Based Expertise': 'Why does this line show the project belongs to its theme?'
     }[name] || 'What does this documented line say about the project?';
   }
 
@@ -5706,8 +5702,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     'Foundational CS Knowledge': 'Which documented statement should be connected to a foundation course',
     'Faculty Expertise': 'Which documented statement would you defend to your project guide',
     'Engineering Standards': 'Which documented statement gives the quality target or its verification',
-    'Theme-Based Expertise': 'Which documented statement shows why this project belongs to its theme',
-    'Project-Specific Knowledge': 'Which documented statement says what this project actually does'
+    'Theme-Based Expertise': 'Which documented statement shows why this project belongs to its theme'
   };
 
   const PERSONA_DESCRIPTIVE_STEM = {
@@ -5715,8 +5710,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     'Foundational CS Knowledge': 'Explain which course concept this project uses here, and why it fits',
     'Faculty Expertise': 'Defend this documented choice to your project guide',
     'Engineering Standards': 'Explain how this project says this quality target is verified',
-    'Theme-Based Expertise': 'Explain why this section shows that the project belongs to its theme',
-    'Project-Specific Knowledge': 'Explain what this project actually does'
+    'Theme-Based Expertise': 'Explain why this section shows that the project belongs to its theme'
   };
 
   const PERSONA_RUBRIC = {
@@ -5724,8 +5718,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     'Foundational CS Knowledge': 'Name the course and the concept this section uses.',
     'Faculty Expertise': 'Defend the requirement with its documented priority or target.',
     'Engineering Standards': 'State the quality target and how the portfolio says it is verified.',
-    'Theme-Based Expertise': 'Explain why this section belongs to the project theme.',
-    'Project-Specific Knowledge': 'State what the project does, using only this section.'
+    'Theme-Based Expertise': 'Explain why this section belongs to the project theme.'
   };
 
   function assessmentKey(teamId, persona, stage, kind){

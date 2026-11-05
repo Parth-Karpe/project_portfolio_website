@@ -1931,6 +1931,10 @@ function backToPortfolioFromMentor(){
   if(page === 'Team Portfolio') render();
   else go('Team Portfolio');
   if(typeof switchPortfolioStage === 'function') switchPortfolioStage(stage, false);
+  const fab = document.getElementById('portfolio-chat-fab');
+  const text = fab && fab.querySelector('.chat-fab-text');
+  if(text) text.textContent = 'AI Mentor';
+  if(fab){ fab.title = 'AI Mentor'; fab.setAttribute('aria-label', 'AI Mentor'); }
 }
 window.backToPortfolioFromMentor = backToPortfolioFromMentor;
 
@@ -1940,8 +1944,7 @@ function mentorDashboard(){
     'Foundational CS Knowledge',
     'Faculty Expertise',
     'Engineering Standards',
-    'Theme-Based Expertise',
-    'Project-Specific Knowledge'
+    'Theme-Based Expertise'
   ];
   const panel = window.mentorDashboardPanel || 'persona';
   const team = typeof activeTeam === 'function' ? activeTeam() : null;
@@ -1949,7 +1952,7 @@ function mentorDashboard(){
   const cards = dimensions.map(name => `<article class="mentor-dimension-card"><h3>${esc(name)}</h3><div class="mentor-dimension-actions"><button type="button" class="mentor-quiz-btn" onclick="window.startMentorMcq('${esc(name)}')">MCQ Quiz</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorDescriptive('${esc(name)}')">Descriptive Quiz</button></div></article>`).join('');
   const stageLabels = [['0','Stage 0 - Problem Definition and Scope'],['1','Stage 1 - Requirement Analysis'],['system-design','Stage 2 - System Design'],['2','Stage 3 - Implementation and Integration'],['3','Stage 4 - Testing and Validations']];
   const stageNavigation = stageLabels.map(([id,label]) => `<button type="button" class="mentor-stage-choice${id === String(window.mentorDashboardStage || '0') ? ' active' : ''}" style="font-size:16px!important;font-weight:700!important" aria-pressed="${id === String(window.mentorDashboardStage || '0')}" onclick="selectMentorStage('${id}')">${esc(label)}</button>`).join('');
-  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona – Six Dimensions</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">${esc(team?.title || 'Open portfolio')}</p><div class="mentor-dimension-grid">${cards}</div></section>`;
+  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona – Five Dimensions</h2><span class="mentor-workspace-label">AI Mentor</span></div><div class="mentor-dimension-grid">${cards}</div></section>`;
   const workTitle = mentorName || 'Quiz';
   const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2><span class="mentor-workspace-label">AI Mentor</span></div><div id="mentor-work-messages" class="mentor-work-messages"></div></section>`;
   const notes = (window.mentorReviseNotes || []).map(note => {
@@ -1960,7 +1963,8 @@ function mentorDashboard(){
   const reviseTarget = mentorName || (team?.title || 'the portfolio');
   const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(mentorName || 'Revise My Work')}</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">Paste a draft. Each sentence is checked against ${esc(reviseTarget)}. Nothing is added beyond the documented lines.</p><textarea id="mentor-revise-input" rows="8" placeholder="Paste the paragraph to check">${esc(window.mentorReviseDraft || '')}</textarea><button type="button" class="mentor-quiz-btn" onclick="window.reviseMentorDraft()">Check against portfolio</button>${notes ? `<ul class="mentor-revise-list">${notes}</ul>` : ''}</section>`;
   const main = panel === 'revise' ? revise : panel === 'work' ? work : persona;
-  return `<div class="mentor-dashboard"><div class="mentor-layout"><aside class="mentor-navigation-column"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.mentorDashboardPanel='revise';render()">Revise My Work</button></nav><nav class="mentor-stage-navigation" aria-label="Project stages">${stageNavigation}</nav></aside>${main}</div></div>`;
+  const projectTitle = team?.title || 'Project';
+  return `<div class="mentor-dashboard"><header class="mentor-page-head"><h1>${esc(projectTitle)}</h1><button type="button" class="mentor-back" onclick="window.backToPortfolioFromMentor()">Back to portfolio</button></header><div class="mentor-layout"><aside class="mentor-navigation-column"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.mentorDashboardPanel='revise';render()">Revise My Work</button></nav><nav class="mentor-stage-navigation" aria-label="Project stages">${stageNavigation}</nav></aside>${main}</div></div>`;
 }
 
 function selectMentorStage(stage){

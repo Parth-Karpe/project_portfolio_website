@@ -482,24 +482,24 @@ test('A ranking the portfolio does not state is replaced with the closest-sectio
   assert(!guarded.answer.includes('Transaction management is the toughest'));
 });
 
-test('Systems Thinking and Project-Specific Knowledge ask different questions on Team A-03', () => {
+test('Systems Thinking and Faculty Expertise ask different questions on Team A-03', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '0';
   const systems = buildDescriptiveQuiz(kb03, 'Systems Thinking');
-  const project = buildDescriptiveQuiz(kb03, 'Project-Specific Knowledge');
+  const faculty = buildDescriptiveQuiz(kb03, 'Faculty Expertise');
   assert.strictEqual(systems.questions.length, 1);
-  assert.strictEqual(project.questions.length, 1);
-  assert.notStrictEqual(systems.questions[0].source, project.questions[0].source);
-  assert.notStrictEqual(systems.questions[0].citation, project.questions[0].citation);
+  assert.strictEqual(faculty.questions.length, 1);
+  assert.notStrictEqual(systems.questions[0].source, faculty.questions[0].source);
+  assert.notStrictEqual(systems.questions[0].citation, faculty.questions[0].citation);
 
   const systemsIds = new Set(chunksForLens(kb03, 'Systems Thinking', '0').chunks.map(chunk => chunk.id));
-  const projectIds = new Set(chunksForLens(kb03, 'Project-Specific Knowledge', '0').chunks.map(chunk => chunk.id));
+  const themeIds = new Set(chunksForLens(kb03, 'Theme-Based Expertise', '0').chunks.map(chunk => chunk.id));
   const systemsQuiz = generateVivaQuiz(kb03, 5, systemsIds);
-  const projectQuiz = generateVivaQuiz(kb03, 5, projectIds);
+  const themeQuiz = generateVivaQuiz(kb03, 5, themeIds);
   assert(systemsQuiz.questions.some(question => question.id === 'q1-scope'));
   assert(!systemsQuiz.questions.some(question => question.id === 'q2-engine'));
-  assert(projectQuiz.questions.some(question => question.id === 'q2-engine'));
-  assert(!projectQuiz.questions.some(question => question.id === 'q1-scope'));
+  assert(themeQuiz.questions.some(question => question.id === 'q2-engine'));
+  assert(!themeQuiz.questions.some(question => question.id === 'q1-scope'));
 });
 
 test('A fact outside the selected mentor is not answered from another section', () => {
@@ -515,7 +515,7 @@ test('A fact outside the selected mentor is not answered from another section', 
 test('Stage 3 says the portfolio does not document that stage yet', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '2';
-  global.window.mentorActiveDimension = 'Project-Specific Knowledge';
+  global.window.mentorActiveDimension = 'Faculty Expertise';
   const reply = answerWithinLens('What are the implementation modules?', kb03);
   assert(reply.text.includes('does not document'));
   assert(reply.text.includes('Stage 3'));
@@ -816,6 +816,8 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
   assert(!mentor.includes('openAskMentor'));
   assert(!mentor.includes('>Ask</button>'));
   assert(!mentor.includes('Ask a Mentor'));
+  assert(!mentor.includes('Project-Specific Knowledge'));
+  assert(mentor.includes('Five Dimensions'));
 });
 
 test('MCQ questions stay fixed while options are prepared for the open project', () => {
@@ -852,8 +854,7 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
     'Foundational CS Knowledge',
     'Faculty Expertise',
     'Engineering Standards',
-    'Theme-Based Expertise',
-    'Project-Specific Knowledge'
+    'Theme-Based Expertise'
   ];
   personas.forEach(persona => {
     const stage1 = buildPersonaMcq(kb03, persona, '1');
@@ -867,13 +868,6 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
     assert(stage3.limitation.includes('Stage 3'));
     assert.strictEqual(stage4.questions.length, 0);
     assert(stage4.stageNote.includes('Stage 4'));
-  });
-  const project = buildPersonaMcq(kb03, 'Project-Specific Knowledge', '0').quiz;
-  const joined = stageSectionText(kb03, '0');
-  assert.strictEqual(project.questions.length, 5);
-  project.questions.forEach(question => {
-    question.options.forEach(option => assert(joined.includes(option.text.slice(0, 40))));
-    assert(!/\[FR-|\[NFR|\[Architecture\]/.test(question.citation));
   });
   global.sessionStorage.setItem('pg_assess_probe', '1');
 });
