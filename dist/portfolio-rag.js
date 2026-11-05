@@ -4868,6 +4868,14 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
+  function syncMentorViewButton(){
+    const fab = document.getElementById('portfolio-chat-fab');
+    const label = window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor';
+    const text = fab?.querySelector('.chat-fab-text');
+    if(text) text.textContent = label;
+    if(fab){ fab.title = label; fab.setAttribute('aria-label',label); }
+  }
+
   window.openMentorSplit = function(){
 
     if(window.mentorSplitOpen && (typeof page === 'undefined' || page === 'Team Portfolio')){
@@ -4880,6 +4888,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
       if(typeof switchPortfolioStage === 'function') switchPortfolioStage(stage, false);
 
+      syncMentorViewButton();
       return;
 
     }
@@ -4894,6 +4903,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(typeof page !== 'undefined' && page !== 'Team Portfolio' && typeof go === 'function') go('Team Portfolio');
 
     else if(typeof render === 'function') render();
+    syncMentorViewButton();
 
   };
 
