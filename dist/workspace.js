@@ -364,10 +364,10 @@ function sharedPageHeader(){
 }
 render=function(){
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
-  const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Mentor Dashboard':mentorDashboard,'Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
+  const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Mentor Dashboard':typeof mentorDashboard==='function'?mentorDashboard:()=>'','Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
   const isPortfolio = page === 'Team Portfolio';
-  const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (activeTeam()?.theme_no || 1);
+  const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : ((typeof activeTeam==='function'&&activeTeam()?.theme_no) || 1);
   const mentorSplit = isPortfolio && !!window.mentorSplitOpen && typeof mentorDashboard === 'function';
 
   $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}${mentorSplit ? ' mentor-split' : ''}">${mentorSplit ? '<div class="mentor-split-left">' : ''}${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><img src="assets/kle_tech_logo.png" alt="KLE Technological University" class="kle-header-logo"><span class="kle-header-dept" style="margin-top:4px">Department of CSE(AI)</span></div>${pageNavigationButtons(`backToThemeProjects(${curTheme})`)}<nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div class="shell-main">${sharedPageHeader()}<main class="main">${views[page]()}</main></div>${mentorSplit ? '</div><div id="mentor-split-handle" class="mentor-split-handle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize the portfolio and mentor" aria-valuemin="20" aria-valuemax="80" tabindex="0"></div><section class="mentor-split-pane" aria-label="AI Mentor">' + mentorDashboard() + '</section>' : ''}</div>${modal||''}`;
