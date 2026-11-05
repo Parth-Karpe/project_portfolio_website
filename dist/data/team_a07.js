@@ -251,35 +251,35 @@ const teamA07Data = {
     "userStoryTable": [
       {
         "id": "UC-01",
-        "actor": "Mini-Shark Operator",
+        "actor": "Operator",
         "desc": "The operator shall configure and start packet capture on the selected probe interfaces.",
         "mainFlow": "Select probe and interface → apply capture settings → start/stop capture → view capture status.",
         "exceptionFlow": "Invalid interface or insufficient privileges → display a capture error."
       },
       {
         "id": "UC-02",
-        "actor": "Client VM (Client-A / Client-B)",
+        "actor": "Client VM",
         "desc": "The client shall generate controlled TCP/HTTP traffic for monitoring across the virtual network.",
         "mainFlow": "Start test traffic → traffic traverses the Host VM routing function → Server VM receives traffic.",
         "exceptionFlow": "Server unreachable or test service stopped → report connectivity/test failure."
       },
       {
         "id": "UC-03",
-        "actor": "Probe Agent (Client-A / Server)",
+        "actor": "Probe Agent",
         "desc": "Each probe shall capture, timestamp, dissect and fingerprint packet observations.",
         "mainFlow": "Capture packet → timestamp → dissect supported headers → generate configured fingerprint → enqueue observation.",
         "exceptionFlow": "Unsupported/malformed packet or full buffer → record the applicable parse/overflow outcome."
       },
       {
         "id": "UC-04",
-        "actor": "Central Mini-Shark Host",
+        "actor": "Central Host",
         "desc": "The central service shall receive telemetry and correlate observations from both probes.",
         "mainFlow": "Receive telemetry → validate observation → correlate fingerprint → calculate delay or expire unmatched observation.",
         "exceptionFlow": "Telemetry missing/late or clocks unsynchronized → record telemetry issue or mark delay unreliable."
       },
       {
         "id": "UC-05",
-        "actor": "Administrator / Analyst",
+        "actor": "Administrator",
         "desc": "The administrator or analyst shall inspect monitoring status and diagnostic results.",
         "mainFlow": "Open dashboard/API → view probe status, packet matches, delay, unmatched observations and available counters → review stored results.",
         "exceptionFlow": "API/database unavailable → display a service/data error rather than stale status."

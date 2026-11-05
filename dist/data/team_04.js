@@ -245,7 +245,7 @@ const team04Data = {
     "userStoryTable": [
       {
         "id": "UC1",
-        "actor": "Index Operator (arXiv, OpenAlex as external sources)",
+        "actor": "Index Operator",
         "desc": "Operator harvests new papers for chosen arXiv categories.",
         "mainFlow": "Operator starts the harvester with categories and a start date -> system requests pages politely (3 s apart, one connection) -> records are saved to a file -> progress is saved so the run can resume",
         "exceptionFlow": "Server asks to wait (503 + Retry-After) -> wait and retry; resumption token expires -> restart from newest saved datestamp"
@@ -259,21 +259,21 @@ const team04Data = {
       },
       {
         "id": "UC3",
-        "actor": "System (OS engine)",
+        "actor": "System (OS)",
         "desc": "A reader process crashes or hangs.",
         "mainFlow": "Supervisor notices (process dead or no heartbeat) -> respawns the reader -> puts its unfinished papers back in line",
         "exceptionFlow": "One paper keeps crashing workers -> parked after N attempts, all other papers continue"
       },
       {
         "id": "UC4",
-        "actor": "System (OS + DBMS engines)",
+        "actor": "System",
         "desc": "The writer process crashes during ingestion.",
         "mainFlow": "Supervisor respawns the writer -> it recovers from its diary -> papers not yet acknowledged are sent again -> duplicates are ignored",
         "exceptionFlow": "Too many restarts -> run stops with a clear error; the diary stays safe"
       },
       {
         "id": "UC5",
-        "actor": "System (DBMS engine)",
+        "actor": "System (DBMS)",
         "desc": "Index is reopened after a crash or power cut.",
         "mainFlow": "Read MANIFEST -> delete segment folders it does not list -> replay diary entries after the last safe number -> start serving searches",
         "exceptionFlow": "Diary tail is torn -> cut at last good record; MANIFEST damaged -> checksum error is reported instead of trusting it"
@@ -294,14 +294,14 @@ const team04Data = {
       },
       {
         "id": "UC8",
-        "actor": "Index Operator / System (retrieval engine)",
+        "actor": "Index Operator",
         "desc": "The citation graph is updated.",
         "mainFlow": "Fetch references from OpenAlex within the credit budget -> build graph -> compute PageRank and clusters -> publish the new graph version through the MANIFEST",
         "exceptionFlow": "Credits used up -> stop, keep the old version, resume later"
       },
       {
         "id": "UC9",
-        "actor": "System (DBMS engine)",
+        "actor": "System (DBMS)",
         "desc": "Small segments are merged in the background.",
         "mainFlow": "Choose small segments -> merge, drop replaced papers, rebuild vector structure -> publish by MANIFEST swap -> delete old segments when no query uses them",
         "exceptionFlow": "Crash during merge -> unlisted new segment deleted at restart, old segments untouched"

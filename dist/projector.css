@@ -1223,23 +1223,49 @@ html body .mentor-navigation-column .mentor-stage-choice {
 }
 
 
-/* Use Cases Table: Optimize column widths (compact Actor column, generous space for user stories & flows) without altering font size */
+/* Functional Requirements Table: Balanced column widths allocating space to Source Need */
+html body #sec-fr .test-suite-table {
+  width: 100% !important;
+}
+html body #sec-fr .test-suite-table th:nth-child(1),
+html body #sec-fr .test-suite-table td:nth-child(1) {
+  width: 75px !important;
+  text-align: center !important;
+}
+html body #sec-fr .test-suite-table th:nth-child(2),
+html body #sec-fr .test-suite-table td:nth-child(2) {
+  width: 44% !important;
+}
+html body #sec-fr .test-suite-table th:nth-child(3),
+html body #sec-fr .test-suite-table td:nth-child(3) {
+  width: 85px !important;
+  text-align: center !important;
+}
+html body #sec-fr .test-suite-table th:nth-child(4),
+html body #sec-fr .test-suite-table td:nth-child(4) {
+  width: 38% !important;
+}
+
+/* Use Cases Table: Optimize column widths and horizontal actor pills without altering font size */
 html body #sec-usecase .test-suite-table {
   width: 100% !important;
 }
 html body #sec-usecase .test-suite-table th:nth-child(1),
 html body #sec-usecase .test-suite-table td:nth-child(1) {
-  width: 60px !important;
+  width: 65px !important;
   text-align: center !important;
+  white-space: nowrap !important;
 }
 html body #sec-usecase .test-suite-table th:nth-child(2),
 html body #sec-usecase .test-suite-table td:nth-child(2) {
-  width: 95px !important;
+  width: 145px !important;
+  min-width: 135px !important;
   text-align: center !important;
+  padding: 10px 6px !important;
 }
 html body #sec-usecase .test-suite-table th:nth-child(3),
 html body #sec-usecase .test-suite-table td:nth-child(3) {
-  width: 30% !important;
+  width: 28% !important;
 }
 html body #sec-usecase .test-suite-table th:nth-child(4),
 html body #sec-usecase .test-suite-table td:nth-child(4) {
@@ -1248,4 +1274,15 @@ html body #sec-usecase .test-suite-table td:nth-child(4) {
 html body #sec-usecase .test-suite-table th:nth-child(5),
 html body #sec-usecase .test-suite-table td:nth-child(5) {
   width: 26% !important;
+}
+html body #sec-usecase .test-suite-table td .tag,
+html body #sec-usecase .test-suite-table .tag {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  padding: 3px 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
 }
