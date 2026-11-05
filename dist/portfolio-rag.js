@@ -3490,12 +3490,6 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
           <strong style="color:var(--ink);font-size:14px;font-weight:700">AI Mentor • Viva Preparation</strong>
 
-          <p style="color:var(--muted);font-size:12px;margin:6px 0 12px;line-height:1.5">
-
-            Your pair-mentor for <strong>Team ${esc(kb.teamId)}</strong> (${esc(kb.title)}). Ask anything about requirements, engines, scope, or click <strong>Viva Quiz</strong> to test defense readiness.
-
-          </p>
-
           <div class="chat-empty-actions">
 
             <button type="button" class="prompt-pill active-accent" onclick="window.submitQuickPrompt('Give me an executive overview and base context of this project')">📋 Overview &amp; Context</button>
@@ -3755,8 +3749,6 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           </div>
 
           <div class="viva-tip-card">
-
-            <div class="viva-tip-label">🎓 Panel Defense Coaching:</div>
 
             <div class="viva-tip-text">${esc(d.defenseTip)}</div>
 
