@@ -2016,8 +2016,29 @@ function mentorDashboard(){
   return `<div class="mentor-dashboard"><div class="mentor-layout"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='work'?' active':''}" onclick="window.openAskMentor(window.mentorActiveDimension||'')">Ask a Mentor</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.mentorDashboardPanel='revise';render()">Revise My Work</button></nav>${main}</div></div>`;
 }
 
+function hasTeamPortfolioData(t){
+  if (!t) return false;
+  const title = (t.title || '').trim().toLowerCase();
+  const id = (t.id || '').trim();
+  // Specifically disable HTTP Proxy Server with In-Memory Caching per user requirement
+  if (id === 'B-12' || title.includes('http proxy server with in-memory caching') || title.includes('http proxy server')) {
+    return false;
+  }
+  if (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA) {
+    const staticTeam = window.STATIC_TEAMS_DATA[id] ||
+      (id === 'A-03' ? (window.STATIC_TEAMS_DATA['A-03'] || window.STATIC_TEAMS_DATA['03']) : null) ||
+      Object.values(window.STATIC_TEAMS_DATA).find(st => st && (st.id === id || (st.title && t.title && st.title.toLowerCase().trim() === title)));
+    if (staticTeam) return true;
+  }
+  return false;
+}
+
 function openTeamPortfolio(id){
   const next = state.teams.find(t => t.id === id);
+  if (!hasTeamPortfolioData(next)) {
+    // Keep button color identical, but do not redirect to portfolio
+    return;
+  }
   window.lastViewedTheme = (selectedTheme !== null && selectedTheme !== undefined) ? selectedTheme : (next?.theme_no || 1);
   activePortfolioStage = '0';
   window.activePortfolioStage = '0';
@@ -2124,7 +2145,9 @@ function hodProjectRowsForTheme(tab){
     return '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink);font-size:13.5px">No projects found in this theme.</td></tr>';
   }
 
-  return list.map(t=>`
+  return list.map(t=>{
+    const hasData = hasTeamPortfolioData(t);
+    return `
     <tr>
       <td style="padding: 12px 16px;">
         <strong style="color:var(--ink);font-size:14px;display:block;line-height:1.35">${esc(t.title)}</strong>
@@ -2141,7 +2164,7 @@ function hodProjectRowsForTheme(tab){
         </button>
       </td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 function downloadHODProjectCSVTemplate(){
