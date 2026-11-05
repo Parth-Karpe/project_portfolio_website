@@ -3607,6 +3607,32 @@ html body .mentor-dashboard #mentor-revise-input {
 .mentor-revise-list { list-style: none; padding: 0; margin: 14px 0 0; }
 .mentor-revise-list li { display: flex; flex-direction: column; gap: 4px; }
 .mentor-wait { padding: 24px; font-size: 16px; }
+.option-loader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 4px;
+}
+.option-loader-ring {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  border-top-color: var(--brand);
+  animation: optionLoaderSpin 0.75s linear infinite;
+  flex: 0 0 auto;
+}
+.option-loader strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+@keyframes optionLoaderSpin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .option-loader-ring { animation: none; border-top-color: var(--brand); }
+}
 .mentor-dashboard-top {
   display: flex;
   align-items: center;

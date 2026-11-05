@@ -65,6 +65,8 @@ const {
   buildDescriptiveQuiz,
   buildPersonaMcq,
   buildPersonaDescriptive,
+  facultyOptionRequest,
+  applyFacultyOptions,
   evaluateVivaQuiz,
   formatResponseWithClickableCitations,
   polishLiveAnswer,
@@ -749,7 +751,7 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
     'Foundational CS Knowledge': 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?',
     'Faculty Expertise': 'Which explanation best justifies selecting the identified problem for this mini project?',
     'Engineering Standards': 'Which statement best represents a clear and technically meaningful project objective?',
-    'Theme-Based Expertise': 'Which theme-specific technical challenge is most directly addressed by the proposed project?'
+    'Theme-Based Expertise': 'Which mechanism is fundamental when several activities update shared data?'
   };
   const ids = [];
   Object.keys(openings).forEach(persona => {
@@ -758,7 +760,9 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
     assert.strictEqual(mcq.quiz.questions.length, 5, persona);
     assert.strictEqual(descriptive.questions.length, 5, persona);
     assert.strictEqual(mcq.quiz.questions[0].prompt, openings[persona]);
-    assert.strictEqual(buildPersonaMcq(kb08, persona, '0').quiz.questions[0].prompt, openings[persona]);
+    if(persona !== 'Theme-Based Expertise'){
+      assert.strictEqual(buildPersonaMcq(kb08, persona, '0').quiz.questions[0].prompt, openings[persona]);
+    }
     mcq.quiz.questions.forEach(question => {
       assert.strictEqual(question.options.length, 4);
       assert.strictEqual(question.options.filter(option => option.isCorrect).length, 1);
@@ -773,16 +777,72 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
       ids.push(question.templateId);
     });
     const later = buildPersonaMcq(kb03, persona, '1');
+    const laterDesc = buildPersonaDescriptive(kb03, persona, '1');
+    assert.strictEqual(later.quiz.questions.length, 5);
+    assert.strictEqual(laterDesc.questions.length, 5);
     assert.notStrictEqual(later.quiz.questions[0].prompt, openings[persona]);
+    later.quiz.questions.forEach(question => {
+      assert.strictEqual(question.options.length, 4);
+      assert.strictEqual(question.options.filter(option => option.isCorrect).length, 1);
+      assert(!question.prompt.includes(question.correctAnswer));
+      assert(!/documented statement/i.test(question.prompt));
+      ids.push(question.templateId);
+    });
+    laterDesc.questions.forEach(question => {
+      assert(question.expectedPoints.length >= 3 && question.expectedPoints.length <= 4);
+      ids.push(question.templateId);
+    });
   });
-  assert.strictEqual(ids.length, 50);
-  assert.strictEqual(new Set(ids).size, 50);
-  assert.strictEqual(buildPersonaMcq(kb12, 'Theme-Based Expertise', '0').quiz.questions[0].prompt, openings['Theme-Based Expertise']);
+  assert.strictEqual(ids.length, 100);
+  assert.strictEqual(new Set(ids).size, 100);
+  const theme03 = buildPersonaMcq(kb03, 'Theme-Based Expertise', '0').quiz.questions;
+  const theme08 = buildPersonaMcq(kb08, 'Theme-Based Expertise', '0').quiz.questions;
+  const theme12 = buildPersonaMcq(kb12, 'Theme-Based Expertise', '0').quiz.questions;
+  assert.notStrictEqual(theme03[0].prompt, theme08[0].prompt);
+  assert.notStrictEqual(theme08[0].prompt, theme12[0].prompt);
+  assert.strictEqual(theme03[0].layer, 'theme');
+  assert.strictEqual(theme03[1].layer, 'theme');
+  assert.strictEqual(theme03[2].layer, 'theme');
+  assert.strictEqual(theme03[3].layer, 'project');
+  assert.strictEqual(theme03[4].layer, 'project');
+  assert.strictEqual(theme03[3].prompt, theme12[3].prompt);
+  assert.strictEqual(theme12[0].prompt, 'Which mechanism is fundamental for two programs to exchange data across a network?');
+  const stage1Theme = buildPersonaMcq(kb03, 'Theme-Based Expertise', '1').quiz.questions;
+  assert.strictEqual(stage1Theme.filter(question => question.layer === 'theme').length, 3);
+  assert.strictEqual(stage1Theme.filter(question => question.layer === 'project').length, 2);
+  assert.notStrictEqual(stage1Theme[0].prompt, buildPersonaMcq(buildTeamKnowledgeBase('01'), 'Theme-Based Expertise', '1').quiz.questions[0].prompt);
   const dashboard = fs.readFileSync(path.join(__dirname, 'dist', 'department.js'), 'utf8');
   const mentor = dashboard.slice(dashboard.indexOf('function mentorDashboard'));
   assert(!mentor.includes('openAskMentor'));
   assert(!mentor.includes('>Ask</button>'));
   assert(!mentor.includes('Ask a Mentor'));
+});
+
+test('MCQ questions stay fixed while options are prepared for the open project', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const kb08 = buildTeamKnowledgeBase('08');
+  const quiz = buildPersonaMcq(kb03, 'Systems Thinking', '0').quiz;
+  const request = facultyOptionRequest(kb03, 'Systems Thinking', '0');
+  const stage1 = facultyOptionRequest(kb03, 'Systems Thinking', '1');
+  assert.strictEqual(request.prompt, 'Generate the four options for each question.');
+  assert(request.systemInstruction.includes('Do not change the question'));
+  assert(request.systemInstruction.includes(kb03.title));
+  assert(request.systemInstruction.includes(quiz.questions[0].prompt));
+  assert(!request.systemInstruction.includes(kb08.title));
+  assert(stage1.systemInstruction.includes('Which functional requirement is most directly responsible for enabling a selected core system operation?'));
+  const replacement = quiz.questions.map((question, index) => ({
+    id: question.templateId,
+    options: [`Project fact ${index} A`, `Project fact ${index} B`, `Project fact ${index} C`, `Project fact ${index} D`],
+    correct: index % 4,
+    explanation: 'Chosen from this project.'
+  }));
+  const applied = applyFacultyOptions(quiz, replacement);
+  assert.strictEqual(applied.questions[0].prompt, quiz.questions[0].prompt);
+  assert.strictEqual(applied.questions[0].options[0].text, 'Project fact 0 A');
+  assert.strictEqual(applied.questions[0].correctAnswer, 'Project fact 0 A');
+  assert.strictEqual(applied.projectOptions, true);
+  assert.strictEqual(applyFacultyOptions(quiz, [{ id: quiz.questions[0].templateId, options: ['Only one'], correct: 0 }]), null);
+  assert.strictEqual(applyFacultyOptions(quiz, replacement.map(item => Object.assign({}, item, { options: ['All of the above', 'B', 'C', 'D'] }))), null);
 });
 
 test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a documented stage', () => {
