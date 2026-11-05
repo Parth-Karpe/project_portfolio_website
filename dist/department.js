@@ -837,34 +837,6 @@ function seedTeams(){
     "excel_order": 30
   },
   {
-    "id": "B-08",
-    "faculty": "Ms.Soumya Patil",
-    "topic": "Theme 6: Concurrent and Transactional Systems",
-    "theme_no": 6,
-    "theme_name": "Concurrent and Transactional Systems",
-    "title": "Concurrent Service Request & Dispatch Engine",
-    "members": [
-      {
-        "name": "Chirag Salecha",
-        "usn": "01FE24BCI089"
-      },
-      {
-        "name": "Achyuth RH",
-        "usn": "01FE24BCI091"
-      },
-      {
-        "name": "Abhijit RH",
-        "usn": "01FE25BCI709"
-      },
-      {
-        "name": "Sagar PM",
-        "usn": "01FE25BCI712"
-      }
-    ],
-    "sample": true,
-    "excel_order": 31
-  },
-  {
     "id": "B-09",
     "faculty": "Ms.N D Kulenavar",
     "topic": "Theme 6: Concurrent and Transactional Systems",
@@ -891,34 +863,6 @@ function seedTeams(){
     ],
     "sample": true,
     "excel_order": 32
-  },
-  {
-    "id": "B-15",
-    "faculty": "Ms. Soumya Patil",
-    "topic": "Theme 6: Concurrent and Transactional Systems",
-    "theme_no": 6,
-    "theme_name": "Concurrent and Transactional Systems",
-    "title": "Concurrent Service Request and Dispatch Engine",
-    "members": [
-      {
-        "name": "Rohit",
-        "usn": "01FE23BCI084"
-      },
-      {
-        "name": "Suryakant",
-        "usn": "01FE23BCI046"
-      },
-      {
-        "name": "Saif Ali",
-        "usn": "01FE23BCI008"
-      },
-      {
-        "name": "Pranav T",
-        "usn": "01FE23BCI004"
-      }
-    ],
-    "sample": true,
-    "excel_order": 33
   }
 ];
 }
@@ -929,9 +873,10 @@ function ensureDepartment(){
   if(state.department?.hod) state.department.hod = state.department.hod.replace(/\s*\(demo\)/gi, '');
   if(state.department?.facultyAdmin) state.department.facultyAdmin = state.department.facultyAdmin.replace(/\s*\(demo\)/gi, '');
   const seeds=seedTeams();
-  if(!state.teams||state.teams.length<33||state.excelVersion!==4){
+  state.teams = (state.teams || []).filter(t => t.id !== 'B-08' && t.id !== 'B-15');
+  if(!state.teams||state.teams.length<31||state.excelVersion!==5){
     state.teams=seeds;
-    state.excelVersion=4;
+    state.excelVersion=5;
     state.activeTeamId=state.teams.some(t=>t.id===state.activeTeamId)?state.activeTeamId:'A-03';
     state.workspaces=state.workspaces||{};
     state.facultyAccount=state.facultyAccount||'Mr. Amit Kachavimath';
@@ -940,7 +885,7 @@ function ensureDepartment(){
       if(!state.workspaces[t.id])state.workspaces[t.id]=newTeamWorkspace(t);
     });
   }
-  if(state.teams && state.teams.length >= 33){
+  if(state.teams && state.teams.length >= 31){
     const orderMap = {};
     seeds.forEach(s => { orderMap[s.id] = s.excel_order; });
     state.teams.forEach(t => {
@@ -1176,7 +1121,7 @@ const saveLocalState=save;
 save=function(){ensureDepartment();syncTeam();return saveLocalState()};
 function facultyNames(){return [...new Set([...state.teams.map(t=>t.faculty),...state.facultyDirectory.map(f=>f.name)])].sort()}
 function visibleTeams(){return state.role==='Faculty'?state.teams.filter(t=>t.faculty===state.facultyAccount):state.role==='Team Lead'?state.teams.filter(t=>t.id===state.activeTeamId):state.teams}
-function switchTeam(id){const next=state.teams.find(t=>t.id===id);if(!next||state.role==='Faculty'&&next.faculty!==state.facultyAccount)return toast('This team is not assigned to the selected faculty account.');save();const w=state.workspaces[id]||newTeamWorkspace(next);workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.activeTeamId=id;state.guide=next.faculty;state.members=state.members.map((m,i)=>({...m,name:next.members[i].name,usn:next.members[i].usn}));state.forms[1].title=next.title;selectedSection='';modal=null;save();render();window.scrollTo(0,0)}
+function switchTeam(id){const next=state.teams.find(t=>t.id===id);if(!next||state.role==='Faculty'&&next.faculty!==state.facultyAccount)return toast('This team is not assigned to the selected faculty account.');save();const w=state.workspaces[id]||newTeamWorkspace(next);workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.activeTeamId=id;state.guide=next.faculty;state.members=state.members.map((m,i)=>({...m,name:next.members[i].name,usn:next.members[i].usn}));state.forms[1].title=next.title;selectedSection='';modal=null;save();render();window.scrollTo(0,0);if(window.subscribeToTeamCloud)window.subscribeToTeamCloud(id);if(window.syncTeamFromCloud)window.syncTeamFromCloud(id)}
 rolePages['Faculty Admin']=['Overview','Department','Team Portfolio'];
 iconFor['Faculty Admin']='♙';
 currentIdentity=function(){if(state.role==='Faculty Admin')return state.department.facultyAdmin;if(state.role==='Faculty')return state.facultyAccount;if(state.role==='HOD')return state.department.hod;if(state.role==='Admin')return 'CS (AI) Administrator';return state.members[0].name};
@@ -1838,21 +1783,21 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-usecase">
           <h3>3. Use Cases</h3>
           <div class="tablewrap" style="margin-bottom:14px">
-            <table class="test-suite-table">
+            <table class="test-suite-table" style="width:100%">
               <thead>
                 <tr>
-                  <th style="width:50px">ID</th>
-                  <th style="width:110px">Actor</th>
-                  <th style="width:220px">Description / User Story</th>
-                  <th>Main Flow</th>
-                  <th>Exception Flow</th>
+                  <th style="width:60px;text-align:center">ID</th>
+                  <th style="width:95px;text-align:center">Actor</th>
+                  <th style="width:30%">Description / User Story</th>
+                  <th style="width:38%">Main Flow</th>
+                  <th style="width:26%">Exception Flow</th>
                 </tr>
               </thead>
               <tbody>
                 ${((hasData && st1.userStoryTable) || []).map(u=>`
                   <tr>
-                    <td><span class="req-tag">${esc(u.id)}</span></td>
-                    <td><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
+                    <td style="text-align:center"><span class="req-tag">${esc(u.id)}</span></td>
+                    <td style="text-align:center"><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
                     <td style="font-weight:600;font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(u.desc)}</td>
                     <td style="font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(u.mainFlow)}</td>
                     <td style="font-size:var(--p-prose, 1.125rem);color:var(--amber,#b45309);line-height:1.6">${esc(u.exceptionFlow)}</td>
@@ -2001,12 +1946,12 @@ function mentorDashboard(){
   const panel = window.mentorDashboardPanel || 'persona';
   const team = typeof activeTeam === 'function' ? activeTeam() : null;
   const mentorName = window.mentorActiveDimension || '';
-  const cards = dimensions.map(name => `<article class="mentor-dimension-card"><h3>${esc(name)}</h3><div class="mentor-dimension-actions"><button type="button" class="mentor-quiz-btn" onclick="window.openAskMentor('${esc(name)}')">Ask</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorMcq('${esc(name)}')">MCQ Quiz</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorDescriptive('${esc(name)}')">Descriptive Quiz</button></div></article>`).join('');
+  const cards = dimensions.map(name => `<article class="mentor-dimension-card"><h3>${esc(name)}</h3><div class="mentor-dimension-actions"><button type="button" class="mentor-quiz-btn" onclick="window.startMentorMcq('${esc(name)}')">MCQ Quiz</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorDescriptive('${esc(name)}')">Descriptive Quiz</button></div></article>`).join('');
   const stageLabels = [['0','Stage 0 - Problem Definition and Scope'],['1','Stage 1 - Requirement Analysis'],['system-design','Stage 2 - System Design'],['2','Stage 3 - Implementation and Integration'],['3','Stage 4 - Testing and Validations']];
-  const stageNavigation = stageLabels.map(([id,label]) => `<button type="button" class="mentor-stage-choice${id === String(window.mentorDashboardStage || '0') ? ' active' : ''}" aria-pressed="${id === String(window.mentorDashboardStage || '0')}" onclick="selectMentorStage('${id}')">${esc(label)}</button>`).join('');
-  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona – Six Dimensions</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">${esc(team?.title || 'Open portfolio')}</p><div class="mentor-dimension-grid">${cards}</div></section>`;
-  const workTitle = mentorName || 'Ask a Mentor';
-  const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2><span class="mentor-workspace-label">AI Mentor</span></div><div id="mentor-work-messages" class="mentor-work-messages"></div><form class="mentor-work-form" onsubmit="event.preventDefault(); window.handleChatSubmit();"><textarea id="mentor-work-input" rows="3" placeholder="Ask about this part of the project…"></textarea><button type="submit" class="mentor-quiz-btn">Send</button></form></section>`;
+  const stageNavigation = stageLabels.map(([id,label]) => `<button type="button" class="mentor-stage-choice${id === String(window.mentorDashboardStage || '0') ? ' active' : ''}" style="font-size:16px!important;font-weight:700!important" aria-pressed="${id === String(window.mentorDashboardStage || '0')}" onclick="selectMentorStage('${id}')">${esc(label)}</button>`).join('');
+  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona – Six Dimensions</h2></div><p class="mentor-panel-note">${esc(team?.title || 'Open portfolio')}</p><div class="mentor-dimension-grid">${cards}</div></section>`;
+  const workTitle = mentorName || 'Quiz';
+  const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2></div><div id="mentor-work-messages" class="mentor-work-messages"></div></section>`;
   const notes = (window.mentorReviseNotes || []).map(note => {
     const sdd = !note.supported && note.sddCitation ? ` ${esc(note.sddCitation)}` : '';
     const mark = note.supported ? esc(note.citation) : `Not in this part of the project${note.citation ? ` ${esc(note.citation)}` : ''}${sdd}`;
@@ -2015,7 +1960,7 @@ function mentorDashboard(){
   const reviseTarget = mentorName || (team?.title || 'the portfolio');
   const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(mentorName || 'Revise My Work')}</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">Paste a draft. Each sentence is checked against ${esc(reviseTarget)}. Nothing is added beyond the documented lines.</p><textarea id="mentor-revise-input" rows="8" placeholder="Paste the paragraph to check">${esc(window.mentorReviseDraft || '')}</textarea><button type="button" class="mentor-quiz-btn" onclick="window.reviseMentorDraft()">Check against portfolio</button>${notes ? `<ul class="mentor-revise-list">${notes}</ul>` : ''}</section>`;
   const main = panel === 'revise' ? revise : panel === 'work' ? work : persona;
-  return `<div class="mentor-dashboard"><div class="mentor-layout"><aside class="mentor-navigation-column"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='work'?' active':''}" onclick="window.openAskMentor(window.mentorActiveDimension||'')">Ask a Mentor</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.mentorDashboardPanel='revise';render()">Revise My Work</button></nav><nav class="mentor-stage-navigation" aria-label="Project stages">${stageNavigation}</nav></aside>${main}</div></div>`;
+  return `<div class="mentor-dashboard"><div class="mentor-layout"><aside class="mentor-navigation-column"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.mentorDashboardPanel='revise';render()">Revise My Work</button></nav><nav class="mentor-stage-navigation" aria-label="Project stages">${stageNavigation}</nav></aside>${main}</div></div>`;
 }
 
 function selectMentorStage(stage){
@@ -2033,6 +1978,10 @@ function hasTeamPortfolioData(t){
   const id = (t.id || '').trim();
   // Specifically disable HTTP Proxy Server with In-Memory Caching per user requirement
   if (id === 'B-12' || title.includes('http proxy server with in-memory caching') || title.includes('http proxy server')) {
+    return false;
+  }
+  // Specifically disable Large-Scale Log Processing & Analytics Engine per user requirement
+  if (id === 'B-10' || id === '10' || title.includes('large-scale log processing') || (title.includes('log processing') && title.includes('analytics engine'))) {
     return false;
   }
   if (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA) {
@@ -2270,7 +2219,7 @@ function department(){
     </div>
 
     <div class="stat-cards-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:6px 0 16px;">
-      ${[['Themes',6],['Faculty Mentors',16],['Teams',all.length]].map(([label,count])=>`
+      ${[['Themes',6],['Faculty Mentors',14],['Teams',all.length]].map(([label,count])=>`
         <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 22px; display:flex; align-items:center; gap:16px; box-shadow:var(--shadow-xs);">
           <div class="projector-stat-label" style="font-weight:700; line-height:1.25">${label} -</div>
           <div class="projector-stat-number" style="font-weight:800; color:var(--brand); line-height:1">${count}</div>

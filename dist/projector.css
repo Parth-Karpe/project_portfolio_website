@@ -1212,3 +1212,40 @@ html[data-theme="dark"] body #app .page-navigation .btn { color:var(--ink)!impor
 
 html body #app .projector-theme-banner { flex-wrap:wrap!important; }
 html body #app .projector-theme-banner > .page-navigation { flex:0 0 100%; }
+
+/* AI Mentor: Left navigation stage choice buttons match Systems Thinking font size */
+html body .mentor-stage-choice,
+html body .mentor-stage-navigation .mentor-stage-choice,
+html body .mentor-navigation-column .mentor-stage-choice {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+
+
+/* Use Cases Table: Optimize column widths (compact Actor column, generous space for user stories & flows) without altering font size */
+html body #sec-usecase .test-suite-table {
+  width: 100% !important;
+}
+html body #sec-usecase .test-suite-table th:nth-child(1),
+html body #sec-usecase .test-suite-table td:nth-child(1) {
+  width: 60px !important;
+  text-align: center !important;
+}
+html body #sec-usecase .test-suite-table th:nth-child(2),
+html body #sec-usecase .test-suite-table td:nth-child(2) {
+  width: 95px !important;
+  text-align: center !important;
+}
+html body #sec-usecase .test-suite-table th:nth-child(3),
+html body #sec-usecase .test-suite-table td:nth-child(3) {
+  width: 30% !important;
+}
+html body #sec-usecase .test-suite-table th:nth-child(4),
+html body #sec-usecase .test-suite-table td:nth-child(4) {
+  width: 38% !important;
+}
+html body #sec-usecase .test-suite-table th:nth-child(5),
+html body #sec-usecase .test-suite-table td:nth-child(5) {
+  width: 26% !important;
+}

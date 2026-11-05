@@ -33,6 +33,7 @@ global.sessionStorage = {
 
 // 2. Load Team Data
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_03.js'), 'utf8'));
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_04.js'), 'utf8'));
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_01.js'), 'utf8'));
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_08.js'), 'utf8'));
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_12.js'), 'utf8'));
@@ -54,8 +55,16 @@ const {
   chunksForLens,
   answerWithinLens,
   personaOpeningQuestion,
+  foundationalSubjects,
+  foundationalSections,
+  foundationalAskRequest,
+  foundationalQuizRequest,
+  foundationalFollowRequest,
   systemsThinkingFollowUp,
+  gradeSystemsSubjectReply,
   buildDescriptiveQuiz,
+  buildPersonaMcq,
+  buildPersonaDescriptive,
   evaluateVivaQuiz,
   formatResponseWithClickableCitations,
   polishLiveAnswer,
@@ -545,12 +554,12 @@ test('Ask a Mentor follows up from the same team section', () => {
   global.window.mentorActiveDimension = 'Systems Thinking';
   const problem = answerWithinLens('what is the problem statement?', kb03);
   const problemFollow = problem.text.split('Follow-up:')[1] || '';
+  const problemChunk = kb03.chunks.find(chunk => chunk.id === 'stage0-problem');
   assert(problem.text.includes('[Stage 0: Problem Statement]'));
-  assert(problemFollow.includes('How does Data Structures shape the need and the flow?'));
-  assert(problemFollow.includes('[Table 0.1]'));
-  assert(/data structure/i.test(problemFollow));
-  assert(!/computer network|compiler/i.test(problemFollow));
-  assert(!/\[Engine |NFR ID-|\[SDD/.test(problemFollow));
+  assert(problemFollow.includes('How does this subject shape the need and the flow?'));
+  assert(problemFollow.includes('[Stage 0: Problem Statement]'));
+  assert(problemChunk.text.includes(problemFollow.replace('[Stage 0: Problem Statement]', '').replace('How does this subject shape the need and the flow?', '').trim().slice(0, 48)));
+  assert(!/\[SDD/.test(problemFollow));
 
   global.window.mentorActiveDimension = 'Engineering Standards';
   const missing = answerWithinLens('what is the context viewpoint?', kb03);
@@ -569,14 +578,58 @@ test('Ask opens with a different team-doc question for each persona', () => {
   assert(/data structure/i.test(systems.text));
   assert(!/computer network|compiler/i.test(systems.text));
   assert(!/\[Engine |NFR ID-|\[SDD/.test(systems.text));
-  const algorithms = systemsThinkingFollowUp(kb03, systems.text);
+  const algorithms = systemsThinkingFollowUp(kb03);
   assert(algorithms.includes('How does Algorithms shape the need and the flow?'));
   assert(/design & analysis of algorithms/i.test(algorithms));
   assert(!/data structure/i.test(algorithms));
   assert(!/computer network|compiler/i.test(algorithms));
-  assert(courses.text.includes('Which course idea does this line use?'));
-  assert(courses.text.includes('[Table 0.1]'));
-  assert.notStrictEqual(systems.text, courses.text);
+  const graded = gradeSystemsSubjectReply(kb03, 'I am not sure');
+  assert(graded.text.includes('does not state this'));
+  assert(graded.text.includes('How does Algorithms shape the need and the flow?'));
+  assert(courses.request);
+  assert.strictEqual(courses.request.prompt, 'Ask one question about one subject in this stage.');
+  assert(courses.request.systemInstruction.includes('[Table 0.1]'));
+  assert.notStrictEqual(systems.text, courses.request.prompt);
+
+  const shared = 'Database Management Systems (Core): Booking records, transactions and data consistency';
+  const sharedKb = { teamId: 'fixture-shared', chunks: [{ id: 'table-0-1', citation: '[Table 0.1]', text: shared }] };
+  const sharedSystems = personaOpeningQuestion(sharedKb, 'Systems Thinking');
+  const sharedCourses = personaOpeningQuestion(sharedKb, 'Foundational CS Knowledge');
+  assert(sharedSystems.text.includes(shared));
+  assert(sharedCourses.request.systemInstruction.includes(shared));
+  assert(sharedCourses.request.systemInstruction.includes('does not document Computer Networks'));
+  assert(sharedSystems.text.includes('How does DBMS shape the need and the flow?'));
+  assert.notStrictEqual(sharedSystems.text, sharedCourses.request.prompt);
+
+  const dsaOnly = { teamId: 'fixture-dsa', chunks: [{ id: 'table-0-1', citation: '[Table 0.1]', text: 'Data Structures and Algorithms (Core): Trees, heaps and graphs' }] };
+  const dsaQuestion = personaOpeningQuestion(dsaOnly, 'Systems Thinking');
+  assert(dsaQuestion.text.includes('How does Data Structures shape the need and the flow?'));
+  assert(!systemsThinkingFollowUp(dsaOnly).includes('How does Algorithms'));
+
+  const dbmsOs = { teamId: 'fixture-dbms-os', chunks: [{ id: 'table-0-1', citation: '[Table 0.1]', text: 'Operating Systems (Core): Concurrency and locks\nDatabase Management Systems (Core): Booking records and transactions' }] };
+  const dbmsQuestion = personaOpeningQuestion(dbmsOs, 'Systems Thinking');
+  assert(dbmsQuestion.text.includes('How does DBMS shape the need and the flow?'));
+  assert(systemsThinkingFollowUp(dbmsOs).includes('How does Operating Systems shape the need and the flow?'));
+
+  const none = { teamId: 'fixture-none', chunks: [{ id: 'table-0-1', citation: '[Table 0.1]', text: 'Discrete Mathematical Structures (Supporting): Sets and graphs' }] };
+  const noneQuestion = personaOpeningQuestion(none, 'Systems Thinking');
+  assert.strictEqual(noneQuestion.text, 'The portfolio does not document these subjects.');
+  assert(!/\[SDD|computer network/i.test(noneQuestion.text));
+
+  global.window.activePortfolioStage = '1';
+  global.window.mentorDashboardStage = '1';
+  const stage1 = personaOpeningQuestion(kb03, 'Systems Thinking');
+  assert(stage1.text.includes('does not cover'));
+  assert(!stage1.text.includes('these subjects'));
+
+  global.window.activePortfolioStage = '2';
+  global.window.mentorDashboardStage = '2';
+  const stage3 = personaOpeningQuestion(kb03, 'Systems Thinking');
+  assert(stage3.text.includes('does not document'));
+  assert(stage3.text.includes('Stage 3'));
+  assert(!stage3.text.includes('these subjects'));
+  global.window.activePortfolioStage = '0';
+  global.window.mentorDashboardStage = '0';
 
   global.window.mentorDashboardStage = '0';
   const standards = personaOpeningQuestion(kb03, 'Engineering Standards');
@@ -584,6 +637,190 @@ test('Ask opens with a different team-doc question for each persona', () => {
   assert(!standards.text.includes('[SDD'));
   assert(!standards.text.includes('Follow-up:'));
 });
+
+test('Foundational CS asks every course plus Computer Networks by stage section', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const subjects = foundationalSubjects(kb03).map(subject => subject.course);
+  assert.deepStrictEqual(subjects, [
+    'Design & Analysis of Algorithms',
+    'Data Structures & Algorithms',
+    'Operating Systems',
+    'Discrete Mathematical Structures',
+    'Software Engineering',
+    'Database Management Systems',
+    'Computer Networks'
+  ]);
+  assert.strictEqual(foundationalSubjects(kb03)[6].documented, false);
+
+  global.window.activePortfolioStage = '0';
+  global.window.mentorDashboardStage = '0';
+  const stage0Ids = foundationalSections(kb03, '0').map(section => section.id);
+  assert(stage0Ids.includes('stage0-problem'));
+  assert(stage0Ids.includes('table-0-1'));
+  assert(stage0Ids.includes('table-0-4'));
+  assert(stage0Ids.some(id => id.startsWith('engine-')));
+  assert(!stage0Ids.some(id => id.startsWith('fr-') || id.startsWith('stage2-')));
+  const ask0 = foundationalAskRequest(kb03);
+  assert.strictEqual(ask0.prompt, 'Ask one question about one subject in this stage.');
+  assert.strictEqual(ask0.subject.course, 'Design & Analysis of Algorithms');
+  assert.strictEqual(ask0.section.id, 'stage0-problem');
+  assert(ask0.systemInstruction.includes('[Table 0.1]'));
+  assert(ask0.systemInstruction.includes('[Stage 0: Problem Statement]'));
+  assert(ask0.systemInstruction.includes('does not document Computer Networks'));
+
+  global.sessionStorage.setItem('pg_foundational_03_0', JSON.stringify({
+    asked: subjects.slice(0, 6).map(course => ({ subject: course, sectionId: 'stage0-problem' })),
+    current: null
+  }));
+  const networks = foundationalAskRequest(kb03);
+  assert.strictEqual(networks.subject.course, 'Computer Networks');
+  assert(networks.systemInstruction.includes('does not document Computer Networks'));
+  assert.strictEqual(networks.section.id, 'stage0-problem');
+
+  global.sessionStorage.setItem('pg_foundational_03_0', JSON.stringify({
+    asked: [],
+    current: { subject: 'Design & Analysis of Algorithms', sectionId: 'stage0-problem' }
+  }));
+  const follow = foundationalFollowRequest(kb03, 'Which concept is used?', 'I am not sure');
+  assert.strictEqual(follow.prompt, 'I am not sure');
+  assert(follow.systemInstruction.includes('Which concept is used?'));
+  assert(follow.systemInstruction.includes('Data Structures & Algorithms'));
+  assert.strictEqual(follow.next.subject.course, 'Data Structures & Algorithms');
+
+  global.window.activePortfolioStage = '1';
+  global.window.mentorDashboardStage = '1';
+  const stage1Ids = foundationalSections(kb03, '1').map(section => section.id);
+  assert(stage1Ids.some(id => id.startsWith('fr-')));
+  assert(stage1Ids.includes('table-testsuite'));
+  assert(!stage1Ids.includes('stage0-problem'));
+  const ask1 = foundationalAskRequest(kb03);
+  assert(ask1.section.id.startsWith('fr-'));
+  assert.strictEqual(ask1.subject.course, 'Design & Analysis of Algorithms');
+
+  global.window.activePortfolioStage = 'system-design';
+  global.window.mentorDashboardStage = 'system-design';
+  const stage2Ids = foundationalSections(kb03, 'system-design').map(section => section.id);
+  assert.deepStrictEqual(stage2Ids, ['stage2-architecture', 'stage2-data-design', 'stage2-algorithm']);
+  const ask2 = foundationalAskRequest(kb03);
+  assert.strictEqual(ask2.section.citation, '[Architecture]');
+  const quiz = foundationalQuizRequest(kb03);
+  assert.strictEqual(quiz.prompt, 'Generate the quiz.');
+  assert(quiz.systemInstruction.includes('does not document Computer Networks'));
+  assert(quiz.systemInstruction.includes('[Architecture]'));
+
+  global.window.activePortfolioStage = '2';
+  global.window.mentorDashboardStage = '2';
+  assert.strictEqual(foundationalSections(kb03, '2').length, 0);
+  assert.strictEqual(foundationalAskRequest(kb03), null);
+  assert.strictEqual(foundationalQuizRequest(kb03), null);
+  assert.strictEqual(foundationalFollowRequest(kb03, 'question', 'answer'), null);
+  const stage3 = personaOpeningQuestion(kb03, 'Foundational CS Knowledge');
+  assert(stage3.text.includes('does not document'));
+  assert(stage3.text.includes('Stage 3'));
+  assert(!stage3.request);
+
+  const kb04 = buildTeamKnowledgeBase('B-04');
+  const networks04 = foundationalSubjects(kb04).filter(subject => /computer network/i.test(subject.course));
+  assert.strictEqual(networks04.length, 1);
+  assert.strictEqual(networks04[0].documented, true);
+  assert(/HTTP/i.test(networks04[0].concepts));
+  assert(/rate limiting|retries/i.test(networks04[0].concepts));
+  global.window.activePortfolioStage = '0';
+  global.window.mentorDashboardStage = '0';
+  const ask4 = foundationalAskRequest(kb04);
+  const networkLines = ask4.systemInstruction.split('\n').filter(line => line.startsWith('SUBJECT: Computer Networks'));
+  assert.strictEqual(networkLines.length, 1);
+  assert(/HTTP/i.test(networkLines[0]));
+  global.window.activePortfolioStage = 'system-design';
+  global.window.mentorDashboardStage = 'system-design';
+  assert.strictEqual(foundationalSections(kb04, 'system-design').length, 0);
+  assert.strictEqual(foundationalAskRequest(kb04), null);
+
+  global.window.activePortfolioStage = '0';
+  global.window.mentorDashboardStage = '0';
+});
+
+test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const kb08 = buildTeamKnowledgeBase('08');
+  const kb12 = buildTeamKnowledgeBase('12');
+  const openings = {
+    'Systems Thinking': 'Which sequence correctly represents the major operations in the proposed system?',
+    'Foundational CS Knowledge': 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?',
+    'Faculty Expertise': 'Which explanation best justifies selecting the identified problem for this mini project?',
+    'Engineering Standards': 'Which statement best represents a clear and technically meaningful project objective?',
+    'Theme-Based Expertise': 'Which theme-specific technical challenge is most directly addressed by the proposed project?'
+  };
+  const ids = [];
+  Object.keys(openings).forEach(persona => {
+    const mcq = buildPersonaMcq(kb03, persona, '0');
+    const descriptive = buildPersonaDescriptive(kb03, persona, '0');
+    assert.strictEqual(mcq.quiz.questions.length, 5, persona);
+    assert.strictEqual(descriptive.questions.length, 5, persona);
+    assert.strictEqual(mcq.quiz.questions[0].prompt, openings[persona]);
+    assert.strictEqual(buildPersonaMcq(kb08, persona, '0').quiz.questions[0].prompt, openings[persona]);
+    mcq.quiz.questions.forEach(question => {
+      assert.strictEqual(question.options.length, 4);
+      assert.strictEqual(question.options.filter(option => option.isCorrect).length, 1);
+      assert(!question.prompt.includes(question.correctAnswer));
+      assert(!question.prompt.includes('['));
+      assert(!/documented statement/i.test(question.prompt));
+      ids.push(question.templateId);
+    });
+    descriptive.questions.forEach(question => {
+      assert(question.expectedPoints.length >= 3 && question.expectedPoints.length <= 4);
+      assert(!question.prompt.includes('['));
+      ids.push(question.templateId);
+    });
+    const later = buildPersonaMcq(kb03, persona, '1');
+    assert.notStrictEqual(later.quiz.questions[0].prompt, openings[persona]);
+  });
+  assert.strictEqual(ids.length, 50);
+  assert.strictEqual(new Set(ids).size, 50);
+  assert.strictEqual(buildPersonaMcq(kb12, 'Theme-Based Expertise', '0').quiz.questions[0].prompt, openings['Theme-Based Expertise']);
+  const dashboard = fs.readFileSync(path.join(__dirname, 'dist', 'department.js'), 'utf8');
+  const mentor = dashboard.slice(dashboard.indexOf('function mentorDashboard'));
+  assert(!mentor.includes('openAskMentor'));
+  assert(!mentor.includes('>Ask</button>'));
+  assert(!mentor.includes('Ask a Mentor'));
+});
+
+test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a documented stage', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const personas = [
+    'Systems Thinking',
+    'Foundational CS Knowledge',
+    'Faculty Expertise',
+    'Engineering Standards',
+    'Theme-Based Expertise',
+    'Project-Specific Knowledge'
+  ];
+  personas.forEach(persona => {
+    const stage1 = buildPersonaMcq(kb03, persona, '1');
+    const design = buildPersonaMcq(kb03, persona, 'system-design');
+    assert.strictEqual(stage1.quiz.questions.length, 5, persona);
+    assert.strictEqual(design.quiz.questions.length, 5, persona);
+    const stage3 = buildPersonaMcq(kb03, persona, '2');
+    const stage4 = buildPersonaDescriptive(kb03, persona, '3');
+    assert.strictEqual(stage3.quiz, undefined);
+    assert(stage3.limitation.includes('does not document enough'));
+    assert(stage3.limitation.includes('Stage 3'));
+    assert.strictEqual(stage4.questions.length, 0);
+    assert(stage4.stageNote.includes('Stage 4'));
+  });
+  const project = buildPersonaMcq(kb03, 'Project-Specific Knowledge', '0').quiz;
+  const joined = stageSectionText(kb03, '0');
+  assert.strictEqual(project.questions.length, 5);
+  project.questions.forEach(question => {
+    question.options.forEach(option => assert(joined.includes(option.text.slice(0, 40))));
+    assert(!/\[FR-|\[NFR|\[Architecture\]/.test(question.citation));
+  });
+  global.sessionStorage.setItem('pg_assess_probe', '1');
+});
+
+function stageSectionText(kb, stage){
+  return kb.chunks.map(chunk => chunk.text).join('\n');
+}
 
 console.log(`\n====================================================`);
 console.log(`ALL TESTS PASSED: ${passedTests} / ${totalTests} (100% SUCCESS)`);

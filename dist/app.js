@@ -31,7 +31,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>
 const safe=s=>{try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)?esc(u.href):'#'}catch{return '#'}};
 const isFaculty=()=>state.role==='Faculty',isAdmin=()=>state.role==='Team Lead';
 function toast(t){$('#toast').textContent=t;$('#toast').style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>$('#toast').style.display='none',3500)}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));return true}catch{toast('Storage full. Remove a photo or export your work before continuing.');return false}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));if(window.saveTeamStateToCloud&&window.db){const tid=(typeof activeTeam==='function'&&activeTeam()?.id)||state.activeTeamId||'A-03';window.saveTeamStateToCloud(tid,state).then(ok=>{const h=$('#savehint');if(h&&ok)h.textContent='✓ Cloud Synced · '+new Date().toLocaleTimeString()}).catch(e=>console.warn('[Firebase] sync notice:',e))}return true}catch{toast('Storage full. Remove a photo or export your work before continuing.');return false}}
 function log(text){state.activities.unshift({text,time:new Date().toLocaleString()});save()}
 function avatar(m){return `<div class="avatar">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name)}">`:esc(m.name.split(' ').map(x=>x[0]).join(''))}</div>`}
 function go(p){page=p;render();window.scrollTo(0,0)}
