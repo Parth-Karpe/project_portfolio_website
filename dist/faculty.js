@@ -16,7 +16,7 @@
 
   function updateFloatingNextButton() {
     const isPortfolio = typeof page !== 'undefined' ? page === 'Team Portfolio' : Boolean(document.querySelector('.portfolio-container'));
-    if (!isPortfolio) {
+    if (!isPortfolio || window.mentorSplitOpen) {
       nextStageButton.hidden = true;
       document.body.classList.remove('has-floating-next');
       return;

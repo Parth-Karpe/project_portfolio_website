@@ -391,6 +391,20 @@ function applyMentorSplitRatio(percent){
 }
 function bindMentorSplitHandle(){
   applyMentorSplitRatio(mentorSplitTop());
+  if(window.mentorSplitFitHeader){
+    window.mentorSplitFitHeader = false;
+    setTimeout(() => requestAnimationFrame(() => {
+      const shell = document.querySelector('.shell.mentor-split');
+      const meta = shell?.querySelector('.portfolio-hero-meta');
+      const scroller = shell?.querySelector('.mentor-split-left > .shell-main');
+      if(!shell || !meta) return;
+      if(scroller) scroller.scrollTop = 0;
+      const height = shell.getBoundingClientRect().height;
+      const bottom = meta.getBoundingClientRect().bottom - shell.getBoundingClientRect().top + 14;
+      if(height) applyMentorSplitRatio(bottom / height * 100);
+    }), 100);
+  }
+
   const handle = document.getElementById('mentor-split-handle');
   if(!handle) return;
   const dragTo = (clientY) => applyMentorSplitRatio((clientY / window.innerHeight) * 100);

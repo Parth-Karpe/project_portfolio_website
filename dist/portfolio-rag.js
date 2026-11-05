@@ -4841,10 +4841,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     }
 
     window.mentorSplitOpen = true;
+    window.mentorSplitFitHeader = true;
 
     window.mentorDashboardStage = String((typeof activePortfolioStage !== 'undefined' && activePortfolioStage) || window.activePortfolioStage || '0');
 
-    window.mentorDashboardPanel = window.mentorDashboardPanel || 'persona';
+    window.mentorDashboardPanel = 'persona';
 
     if(typeof page !== 'undefined' && page !== 'Team Portfolio' && typeof go === 'function') go('Team Portfolio');
 
