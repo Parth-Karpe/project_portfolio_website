@@ -251,7 +251,7 @@
       const theme=window.lastViewedTheme??team?.theme_no??1;
       const crumb=app.querySelector('.crumb');
       if(crumb) crumb.textContent=`Theme ${theme} › ${portfolio.querySelector('h1')?.textContent||team?.title||''}`;
-      const back=app.querySelector('[onclick^="backToThemeProjects"]');if(back && !back.hasAttribute('data-page-back')) back.textContent=`← Back to Theme ${theme}`;
+      const back=app.querySelector('[onclick^="backToThemeProjects"]');if(back) back.textContent=`Back to Theme ${theme}`;
       portfolio.querySelectorAll('.portfolio-subblock,.portfolio-section').forEach(addEmptyState);
       orderedProse(portfolio);accordionNavigation(app);
       const sidebar=app.querySelector('#app-sidebar');

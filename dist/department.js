@@ -2096,8 +2096,8 @@ function goToProjectHome(){
   go('Department');
 }
 
-function pageNavigationButtons(backAction){
-  return `<nav class="page-navigation" aria-label="Page navigation"><button type="button" class="btn secondary" data-page-back onclick="${backAction}">Back</button><button type="button" class="btn secondary" onclick="goToProjectHome()">Home</button></nav>`;
+function pageNavigationButtons(backAction, backLabel = 'Back', showHome = true){
+  return `<nav class="page-navigation" aria-label="Page navigation"><button type="button" class="btn secondary" data-page-back onclick="${backAction}">${backLabel}</button>${showHome ? `<button type="button" class="btn secondary" onclick="goToProjectHome()">Home</button>` : ''}</nav>`;
 }
 
 function backToThemes(){
@@ -2214,7 +2214,7 @@ function department(){
 
     return `
       <div style="margin-bottom: 14px;">
-        ${pageNavigationButtons("backToThemes()") }
+        ${pageNavigationButtons("backToThemes()", "Back", false) }
 
         <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 18px 22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:var(--shadow-xs)">
           <div>
