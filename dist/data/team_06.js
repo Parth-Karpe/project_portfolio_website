@@ -302,56 +302,56 @@ const team06Data = {
     "userStoryTable": [
       {
         "id": "UC-01",
-        "actor": "Scheduler / Administrator",
+        "actor": "Scheduler",
         "desc": "Import or enter academic scheduling data.",
         "mainFlow": "Select the data source; enter or upload the required information; allow the system to parse and store the data; review the validation summary.",
         "exceptionFlow": "Missing, invalid, or duplicate records are identified and reported. Such records are not treated as valid input."
       },
       {
         "id": "UC-02",
-        "actor": "Scheduler / Administrator",
+        "actor": "Scheduler",
         "desc": "Configure the academic calendar and time-slot rules.",
         "mainFlow": "Specify working days, working hours, breaks, and lunch periods; allow the system to derive the permitted time slots; review and confirm the configuration.",
         "exceptionFlow": "Invalid, overlapping, or out-of-range time rules are rejected with an appropriate explanation."
       },
       {
         "id": "UC-03",
-        "actor": "Scheduler / Administrator",
+        "actor": "Scheduler",
         "desc": "Validate scheduling inputs before timetable generation.",
         "mainFlow": "Initiate validation; execute relationship, capacity, and configuration checks; display the validation status and any identified issues.",
         "exceptionFlow": "Any unresolved mandatory issue prevents timetable generation until the issue is corrected."
       },
       {
         "id": "UC-04",
-        "actor": "Scheduler / Administrator",
+        "actor": "Scheduler",
         "desc": "Generate a timetable using validated input data.",
         "mainFlow": "Initiate timetable generation; evaluate candidate assignments against the constraints; return the generated timetable when a feasible solution is found.",
         "exceptionFlow": "If no feasible solution is found within the execution limit, return an infeasible or limit-reached status with relevant diagnostics."
       },
       {
         "id": "UC-05",
-        "actor": "Scheduler / Administrator",
+        "actor": "Scheduler",
         "desc": "Review infeasibility and scheduling-conflict diagnostics.",
         "mainFlow": "Review the diagnostic report; identify the affected constraint or resource category; update the relevant academic data or configuration.",
         "exceptionFlow": "If the system cannot isolate the exact cause, it shall report the termination reason and the affected constraint or resource category."
       },
       {
         "id": "UC-06",
-        "actor": "Faculty / Coordinator",
+        "actor": "Coordinator",
         "desc": "View the master timetable.",
         "mainFlow": "Select a validated timetable generation; open the master timetable view; review the overall academic schedule and assignments.",
         "exceptionFlow": "If no validated timetable is available, display a clear unavailable-state message."
       },
       {
         "id": "UC-07",
-        "actor": "Faculty / Coordinator",
+        "actor": "Coordinator",
         "desc": "View an individual faculty timetable.",
         "mainFlow": "Select a faculty member; retrieve the corresponding validated assignments; display the faculty member's weekly schedule.",
         "exceptionFlow": "If the faculty member is unknown or has no assigned sessions, display an appropriate empty-state message."
       },
       {
         "id": "UC-08",
-        "actor": "Faculty / Student / Coordinator",
+        "actor": "Coordinator",
         "desc": "View section-wise and batch-wise timetables.",
         "mainFlow": "Select a section or batch; retrieve the corresponding validated assignments; display theory and laboratory sessions at the appropriate level.",
         "exceptionFlow": "Laboratory sessions assigned to individual batches shall not be incorrectly represented as sessions for the entire section."
@@ -365,7 +365,7 @@ const team06Data = {
       },
       {
         "id": "UC-10",
-        "actor": "Scheduler / Administrator",
+        "actor": "Scheduler",
         "desc": "Regenerate the timetable after modifying constraints or academic data.",
         "mainFlow": "Modify the relevant data or constraints; revalidate the inputs; initiate generation; retain or version the previously validated timetable.",
         "exceptionFlow": "A new infeasible generation attempt shall not overwrite or remove the previously validated timetable."

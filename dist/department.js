@@ -1503,6 +1503,23 @@ function formatReqId(id){
     .replace(/\bFR-(\d+)\b/g, 'FR ID-$1');
 }
 
+function formatActorTag(actor){
+  if(!actor) return 'User';
+  let a = String(actor).trim();
+  if(a.includes('Index Operator')) return 'Index Operator';
+  if(a.includes('Mini-Shark Operator')) return 'Operator';
+  if(a.includes('Client VM')) return 'Client VM';
+  if(a.includes('Probe Agent')) return 'Probe Agent';
+  if(a.includes('Central Mini-Shark') || a.includes('Central Host')) return 'Central Host';
+  if(a.includes('Scheduler')) return 'Scheduler';
+  if(a.includes('Faculty / Student / Coordinator') || a.includes('Faculty / Coordinator')) return 'Coordinator';
+  if(a.includes('Administrator / Analyst')) return 'Administrator';
+  if(a.includes('System (OS + DBMS engines)') || a.includes('System (OS + DBMS)')) return 'System';
+  if(a.includes('System (OS engine)') || a.includes('System (OS)')) return 'System (OS)';
+  if(a.includes('System (DBMS engine)') || a.includes('System (DBMS)')) return 'System (DBMS)';
+  return a;
+}
+
 portfolio=function(){
   const t=activeTeam()||state.teams[0],
         staticTeam = (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA && (
@@ -1731,13 +1748,13 @@ portfolio=function(){
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
           <div class="tablewrap">
-            <table class="test-suite-table fr-table" id="table-fr">
+            <table class="test-suite-table fr-table" id="table-fr" style="width:100%">
               <thead>
                 <tr>
-                  <th style="width:85px;text-align:center">FR ID</th>
-                  <th style="width:58%">Description</th>
-                  <th style="width:110px">Priority</th>
-                  <th style="width:200px">Source Need (from S0)</th>
+                  <th style="width:75px;text-align:center">FR ID</th>
+                  <th style="width:44%">Description</th>
+                  <th style="width:85px;text-align:center">Priority</th>
+                  <th style="width:38%">Source Need (from S0)</th>
                 </tr>
               </thead>
               <tbody>
@@ -1745,7 +1762,7 @@ portfolio=function(){
                   <tr id="portfolio-fr-${esc(fr.id)}">
                     <td style="text-align:center"><span class="req-tag">${esc(formatReqId(fr.id))}</span></td>
                     <td class="fr-desc" style="font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(fr.desc)}</td>
-                    <td><span class="requirement-meta-text" style="font-size:var(--p-prose, 1.125rem)">${esc(fr.priority||'Mandatory')}</span></td>
+                    <td style="text-align:center"><span class="requirement-meta-text" style="font-size:var(--p-prose, 1.125rem)">${esc(fr.priority||'Mandatory')}</span></td>
                     <td class="fr-source" style="font-size:var(--p-prose, 1.125rem);color:var(--muted);line-height:1.6">${esc(fr.sourceNeed||'')}</td>
                   </tr>
                 `).join('')}
@@ -1786,9 +1803,9 @@ portfolio=function(){
             <table class="test-suite-table" style="width:100%">
               <thead>
                 <tr>
-                  <th style="width:60px;text-align:center">ID</th>
-                  <th style="width:95px;text-align:center">Actor</th>
-                  <th style="width:30%">Description / User Story</th>
+                  <th style="width:65px;text-align:center">ID</th>
+                  <th style="width:145px;text-align:center">Actor</th>
+                  <th style="width:28%">Description / User Story</th>
                   <th style="width:38%">Main Flow</th>
                   <th style="width:26%">Exception Flow</th>
                 </tr>
@@ -1797,7 +1814,7 @@ portfolio=function(){
                 ${((hasData && st1.userStoryTable) || []).map(u=>`
                   <tr>
                     <td style="text-align:center"><span class="req-tag">${esc(u.id)}</span></td>
-                    <td style="text-align:center"><span class="tag gray" style="font-size:10.5px">${esc(u.actor)}</span></td>
+                    <td style="text-align:center;padding:10px 6px!important"><span class="tag gray" style="white-space:nowrap;padding:3px 8px;display:inline-flex;align-items:center;justify-content:center">${esc(formatActorTag(u.actor))}</span></td>
                     <td style="font-weight:600;font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(u.desc)}</td>
                     <td style="font-size:var(--p-prose, 1.125rem);color:var(--ink);line-height:1.6">${esc(u.mainFlow)}</td>
                     <td style="font-size:var(--p-prose, 1.125rem);color:var(--amber,#b45309);line-height:1.6">${esc(u.exceptionFlow)}</td>
