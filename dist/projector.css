@@ -1159,3 +1159,26 @@ html[data-theme="dark"] body .viva-tip-card {
 html[data-theme="dark"] body .viva-tip-text {
   color: #ffffff !important;
 }
+/* Shared header branding: logo, subtle divider and secondary department label. */
+html body #app .common-page-header .school-top-header {
+  flex-direction:row!important; align-items:center!important; gap:20px!important;
+}
+html body #app .common-page-header .kle-header-logo {
+  height:46px; max-width:300px; width:auto; flex-shrink:0;
+  padding:0; border:0; border-radius:0; background:transparent; box-shadow:none;
+}
+html body #app .common-page-header .school-top-header > .kle-header-dept {
+  display:flex; align-items:center; min-height:32px; margin:0!important;
+  padding-left:20px; border-left:1px solid var(--line-soft,#D5E0F2);
+  font-size:18px!important; font-weight:600!important; line-height:1.25!important;
+  letter-spacing:normal;
+}
+@media(max-width:760px) {
+  html body #app .common-page-header .school-top-header { gap:12px!important; }
+  html body #app .common-page-header .kle-header-logo {
+    height:42px; max-width:45vw; object-fit:contain;
+  }
+  html body #app .common-page-header .school-top-header > .kle-header-dept {
+    padding-left:12px; font-size:17px!important;
+  }
+}
