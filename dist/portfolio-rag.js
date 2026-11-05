@@ -4894,69 +4894,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   };
 
-  window.openAskMentor = async function(dimension){
-
-    if(dimension) window.mentorActiveDimension = dimension;
-
-    if(!activeMentorLens()){
-
-      window.mentorDashboardPanel = 'persona';
-
-      if(mentorSurfaceOpen() && typeof render === 'function') render();
-
-      return;
-
-    }
-
-    window.mentorDashboardPanel = 'work';
-
-    isChatOpen = false;
-
-    const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
-
-    if(teamId) window.mountPortfolioChat(teamId);
-
-    clearActiveQuiz(teamId);
-
-    const kb = buildTeamKnowledgeBase(teamId);
-
-    const question = personaOpeningQuestion(kb, activeMentorName());
-
-    if(question.request){
-      const pending = 'Preparing a question from the portfolio.';
-      chatMessages = [{ role: 'assistant', text: pending, html: esc(pending), chunks: question.chunks || [] }];
-      if(mentorSurfaceOpen() && typeof render === 'function') render();
-      updateChatMessagesThread();
-      isGenerating = true;
-      try {
-        const text = await callPersonaModel(question.request.systemInstruction, question.request.prompt);
-        const shown = text || 'The question could not be prepared.';
-        if(text){
-          writeFoundationalState(kb && kb.teamId, question.request.stage, {
-            asked: [],
-            current: { subject: question.request.subject.course, sectionId: question.request.section.id }
-          });
-        }
-        chatMessages = [{ role: 'assistant', text: shown, html: esc(shown), chunks: question.chunks || [] }];
-      } finally {
-        isGenerating = false;
-        updateChatMessagesThread();
-      }
-      const pendingInput = document.getElementById('mentor-work-input');
-      if(pendingInput) pendingInput.focus();
-      return;
-    }
-
-    chatMessages = [{ role: 'assistant', text: question.text, html: esc(question.text), chunks: question.chunks || [] }];
-
-    if(mentorSurfaceOpen() && typeof render === 'function') render();
-
-    updateChatMessagesThread();
-
-    const input = document.getElementById('mentor-work-input');
-
-    if(input) input.focus();
-
+  window.openAskMentor = function(){
+    window.mentorDashboardPanel = 'persona';
+    if(typeof render === 'function') render();
   };
 
 
@@ -5779,7 +5719,146 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return { facts: shuffleFacts(facts, personaSeed(lens.name, stage, kb.teamId)), stage, lens };
   }
 
+  const STAGE0_BANK = {
+    'Systems Thinking': {
+      mcq: [
+        { id: 'ST-M1', focus: 'Workflow sequence', prompt: 'Which sequence correctly represents the major operations in the proposed system?', options: ['Publish the result, then discard the input, then skip processing', 'Accept the inputs, carry them through the processing stages, and emit the outputs', 'Treat every excluded item as the first processing stage', 'Run only the output step and invent the missing inputs'], correct: 1, explanation: 'A system accepts inputs, processes them in stages, and produces outputs.' },
+        { id: 'ST-M2', focus: 'Stage dependency', prompt: 'Which of the following best describes the relationship between two important stages of the conceptual workflow?', options: ['The stages share no data and cannot affect each other', 'The output is created before any stage begins', 'A downstream stage depends on the output of an upstream stage', 'An excluded external system performs the core stages'], correct: 2, explanation: 'Later stages depend on what earlier stages produce.' },
+        { id: 'ST-M3', focus: 'Failure consequence', prompt: 'What is the most likely consequence if a critical operation in the proposed workflow fails?', options: ['Dependent work stops or becomes incorrect', 'The objective is completed by the failure', 'The boundary vanishes and scope no longer matters', 'Only the project title needs to change'], correct: 0, explanation: 'A failed critical step blocks the stages that rely on it.' },
+        { id: 'ST-M4', focus: 'System boundary', prompt: 'Which of the following correctly identifies the system boundary and its interaction with external inputs or outputs?', options: ['The system includes every idea in the problem statement', 'Outputs exist, but the system has no inputs', 'Exclusions are implemented as core stages', 'In-scope work stays inside, and inputs and outputs cross the boundary'], correct: 3, explanation: 'The boundary separates in-scope work from the inputs and outputs that cross it.' },
+        { id: 'ST-M5', focus: 'Limitation or dependency', prompt: "Which system-level limitation or dependency must be considered to achieve the project's primary objective?", options: ['Work the scope has already excluded', 'A dependency or limit the primary objective relies on', 'A definition that the project does not use', 'Evidence from implementation or testing'], correct: 1, explanation: 'The objective can be met only if its real dependency or limit is recognized.' }
+      ],
+      descriptive: [
+        { id: 'ST-D1', focus: 'End-to-end workflow', prompt: 'Explain the end-to-end conceptual workflow of the proposed system, identifying its major inputs, processing stages and outputs.', points: ['Name the major inputs', 'Name the processing stages in order', 'Name the outputs', 'Show how the stages form one flow'] },
+        { id: 'ST-D2', focus: 'Operation dependency', prompt: 'Explain how the major operations or components of the proposed system depend on one another.', points: ['Name the major operations', 'State what each one produces for the next', 'Explain what fails if one operation is missing'] },
+        { id: 'ST-D3', focus: 'Failure scenario', prompt: 'Identify a critical failure scenario in the proposed workflow and explain its effect on the overall system.', points: ['Name a critical failure', 'Explain which stages it affects', 'Describe the effect on the overall result'] },
+        { id: 'ST-D4', focus: 'System boundary', prompt: 'Explain the system boundary, including what the system is responsible for and what is outside its scope.', points: ['State what the system is responsible for', 'State what is outside the scope', 'Explain how inputs and outputs cross the boundary'] },
+        { id: 'ST-D5', focus: 'Workflow and objectives', prompt: 'Explain how the proposed workflow collectively supports the stated project objectives.', points: ['Name the relevant objectives', 'Map workflow stages to those objectives', 'Explain why the set of stages is enough for those objectives'] }
+      ]
+    },
+    'Foundational CS Knowledge': {
+      mcq: [
+        { id: 'FK-M1', focus: 'Relevant course concept', prompt: 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?', options: ['A concept from a course the project does not use', 'The course concept that matches that challenge', 'A screen color or label choice', 'The project title by itself'], correct: 1, explanation: 'The useful concept is the one that addresses the challenge the project actually has.' },
+        { id: 'FK-M2', focus: 'Structure or algorithm', prompt: 'Which data structure or algorithm is most appropriate for a specific operation in the proposed workflow?', options: ['One that cannot represent the data that operation needs', 'One chosen for an unrelated problem', 'The structure or algorithm that fits that operation', 'A manual step the scope has excluded'], correct: 2, explanation: 'The right choice is the one that fits the operation, not an unrelated method.' },
+        { id: 'FK-M3', focus: 'Foundational mechanism', prompt: 'Which OS, DBMS, networking or other foundational mechanism best supports a selected project objective?', options: ['A mechanism that does not serve that objective', 'The mechanism the objective actually depends on', 'A later test script', 'An objective with no technical content'], correct: 1, explanation: 'Choose the mechanism the objective depends on.' },
+        { id: 'FK-M4', focus: 'Advantage of a concept', prompt: 'What is the primary technical advantage of applying a selected foundational CS concept to this project?', options: ['It makes the write-up longer without changing the solution', 'It replaces the project objectives', 'It adds a feature the scope excludes', 'It gives a concrete way to carry out part of the solution'], correct: 3, explanation: 'A course concept helps when it gives a concrete way to do part of the work.' },
+        { id: 'FK-M5', focus: 'Concept trade-off', prompt: 'Which limitation or trade-off should be considered when applying a selected algorithm, data structure or computing mechanism?', options: ['The cost, limit, or compromise that comes with that choice', 'A guarantee that the choice has no downside', 'A result measured only after final testing', 'A course that is not connected to the project'], correct: 0, explanation: 'Every technical choice has a cost or limit that should be named.' }
+      ],
+      descriptive: [
+        { id: 'FK-D1', focus: 'Two course concepts', prompt: 'Identify two foundational CS concepts relevant to the project and explain their roles in solving the identified problem.', points: ['Name two relevant concepts', 'Explain the role of the first concept', 'Explain the role of the second concept'] },
+        { id: 'FK-D2', focus: 'Structure in an operation', prompt: 'Explain how a selected data structure or algorithm could support an important operation in the proposed system.', points: ['Name the operation', 'Name the structure or algorithm', 'Explain how it supports that operation'] },
+        { id: 'FK-D3', focus: 'Mechanism and objective', prompt: 'Explain how an OS, DBMS, networking or other relevant foundational mechanism contributes to a stated project objective.', points: ['Name the mechanism', 'Name the objective it supports', 'Explain the contribution'] },
+        { id: 'FK-D4', focus: 'Compare two approaches', prompt: 'Compare two possible foundational computing approaches for a technical challenge identified in the project. Explain which appears more suitable and why.', points: ['Name the challenge', 'Describe two possible approaches', 'Choose the more suitable one and give the reason'] },
+        { id: 'FK-D5', focus: 'Two courses together', prompt: 'Explain how concepts from two different foundational CS courses work together in the proposed workflow.', points: ['Name the two courses or concepts', 'Show where each appears in the workflow', 'Explain how they depend on each other'] }
+      ]
+    },
+    'Faculty Expertise': {
+      mcq: [
+        { id: 'FM-M1', focus: 'Problem justification', prompt: 'Which explanation best justifies selecting the identified problem for this mini project?', options: ['The problem is real, limited enough for the team, and not already solved in the same way', 'The problem was chosen only because the title sounds technical', 'The problem needs a finished product before the idea is clear', 'The problem is worth doing because it has no constraints'], correct: 0, explanation: 'A mini-project problem should be real, feasible, and not already solved in the same way.' },
+        { id: 'FM-M2', focus: 'Critical challenge', prompt: "Which technical challenge is most critical to achieving the project's objectives?", options: ['A task that is outside the stated scope', 'The challenge that blocks the main objectives if it is not solved', 'A wording change in the team name', 'Work that belongs only to a later stage'], correct: 1, explanation: 'The critical challenge is the one that blocks the main objectives.' },
+        { id: 'FM-M3', focus: 'Priority feature', prompt: "Which proposed feature or activity should receive priority to demonstrate the project's core functionality?", options: ['An excluded extra that does not show the core idea', 'Cosmetic text that does not affect behavior', 'The smallest set of work that shows the core function', 'Every planned feature at the same time'], correct: 2, explanation: 'Priority goes to the work that demonstrates the core function.' },
+        { id: 'FM-M4', focus: 'Scope justification', prompt: "Which justification best supports the project's stated scope and exclusions?", options: ['Exclusions are ignored once implementation starts', 'Scope should grow whenever a new idea appears', 'In-scope and out-of-scope items can be swapped freely', 'The boundary keeps the work feasible for the team and the time available'], correct: 3, explanation: 'Scope and exclusions keep the work feasible for the team and the time.' },
+        { id: 'FM-M5', focus: 'Feasibility risk', prompt: 'Which constraint poses the most significant feasibility risk, and what is the most appropriate response?', options: ['A limit that can stop the project, handled by narrowing the work to what is essential', 'A limit that can be ignored because the title stays the same', 'A wish to add every excluded feature', 'A test result required before the problem is defined'], correct: 0, explanation: 'The serious risk is a limit that can stop the project, and the response is to keep the essential work.' }
+      ],
+      descriptive: [
+        { id: 'FM-D1', focus: 'Why the problem matters', prompt: 'Why is the identified problem worth solving? Explain its practical significance and the limitations of existing approaches.', points: ['Explain the practical significance', 'Describe a limitation of existing approaches', 'Say why this project is still worth doing'] },
+        { id: 'FM-D2', focus: 'Challenging objectives', prompt: 'Which two project objectives are likely to be technically challenging? Justify your selection.', points: ['Name two objectives', 'Explain why the first is challenging', 'Explain why the second is challenging'] },
+        { id: 'FM-D3', focus: 'Approach justification', prompt: 'Why is the proposed technical approach appropriate for the identified problem? Explain its advantages and limitations.', points: ['State the approach', 'Give an advantage', 'Give a limitation', 'Explain why it still fits the problem'] },
+        { id: 'FM-D4', focus: 'Scope decisions', prompt: "Justify the In Scope and Out of Scope decisions considering the project's objectives, team size and available time.", points: ['Connect an in-scope item to an objective', 'Explain one exclusion', 'Relate the boundary to team size or time'] },
+        { id: 'FM-D5', focus: 'Priority under constraint', prompt: 'How would you prioritize the planned work if the team encountered a major technical or resource constraint?', points: ['Name the kind of constraint', 'State what would be kept', 'State what would be deferred and why'] }
+      ]
+    },
+    'Engineering Standards': {
+      mcq: [
+        { id: 'ES-M1', focus: 'Clear objective', prompt: 'Which statement best represents a clear and technically meaningful project objective?', options: ['A vague hope with no technical outcome', 'An objective that says what will be achieved and how it can be recognized', 'A restatement of the team members names', 'A feature the scope says will not be built'], correct: 1, explanation: 'A clear objective states the outcome and how it can be recognized.' },
+        { id: 'ES-M2', focus: 'Measurable outcome', prompt: 'Which measurable outcome would provide the strongest evidence that a selected project objective has been achieved?', options: ['A number or observable result that matches that objective', 'The statement that the team worked hard', 'An objective copied from an unrelated project', 'A feature that was declared out of scope'], correct: 0, explanation: 'Evidence is an observable result that matches the objective.' },
+        { id: 'ES-M3', focus: 'Problem and objective mismatch', prompt: 'Which inconsistency, if present, would indicate a mismatch between the problem statement and project objectives?', options: ['The objectives name the same need as the problem', 'The objectives can be checked against the problem', 'The objectives pursue a different problem from the one stated', 'The scope repeats a limit already named in the problem'], correct: 2, explanation: 'A mismatch means the objectives pursue a different problem from the one stated.' },
+        { id: 'ES-M4', focus: 'Scope violation', prompt: 'Which proposed feature would violate the documented project scope?', options: ['A feature listed as in scope', 'A feature that directly serves a stated objective', 'A constraint already accepted in the feasibility notes', 'A feature the project has placed out of scope'], correct: 3, explanation: 'A feature placed out of scope would violate the scope.' },
+        { id: 'ES-M5', focus: 'Feasibility consideration', prompt: "Which engineering consideration is most important when evaluating the project's feasibility and constraints?", options: ['Whether the plan fits the stated limits of time, skill, and resources', 'Whether the title uses more technical words', 'Whether later source code already exists', 'Whether every excluded idea is added back'], correct: 0, explanation: 'Feasibility asks whether the plan fits the stated limits.' }
+      ],
+      descriptive: [
+        { id: 'ES-D1', focus: 'Objective clarity', prompt: 'Examine the project objectives. Identify one objective that needs greater clarity or measurability and suggest how it could be improved.', points: ['Quote or name one objective', 'Say what is unclear or not measurable', 'Suggest a clearer or measurable form'] },
+        { id: 'ES-D2', focus: 'Objectives address the problem', prompt: 'Explain how the stated project objectives address the problem identified in the problem statement.', points: ['State the problem', 'Name the objectives that respond to it', 'Explain the link between them'] },
+        { id: 'ES-D3', focus: 'Workflow covers objectives', prompt: 'Examine the conceptual workflow and explain whether its major operations adequately cover the stated project objectives.', points: ['Name the major operations', 'Match them to the objectives', 'Say whether any objective is left uncovered'] },
+        { id: 'ES-D4', focus: 'Scope boundary', prompt: 'Explain how the In Scope and Out of Scope sections establish clear project boundaries and help prevent scope expansion.', points: ['State what is in scope', 'State what is out of scope', 'Explain how that boundary limits later expansion'] },
+        { id: 'ES-D5', focus: 'Constraints and planning', prompt: 'Identify two important project constraints or risks and explain how they should influence planning and later verification.', points: ['Name two constraints or risks', 'Explain the effect on planning', 'Explain what should later be verified'] }
+      ]
+    },
+    'Theme-Based Expertise': {
+      mcq: [
+        { id: 'TH-M1', focus: 'Theme challenge', prompt: 'Which theme-specific technical challenge is most directly addressed by the proposed project?', options: ['A challenge from a different theme that this project does not take on', 'The challenge the project is actually built to handle', 'A general study tip with no link to the theme', 'A test report from the final stage'], correct: 1, explanation: 'The relevant challenge is the one this project is built to handle.' },
+        { id: 'TH-M2', focus: 'Theme approach', prompt: 'Which algorithm, mechanism or technical approach is most suitable for a selected core operation in the project?', options: ['An approach aimed at a different operation', 'An approach the scope has ruled out', 'The approach that fits that core operation', 'A label that does not change system behavior'], correct: 2, explanation: 'The suitable approach is the one that fits the core operation.' },
+        { id: 'TH-M3', focus: 'Theme advantage', prompt: 'What is the main technical advantage of the proposed theme-specific approach?', options: ['It avoids stating any limitation', 'It copies an unrelated project method', 'It lengthens the synopsis without changing the design', 'It addresses the theme challenge in a way that fits this project'], correct: 3, explanation: 'The advantage is that the approach fits this project and its theme challenge.' },
+        { id: 'TH-M4', focus: 'Theme limitation', prompt: 'Which limitation or trade-off is associated with a selected theme-specific mechanism?', options: ['A weakness or compromise that comes with that mechanism', 'A claim that the mechanism cannot fail', 'A course topic the project never uses', 'A completed test suite'], correct: 0, explanation: 'A mechanism should be discussed with the weakness or compromise it brings.' },
+        { id: 'TH-M5', focus: 'Theme constraint', prompt: 'Which technical constraint or performance consideration is most important for the proposed system?', options: ['A limit that can change whether the system meets its objective', 'The order of names on the cover page', 'An excluded feature treated as mandatory', 'A measurement that requires finished code at this stage'], correct: 0, explanation: 'The important constraint is one that can change whether the objective is met.' }
+      ],
+      descriptive: [
+        { id: 'TH-D1', focus: 'Theme challenge', prompt: 'Explain the main technical challenge addressed by the project within its assigned theme.', points: ['Name the theme', 'State the technical challenge', 'Explain why that challenge belongs to the theme'] },
+        { id: 'TH-D2', focus: 'Theme mechanism', prompt: 'Explain the role of a selected theme-specific algorithm, mechanism or processing approach in achieving a project objective.', points: ['Name the approach', 'Name the objective', 'Explain the role of the approach'] },
+        { id: 'TH-D3', focus: 'Compare theme approaches', prompt: 'Compare two technically feasible approaches for addressing a selected challenge in the project. Discuss their advantages and limitations.', points: ['Name the challenge', 'Describe two feasible approaches', 'Compare an advantage and a limitation', 'Frame them as alternatives, not as completed work'] },
+        { id: 'TH-D4', focus: 'Approach limitation', prompt: 'Identify a significant technical limitation of the proposed approach and explain how it may affect the expected system behavior.', points: ['Name the limitation', 'Explain the effect on system behavior', 'Keep the claim tied to the proposed approach'] },
+        { id: 'TH-D5', focus: 'Later evaluation measures', prompt: "Explain which theme-specific performance, correctness or quality measures would be appropriate for evaluating the project's objectives in later stages.", points: ['Name the objectives to evaluate', 'Propose suitable measures', 'Explain why those measures fit the theme', 'Do not claim that testing is already complete'] }
+      ]
+    }
+  };
+
+  function stage0Questions(persona, kind){
+    const bank = STAGE0_BANK[persona];
+    return bank && bank[kind] ? bank[kind] : null;
+  }
+
+  function stage0Mcq(kb, persona){
+    const letters = ['A', 'B', 'C', 'D'];
+    const questions = stage0Questions(persona, 'mcq').map((item, index) => {
+      const options = item.options.map((text, optionIndex) => ({ key: letters[optionIndex], text, isCorrect: optionIndex === item.correct }));
+      const correct = options[item.correct];
+      return {
+        id: item.id,
+        templateId: item.id,
+        index,
+        type: persona,
+        prompt: item.prompt,
+        options,
+        correctKey: correct.key,
+        correctAnswer: correct.text,
+        citation: '',
+        explanation: item.explanation,
+        defenseTip: item.focus
+      };
+    });
+    return {
+      quiz: {
+        teamId: kb && kb.teamId,
+        dimension: persona,
+        stage: '0',
+        kind: 'mcq',
+        personaStage: true,
+        templateGuided: true,
+        seed: personaSeed(persona, '0', kb && kb.teamId),
+        generatedBy: 'Stage 0 questions',
+        questions,
+        userAnswers: questions.map(() => null),
+        isEvaluated: false
+      }
+    };
+  }
+
+  function stage0Descriptive(kb, persona){
+    const questions = stage0Questions(persona, 'descriptive').map(item => ({
+      templateId: item.id,
+      prompt: item.prompt,
+      expectedPoints: item.points.slice(),
+      source: item.points.join(' '),
+      citation: '',
+      rubric: item.focus,
+      draft: ''
+    }));
+    return { teamId: kb && kb.teamId, dimension: persona, stage: '0', kind: 'descriptive', personaStage: true, templateGuided: true, questions };
+  }
+
   function buildPersonaMcq(kb, persona, stageId){
+    const stage = stageId || mentorStageKey();
+    if(String(stage) === '0' && STAGE0_BANK[persona]) return stage0Mcq(kb, persona);
     const pack = personaStageQuestions(kb, persona, stageId);
     if(pack.limitation) return { limitation: pack.limitation };
     const chosen = pack.facts.slice(0, 5);
@@ -5839,6 +5918,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function buildPersonaDescriptive(kb, persona, stageId){
+    const stage = stageId || mentorStageKey();
+    if(String(stage) === '0' && STAGE0_BANK[persona]) return stage0Descriptive(kb, persona);
     const pack = personaStageQuestions(kb, persona, stageId);
     if(pack.limitation) return { teamId: kb && kb.teamId, dimension: persona, stage: pack.stage, kind: 'descriptive', questions: [], stageNote: pack.limitation };
     const stem = PERSONA_DESCRIPTIVE_STEM[pack.lens.name];
@@ -5874,6 +5955,17 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function descriptiveFeedback(question){
     const answer = question.draft || '';
+    if(question.expectedPoints && question.expectedPoints.length){
+      const met = question.expectedPoints.filter(point => answer && portfolioOverlap(answer, point) >= 0.4);
+      const missing = question.expectedPoints.filter(point => !met.includes(point));
+      const supported = met.length * 2 >= question.expectedPoints.length;
+      return {
+        supported,
+        strength: met.length ? met.join(' ') : '',
+        missing,
+        improvement: supported ? 'Keep the explanation tied to this project.' : 'Cover the missing points with a specific explanation.'
+      };
+    }
     const supported = answer ? portfolioOverlap(answer, question.source) >= 0.4 : false;
     const sourceWords = tokenize(question.source).map(stemWord).filter(token => token.length > 2);
     const answerWords = new Set(tokenize(answer).map(stemWord));

@@ -740,6 +740,51 @@ test('Foundational CS asks every course plus Computer Networks by stage section'
   global.window.mentorDashboardStage = '0';
 });
 
+test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const kb08 = buildTeamKnowledgeBase('08');
+  const kb12 = buildTeamKnowledgeBase('12');
+  const openings = {
+    'Systems Thinking': 'Which sequence correctly represents the major operations in the proposed system?',
+    'Foundational CS Knowledge': 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?',
+    'Faculty Expertise': 'Which explanation best justifies selecting the identified problem for this mini project?',
+    'Engineering Standards': 'Which statement best represents a clear and technically meaningful project objective?',
+    'Theme-Based Expertise': 'Which theme-specific technical challenge is most directly addressed by the proposed project?'
+  };
+  const ids = [];
+  Object.keys(openings).forEach(persona => {
+    const mcq = buildPersonaMcq(kb03, persona, '0');
+    const descriptive = buildPersonaDescriptive(kb03, persona, '0');
+    assert.strictEqual(mcq.quiz.questions.length, 5, persona);
+    assert.strictEqual(descriptive.questions.length, 5, persona);
+    assert.strictEqual(mcq.quiz.questions[0].prompt, openings[persona]);
+    assert.strictEqual(buildPersonaMcq(kb08, persona, '0').quiz.questions[0].prompt, openings[persona]);
+    mcq.quiz.questions.forEach(question => {
+      assert.strictEqual(question.options.length, 4);
+      assert.strictEqual(question.options.filter(option => option.isCorrect).length, 1);
+      assert(!question.prompt.includes(question.correctAnswer));
+      assert(!question.prompt.includes('['));
+      assert(!/documented statement/i.test(question.prompt));
+      ids.push(question.templateId);
+    });
+    descriptive.questions.forEach(question => {
+      assert(question.expectedPoints.length >= 3 && question.expectedPoints.length <= 4);
+      assert(!question.prompt.includes('['));
+      ids.push(question.templateId);
+    });
+    const later = buildPersonaMcq(kb03, persona, '1');
+    assert.notStrictEqual(later.quiz.questions[0].prompt, openings[persona]);
+  });
+  assert.strictEqual(ids.length, 50);
+  assert.strictEqual(new Set(ids).size, 50);
+  assert.strictEqual(buildPersonaMcq(kb12, 'Theme-Based Expertise', '0').quiz.questions[0].prompt, openings['Theme-Based Expertise']);
+  const dashboard = fs.readFileSync(path.join(__dirname, 'dist', 'department.js'), 'utf8');
+  const mentor = dashboard.slice(dashboard.indexOf('function mentorDashboard'));
+  assert(!mentor.includes('openAskMentor'));
+  assert(!mentor.includes('>Ask</button>'));
+  assert(!mentor.includes('Ask a Mentor'));
+});
+
 test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a documented stage', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   const personas = [
@@ -750,24 +795,11 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
     'Theme-Based Expertise',
     'Project-Specific Knowledge'
   ];
-  const stage0Prompts = [];
   personas.forEach(persona => {
-    const mcq = buildPersonaMcq(kb03, persona, '0');
-    const descriptive = buildPersonaDescriptive(kb03, persona, '0');
-    assert.strictEqual(mcq.quiz.questions.length, 5, persona);
-    assert.strictEqual(descriptive.questions.length, 5, persona);
-    mcq.quiz.questions.forEach(question => {
-      assert.strictEqual(question.options.length, 4);
-      assert.strictEqual(question.options.filter(option => option.isCorrect).length, 1);
-      assert(!question.prompt.includes(question.correctAnswer));
-    });
-    const prompts = mcq.quiz.questions.map(question => question.prompt);
-    assert.strictEqual(new Set(prompts).size, 5);
-    stage0Prompts.push(prompts[0]);
     const stage1 = buildPersonaMcq(kb03, persona, '1');
     const design = buildPersonaMcq(kb03, persona, 'system-design');
-    assert.strictEqual(stage1.quiz.questions.length, 5);
-    assert.strictEqual(design.quiz.questions.length, 5);
+    assert.strictEqual(stage1.quiz.questions.length, 5, persona);
+    assert.strictEqual(design.quiz.questions.length, 5, persona);
     const stage3 = buildPersonaMcq(kb03, persona, '2');
     const stage4 = buildPersonaDescriptive(kb03, persona, '3');
     assert.strictEqual(stage3.quiz, undefined);
@@ -776,10 +808,10 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
     assert.strictEqual(stage4.questions.length, 0);
     assert(stage4.stageNote.includes('Stage 4'));
   });
-  assert.strictEqual(new Set(stage0Prompts).size, personas.length);
-  const systems = buildPersonaMcq(kb03, 'Systems Thinking', '0').quiz;
+  const project = buildPersonaMcq(kb03, 'Project-Specific Knowledge', '0').quiz;
   const joined = stageSectionText(kb03, '0');
-  systems.questions.forEach(question => {
+  assert.strictEqual(project.questions.length, 5);
+  project.questions.forEach(question => {
     question.options.forEach(option => assert(joined.includes(option.text.slice(0, 40))));
     assert(!/\[FR-|\[NFR|\[Architecture\]/.test(question.citation));
   });
