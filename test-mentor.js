@@ -537,6 +537,27 @@ test('Revise marks a template sentence as outside the project and cites the SDD 
   global.document.getElementById = previous;
 });
 
+test('Ask a Mentor follows up from the same cited section', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  global.window.mentorDashboardStage = '0';
+  global.window.mentorActiveDimension = 'Systems Thinking';
+  const problem = answerWithinLens('what is the problem statement?', kb03);
+  const problemFollow = problem.text.split('Follow-up:')[1] || '';
+  const problemChunk = kb03.chunks.find(chunk => chunk.id === 'stage0-problem');
+  assert(problem.text.includes('[Stage 0: Problem Statement]'));
+  assert(problemFollow.includes('[Stage 0: Problem Statement]'));
+  assert(problemChunk.text.includes(problemFollow.replace('[Stage 0: Problem Statement]', '').replace('Explain this documented line in your own words:', '').trim().slice(0, 48)));
+  assert(!/\[Engine |NFR ID-/.test(problemFollow));
+
+  global.window.mentorActiveDimension = 'Engineering Standards';
+  const template = answerWithinLens('what is the context viewpoint?', kb03);
+  const templateFollow = template.text.split('Follow-up:')[1] || '';
+  assert(template.text.includes('[SDD 2.2.1 Context]'));
+  assert(templateFollow.includes('[SDD 2.2.1 Context]'));
+  assert(template.text.includes('not this team\'s design'));
+  assert(!/\[Engine |NFR ID-/.test(templateFollow));
+});
+
 console.log(`\n====================================================`);
 console.log(`ALL TESTS PASSED: ${passedTests} / ${totalTests} (100% SUCCESS)`);
 console.log(`====================================================`);

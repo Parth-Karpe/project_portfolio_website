@@ -23,7 +23,7 @@ let selectedSection='',mediaURLs=[];
 function editableStage(n=state.stage){return isAdmin()&&!['Submitted','Approved'].includes(status(n))}
 function keepsPortfolioChat(p){return p==='Team Portfolio'||p==='Mentor Dashboard'}
 function switchRole(role){if(!rolePages[role])return;state.role=role;modal=null;selectedSection='';if(!rolePages[role].includes(page))page=role==='HOD'?'Department':role==='Admin'?'Admin Panel':'Overview';if(!keepsPortfolioChat(page)&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();save();render()}
-go=function(p){if(!rolePages[state.role].includes(p))return toast('This panel is not available to your current role.');if(!keepsPortfolioChat(p)&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();if(p==='Mentor Dashboard'){window.mentorDashboardStage=String(window.activePortfolioStage||activePortfolioStage||'0');window.mentorDashboardPanel='persona'}page=p;selectedSection='';modal=null;render();window.scrollTo(0,0)};
+go=function(p){if(p==='Mentor Dashboard'&&typeof openMentorSplit==='function'){openMentorSplit();return}if(!rolePages[state.role].includes(p))return toast('This panel is not available to your current role.');if(!keepsPortfolioChat(p)&&typeof unmountPortfolioChat==='function')unmountPortfolioChat();if(p==='Mentor Dashboard'){window.mentorDashboardStage=String(window.activePortfolioStage||activePortfolioStage||'0');window.mentorDashboardPanel='persona'}page=p;selectedSection='';modal=null;render();window.scrollTo(0,0)};
 function openSection(n,key=''){if(!rolePages[state.role].includes('Design Journey'))return;state.stage=n;page='Design Journey';selectedSection=key;save();render();if(key)document.getElementById('f-'+key)?.scrollIntoView({behavior:'smooth',block:'center'});else window.scrollTo(0,0)}
 
 let activePortfolioTopic = 'stage-0';
@@ -368,11 +368,62 @@ render=function(){
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
   const isPortfolio = page === 'Team Portfolio';
   const curTheme = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (activeTeam()?.theme_no || 1);
+  const mentorSplit = isPortfolio && !!window.mentorSplitOpen && typeof mentorDashboard === 'function';
 
-  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}">${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><img src="assets/kle_tech_logo.png" alt="KLE Technological University" class="kle-header-logo"><span class="kle-header-dept" style="margin-top:4px">Department of CSE(AI)</span></div><div style="margin-bottom:12px"><button class="btn secondary" style="width:100%; justify-content:center; padding:7px 12px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects(${curTheme})">← Back to Theme ${curTheme}</button></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div>${sharedPageHeader()}<main class="main">${views[page]()}</main></div></div>${modal||''}`;
+  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}${mentorSplit ? ' mentor-split' : ''}">${mentorSplit ? '<div class="mentor-split-left">' : ''}${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><img src="assets/kle_tech_logo.png" alt="KLE Technological University" class="kle-header-logo"><span class="kle-header-dept" style="margin-top:4px">Department of CSE(AI)</span></div><div style="margin-bottom:12px"><button class="btn secondary" style="width:100%; justify-content:center; padding:7px 12px; font-size:12.5px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer" onclick="backToThemeProjects(${curTheme})">← Back to Theme ${curTheme}</button></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div class="shell-main">${sharedPageHeader()}<main class="main">${views[page]()}</main></div>${mentorSplit ? '</div><div id="mentor-split-handle" class="mentor-split-handle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize the portfolio and mentor" aria-valuemin="20" aria-valuemax="80" tabindex="0"></div><section class="mentor-split-pane" aria-label="AI Mentor">' + mentorDashboard() + '</section>' : ''}</div>${modal||''}`;
   const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
   if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();
+  if(mentorSplit) bindMentorSplitHandle();
 }
+function mentorSplitTop(){
+  const saved = Number(window.mentorSplitRatio != null ? window.mentorSplitRatio : localStorage.getItem('pg_mentor_split'));
+  if(!saved || saved < 20 || saved > 80) return 50;
+  return saved;
+}
+function applyMentorSplitRatio(percent){
+  const top = Math.min(80, Math.max(20, Math.round(Number(percent) || 50)));
+  window.mentorSplitRatio = top;
+  document.documentElement.style.setProperty('--mentor-top', top + '%');
+  document.documentElement.style.setProperty('--mentor-bottom-offset', (100 - top) + 'vh');
+  const handle = document.getElementById('mentor-split-handle');
+  if(handle) handle.setAttribute('aria-valuenow', String(top));
+  try { localStorage.setItem('pg_mentor_split', String(top)); } catch(e) {}
+}
+function bindMentorSplitHandle(){
+  applyMentorSplitRatio(mentorSplitTop());
+  const handle = document.getElementById('mentor-split-handle');
+  if(!handle) return;
+  const dragTo = (clientY) => applyMentorSplitRatio((clientY / window.innerHeight) * 100);
+  handle.onpointerdown = (event) => {
+    if(event.button !== 0) return;
+    window.mentorSplitDragging = true;
+    handle.setPointerCapture(event.pointerId);
+    document.body.classList.add('mentor-split-dragging');
+    dragTo(event.clientY);
+    event.preventDefault();
+  };
+  handle.onpointermove = (event) => {
+    if(!window.mentorSplitDragging) return;
+    dragTo(event.clientY);
+  };
+  handle.onpointerup = handle.onpointercancel = (event) => {
+    window.mentorSplitDragging = false;
+    document.body.classList.remove('mentor-split-dragging');
+    if(event && event.pointerId != null) { try { handle.releasePointerCapture(event.pointerId); } catch(e) {} }
+  };
+  handle.ondblclick = () => applyMentorSplitRatio(50);
+  handle.onkeydown = (event) => {
+    const current = mentorSplitTop();
+    if(event.key === 'ArrowUp') applyMentorSplitRatio(current - 4);
+    else if(event.key === 'ArrowDown') applyMentorSplitRatio(current + 4);
+    else if(event.key === 'Home') applyMentorSplitRatio(20);
+    else if(event.key === 'End') applyMentorSplitRatio(80);
+    else if(event.key === 'Enter') applyMentorSplitRatio(50);
+    else return;
+    event.preventDefault();
+  };
+}
+window.applyMentorSplitRatio = applyMentorSplitRatio;
 function adminPanel(){return heading('CSE(AI) Administration','Loading department workspace…')}
 const originalReview=review;
 review=function(){let html=originalReview();if(isFaculty())html=html.replace(`>${esc(state.feedback)}</textarea>`,`>${esc(state.reviews?.[state.stage]?.feedback||'')}</textarea>`).replace(`value="${esc(state.score)}"`,`value="${esc(state.reviews?.[state.stage]?.score??8)}"`);return html+evidenceSection(state.stage)};
