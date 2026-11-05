@@ -3609,6 +3609,9 @@ html body .mentor-dashboard #mentor-revise-input {
 .mentor-wait { padding: 24px; font-size: 16px; }
 .mentor-dashboard-top {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 html body .mentor-dashboard .mentor-back,
 html body .mentor-dashboard .mentor-stage-pill,
