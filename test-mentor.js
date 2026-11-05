@@ -67,6 +67,10 @@ const {
   buildPersonaDescriptive,
   facultyOptionRequest,
   applyFacultyOptions,
+  buildReviseSectionCatalog,
+  reviseSectionRequest,
+  applyReviseModelSections,
+  reviseMentorDraftLocal,
   evaluateVivaQuiz,
   formatResponseWithClickableCitations,
   polishLiveAnswer,
@@ -537,17 +541,50 @@ test('A context viewpoint question cites the SDD template, not a project section
 });
 
 test('Revise marks a template sentence as outside the project and cites the SDD section', () => {
-  const previous = global.document.getElementById;
-  global.document.getElementById = (id) => id === 'mentor-revise-input'
-    ? { value: 'The context viewpoint defines the system as a black box.' }
-    : null;
+  const kb03 = buildTeamKnowledgeBase('03');
+  const sections = reviseMentorDraftLocal(kb03, '0', 'The context viewpoint defines the system as a black box.');
+  const notes = sections.reduce((list, section) => list.concat(section.items || []), []);
+  assert(notes.length >= 1);
+  assert(notes.every(note => !note.supported));
+  const withSdd = notes.find(note => note.sddCitation && note.sddCitation.includes('SDD'));
+  assert(withSdd || sections.some(section => section.key === 'unmatched'));
+});
+
+test('Revise stage guide lists Stage 0 sections when the tab opens', () => {
+  global.window.mountPortfolioChat('A-03');
   global.window.mentorDashboardStage = '0';
-  global.window.mentorActiveDimension = 'Systems Thinking';
-  global.window.reviseMentorDraft();
-  const note = global.window.mentorReviseNotes[0];
-  assert.strictEqual(note.supported, false);
-  assert.strictEqual(note.sddCitation, '[SDD 2.2.1 Context]');
-  global.document.getElementById = previous;
+  global.window.activePortfolioStage = '0';
+  global.window.reviseMentorStageGuide();
+  assert(global.window.mentorReviseGuide);
+  assert(global.window.mentorReviseSections.length >= 3);
+  assert(global.window.mentorReviseSections.some(section => section.key === 'stage0-problem'));
+  assert(global.window.mentorReviseSections.some(section => section.preview && section.preview.length > 10));
+});
+
+test('Revise groups a Stage 0 objective sentence under the objectives section', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const sections = reviseMentorDraftLocal(kb03, '0', 'To detect overlapping booking requests and resource conflicts accurately.');
+  const section = sections.find(item => item.key === 'stage0-objectives');
+  assert(section);
+  assert.strictEqual(section.items[0].supported, true);
+  assert(section.items[0].citation.includes('Objectives'));
+});
+
+test('Revise model payload covers every Stage 0 section key', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const request = reviseSectionRequest(kb03, '0', 'Sample draft about objectives and scope.');
+  const mock = request.catalog.sections.map((section, index) => ({
+    sectionKey: section.key,
+    status: index === 0 ? 'aligned' : 'partial',
+    summary: `Review ${section.label}.`,
+    gaps: ['Add more detail from the portfolio.'],
+    suggestions: [`Use the documented lines in ${section.label}.`],
+    draftQuotes: index === 0 ? ['Sample draft about objectives and scope.'] : []
+  }));
+  const applied = applyReviseModelSections(request.catalog, mock);
+  assert.strictEqual(applied.length, request.catalog.sections.length);
+  assert(applied.every(section => section.suggestions.length >= 1));
+  assert.strictEqual(applyReviseModelSections(request.catalog, mock.slice(0, 1)), null);
 });
 
 test('Ask a Mentor follows up from the same team section', () => {

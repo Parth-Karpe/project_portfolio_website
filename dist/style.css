@@ -3606,6 +3606,79 @@ html body .mentor-dashboard #mentor-revise-input {
 .mentor-source { margin: 6px 0 0; color: var(--ink); }
 .mentor-revise-list { list-style: none; padding: 0; margin: 14px 0 0; }
 .mentor-revise-list li { display: flex; flex-direction: column; gap: 4px; }
+.mentor-revise-sections { margin-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+.mentor-revise-section {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--bg, var(--surface));
+}
+.mentor-revise-section-title {
+  margin: 0 0 8px;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.mentor-revise-section-tag {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+}
+.mentor-revise-guide em,
+.mentor-revise-guide {
+  color: var(--muted);
+  font-style: normal;
+  line-height: 1.45;
+  margin: 0 0 8px;
+}
+.mentor-revise-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.mentor-revise-section-head .mentor-revise-section-title {
+  margin: 0;
+  flex: 1 1 auto;
+}
+.mentor-revise-status {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+.mentor-revise-status-aligned { color: #166534; background: #ecfdf3; }
+.mentor-revise-status-partial { color: #92400e; background: #fffbeb; }
+.mentor-revise-status-missing,
+.mentor-revise-status-not_addressed { color: #9f1239; background: #fff1f2; }
+.mentor-revise-summary { margin: 0 0 8px; color: var(--ink); }
+.mentor-revise-gaps,
+.mentor-revise-suggestions {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  color: var(--ink);
+}
+.mentor-revise-fallback {
+  margin: 0 0 10px;
+  color: #92400e;
+  font-size: 14px;
+}
+.mentor-revise-jump {
+  margin-left: auto;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--blue);
+  cursor: pointer;
+}
 .mentor-wait { padding: 24px; font-size: 16px; }
 .option-loader {
   display: flex;

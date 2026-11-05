@@ -4950,7 +4950,61 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
+  const MENTOR_PREPARE_QUESTIONS = 'Preparing questions for this project.';
+  const MENTOR_PREPARE_REVISE = 'Preparing suggestions for this project.';
+  const MENTOR_PREPARE_FAILED = 'The questions could not be prepared.';
+  const MENTOR_REVISE_FAILED = 'Suggestions could not be prepared. Showing portfolio sections only.';
+  const REVISE_STATUS = ['aligned', 'partial', 'missing', 'not_addressed'];
+
+  function mentorPrepareLoaderHtml(text){
+    const pending = text || MENTOR_PREPARE_QUESTIONS;
+    return `<div class="option-loader" role="status" aria-live="polite"><span class="option-loader-ring" aria-hidden="true"></span><strong>${esc(pending)}</strong></div>`;
+  }
+
+  window.queueMentorMcq = function(dimension){
+    if(dimension) window.mentorActiveDimension = dimension;
+    window.mentorDashboardPanel = 'work';
+    window.mentorAutoStartMcq = dimension || window.mentorActiveDimension || '';
+    if(typeof render === 'function') render();
+  };
+
+  window.openMentorRevise = function(){
+    window.mentorDashboardPanel = 'revise';
+    window.mentorAutoStartRevise = true;
+    if(typeof render === 'function') render();
+  };
+
+  window.reviseMentorStageGuide = function(){
+    const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
+    if(teamId) window.mountPortfolioChat(teamId);
+    const kb = buildTeamKnowledgeBase(teamId);
+    const stage = mentorStageKey();
+    const pool = orderedStageChunks(kb, stage).chunks;
+    const sectionMap = {};
+    pool.forEach(chunk => {
+      const key = reviseSectionKey(chunk);
+      if(sectionMap[key]) return;
+      sectionMap[key] = {
+        key,
+        label: reviseSectionLabel(chunk, key),
+        citation: chunk.citation || '',
+        elementId: chunk.elementId || '',
+        preview: firstDocumentedLine(chunk).slice(0, 240),
+        items: []
+      };
+    });
+    window.mentorReviseSections = pool.map(chunk => reviseSectionKey(chunk)).filter((key, index, list) => list.indexOf(key) === index).map(key => sectionMap[key]).filter(Boolean);
+    window.mentorReviseNotes = [];
+    window.mentorReviseStage = stage;
+    window.mentorReviseStageLabel = mentorStageLabel(stage);
+    window.mentorReviseGuide = true;
+    window.mentorDashboardPanel = 'revise';
+    if(typeof render === 'function') render();
+  };
+
   window.startMentorMcq = async function(dimension, forceNew){
+
+    window.mentorAutoStartMcq = '';
 
     if(dimension) window.mentorActiveDimension = dimension;
 
@@ -4980,14 +5034,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           return;
         }
       }
-      const pending = 'Preparing options for this project.';
-      const pendingHtml = `<div class="option-loader" role="status" aria-live="polite"><span class="option-loader-ring" aria-hidden="true"></span><strong>${esc(pending)}</strong></div>`;
-      chatMessages = [{ role: 'assistant', text: pending, html: pendingHtml }];
+      chatMessages = [{ role: 'assistant', text: MENTOR_PREPARE_QUESTIONS, html: mentorPrepareLoaderHtml() }];
       if(mentorSurfaceOpen() && typeof render === 'function') render();
       updateChatMessagesThread();
       const quiz = await facultyMcqWithProjectOptions(kb, persona, stage);
       if(!quiz){
-        const note = 'The options could not be prepared.';
+        const note = MENTOR_PREPARE_FAILED;
         chatMessages = [{ role: 'assistant', text: note, html: esc(note) }];
         clearActiveQuiz(teamId);
       } else {
@@ -5045,6 +5097,146 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     '0': { ids: ['stage0-problem', 'stage0-objectives', 'table-0-1', 'table-0-3', 'table-0-4', 'table-0-5'], prefixes: ['engine-'] },
     '1': { ids: ['table-use-cases', 'diag-usecase', 'table-testsuite'], prefixes: ['fr-', 'nfr-'] }
   };
+
+  const REVISE_STAGE_TOKENS = {
+    '0': ['stage0-problem', 'stage0-objectives', 'table-0-1', 'table-0-2', 'diag-asis', 'table-0-3', 'engine-', 'table-0-4', 'table-0-5'],
+    '1': ['fr-', 'nfr-', 'table-use-cases', 'diag-usecase', 'table-testsuite'],
+    'system-design': ['stage2-architecture', 'stage2-data-design', 'stage2-algorithm'],
+    '2': [],
+    '3': []
+  };
+
+  function orderedStageChunks(kb, stageId){
+    const stage = String(stageId || mentorStageKey());
+    const tokens = REVISE_STAGE_TOKENS[stage] || [];
+    const chunks = (kb && kb.chunks) || [];
+    const used = new Set();
+    const ordered = [];
+    tokens.forEach(token => {
+      chunks.forEach(chunk => {
+        if(used.has(chunk.id) || !chunkMatchesToken(chunk, token)) return;
+        used.add(chunk.id);
+        ordered.push(chunk);
+      });
+    });
+    return { stage, chunks: ordered };
+  }
+
+  function reviseSectionKey(chunk){
+    if(!chunk) return 'unmatched';
+    const id = String(chunk.id || '');
+    if(id.startsWith('fr-')) return 'table-fr';
+    if(id.startsWith('nfr-')) return 'table-nfr';
+    return id;
+  }
+
+  function reviseSectionLabel(chunk, key){
+    if(!chunk) return 'Not matched in this stage';
+    if(key === 'table-fr') return 'Functional requirements';
+    if(key === 'table-nfr') return 'Non-functional requirements';
+    return chunk.label || key;
+  }
+
+  function buildReviseSectionCatalog(kb, stageId){
+    const pack = orderedStageChunks(kb, stageId);
+    const order = [];
+    const map = {};
+    pack.chunks.forEach(chunk => {
+      const key = reviseSectionKey(chunk);
+      if(!map[key]){
+        map[key] = {
+          key,
+          label: reviseSectionLabel(chunk, key),
+          citation: chunk.citation || '',
+          elementId: chunk.elementId || '',
+          evidenceLines: []
+        };
+        order.push(key);
+      }
+      const line = String(chunk.text || '').replace(/\s+/g, ' ').trim();
+      if(line && map[key].evidenceLines.length < 8) map[key].evidenceLines.push(line.slice(0, 320));
+      if(key === 'table-fr') map[key].citation = '[Functional Requirements]';
+      if(key === 'table-nfr') map[key].citation = '[Non-Functional Requirements]';
+    });
+    return {
+      stage: pack.stage,
+      sections: order.map(key => {
+        const section = map[key];
+        section.evidence = section.evidenceLines.join(' | ').slice(0, 1400);
+        return section;
+      })
+    };
+  }
+
+  function reviseSectionRequest(kb, stageId, draft){
+    const catalog = buildReviseSectionCatalog(kb, stageId);
+    const sectionLines = catalog.sections.map(section => `${section.key} | ${section.label} | ${section.citation} | ${section.evidence}`).join('\n');
+    const trimmed = String(draft || '').trim().slice(0, 1000);
+    const prompt = trimmed || 'No student draft pasted. Review every section and suggest what the student should write using only the portfolio evidence.';
+    return {
+      catalog,
+      prompt,
+      systemInstruction: [
+        `You are the revise mentor for "${kb.title || 'this project'}" (Team ${kb.teamId || ''}). ${mentorStageLabel(String(stageId || mentorStageKey()))}.`,
+        'Compare the student draft to every section below. Use only the supplied evidence. Do not invent requirements, identifiers, metrics, or mechanisms.',
+        'Return only a JSON array with exactly one object per sectionKey listed, in the same order.',
+        'Each object: {"sectionKey":"...","status":"aligned|partial|missing|not_addressed","summary":"...","gaps":["..."],"suggestions":["..."],"draftQuotes":["..."]}',
+        'Give 1-3 short gaps and 1-3 actionable suggestions per section. summary is one sentence.',
+        'SECTIONS:',
+        sectionLines
+      ].join('\n')
+    };
+  }
+
+  function applyReviseModelSections(catalog, parsed){
+    if(!catalog || !Array.isArray(catalog.sections) || !Array.isArray(parsed)) return null;
+    const byKey = {};
+    parsed.forEach(item => {
+      const key = item && item.sectionKey;
+      if(key) byKey[key] = item;
+    });
+    const sections = [];
+    for(let index = 0; index < catalog.sections.length; index++){
+      const spec = catalog.sections[index];
+      const item = byKey[spec.key];
+      if(!item) return null;
+      const status = String(item.status || '').toLowerCase();
+      if(!REVISE_STATUS.includes(status)) return null;
+      const gaps = (item.gaps || []).map(gap => String(gap || '').replace(/\s+/g, ' ').trim()).filter(text => text.length >= 6).slice(0, 3);
+      let suggestions = (item.suggestions || []).map(text => String(text || '').replace(/\s+/g, ' ').trim()).filter(text => text.length >= 6).slice(0, 3);
+      if(!suggestions.length){
+        const summary = String(item.summary || '').replace(/\s+/g, ' ').trim();
+        if(summary.length >= 12) suggestions = [summary.slice(0, 280)];
+        else return null;
+      }
+      if(gaps.concat(suggestions).some(text => /\[Table|\[FR|\[NFR|\[Stage/i.test(text))) return null;
+      const draftQuotes = (item.draftQuotes || []).map(text => String(text || '').trim()).filter(Boolean).slice(0, 3);
+      sections.push({
+        key: spec.key,
+        label: spec.label,
+        citation: spec.citation,
+        elementId: spec.elementId,
+        status,
+        summary: String(item.summary || '').slice(0, 280),
+        gaps,
+        suggestions,
+        draftQuotes,
+        items: draftQuotes.map(quote => ({ sentence: quote, supported: status === 'aligned', citation: spec.citation }))
+      });
+    }
+    return sections.length === catalog.sections.length ? sections : null;
+  }
+
+  async function reviseMentorWithModel(kb, stage, draft){
+    const request = reviseSectionRequest(kb, stage, draft);
+    if(!request.catalog.sections.length) return null;
+    const first = applyReviseModelSections(request.catalog, parseModelJsonArray(await callPersonaModel(request.systemInstruction, request.prompt, true)));
+    if(first) return { sections: first, fromModel: true };
+    const retry = 'Return only the JSON array with one entry per sectionKey. Each entry needs status, summary, gaps, and suggestions grounded in the evidence.';
+    const second = applyReviseModelSections(request.catalog, parseModelJsonArray(await callPersonaModel(request.systemInstruction, retry, true)));
+    if(second) return { sections: second, fromModel: true };
+    return null;
+  }
 
   function mentorLensByName(name){
     return MENTOR_LENSES.find(item => item.name === name) || null;
@@ -6554,7 +6746,137 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-  window.reviseMentorDraft = function(){
+  function reviseMentorDraftLocal(kb, stage, text){
+
+    const stagePack = orderedStageChunks(kb, stage);
+
+    const pool = stagePack.chunks;
+
+    const sectionMap = {};
+
+    const unmatched = { key: 'unmatched', label: 'Not matched in this stage', citation: '', items: [], suggestions: ['Compare your draft to the sections listed for this stage.'] };
+
+    if(!text){
+
+      const catalog = buildReviseSectionCatalog(kb, stage);
+
+      return catalog.sections.map(section => ({
+
+        key: section.key,
+
+        label: section.label,
+
+        citation: section.citation,
+
+        elementId: section.elementId,
+
+        preview: section.evidence.slice(0, 240),
+
+        status: 'not_addressed',
+
+        suggestions: ['Address this section using the documented portfolio lines.'],
+
+        gaps: [],
+
+        items: []
+
+      }));
+
+    }
+
+    text.split(/(?<=[.!?])\s+/).map(sentence => sentence.trim()).filter(Boolean).forEach(sentence => {
+
+      const sdd = matchingSddChunk(sentence, 12);
+
+      const sddCitation = sdd ? sdd.citation : '';
+
+      let pick = null;
+
+      let supported = false;
+
+      if(pool.length){
+
+        const scored = scoreAllChunks(sentence, { chunks: pool, dynamicHintIndex: [] });
+
+        const source = scored[0] && scored[0].score >= 12 ? scored[0].chunk : null;
+
+        supported = !!(source && portfolioOverlap(sentence, source.text) >= 0.4);
+
+        pick = supported ? source : closestLensChunk(sentence, pool);
+
+        if(!supported && pick && scored[0] && scored[0].score <= 0) pick = null;
+
+      }
+
+      const note = { sentence, supported, citation: supported && pick ? pick.citation : (pick ? pick.citation : ''), sddCitation: supported ? '' : sddCitation };
+
+      if(!pick){ unmatched.items.push(note); return; }
+
+      const sectionKey = reviseSectionKey(pick);
+
+      if(!sectionMap[sectionKey]){
+
+        sectionMap[sectionKey] = {
+
+          key: sectionKey,
+
+          label: reviseSectionLabel(pick, sectionKey),
+
+          citation: pick.citation || '',
+
+          elementId: pick.elementId || '',
+
+          status: supported ? 'aligned' : 'partial',
+
+          suggestions: [],
+
+          gaps: supported ? [] : ['This sentence does not yet match the documented lines closely enough.'],
+
+          items: []
+
+        };
+
+      }
+
+      sectionMap[sectionKey].items.push(note);
+
+    });
+
+    const order = [];
+
+    pool.forEach(chunk => {
+
+      const key = reviseSectionKey(chunk);
+
+      if(sectionMap[key] && !order.includes(key)) order.push(key);
+
+    });
+
+    return order.map(key => sectionMap[key]).concat(unmatched.items.length ? [unmatched] : []);
+
+  }
+
+  function applyReviseResult(sections, stage, fromModel, usedFallback){
+
+    window.mentorReviseSections = sections || [];
+
+    window.mentorReviseNotes = window.mentorReviseSections.reduce((list, section) => list.concat(section.items || []), []);
+
+    window.mentorReviseStage = stage;
+
+    window.mentorReviseStageLabel = mentorStageLabel(stage);
+
+    window.mentorReviseGuide = !!usedFallback && !fromModel;
+
+    window.mentorReviseFromModel = !!fromModel;
+
+    window.mentorReviseFallbackNote = usedFallback && !fromModel ? MENTOR_REVISE_FAILED : '';
+
+    window.mentorDashboardPanel = 'revise';
+
+  }
+
+  window.reviseMentorDraft = async function(){
 
     const field = document.getElementById('mentor-revise-input');
 
@@ -6562,49 +6884,29 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     window.mentorReviseDraft = field ? field.value : '';
 
-    if(!text){
-
-      window.mentorReviseNotes = [];
-
-      return;
-
-    }
-
     const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
+
+    if(teamId) window.mountPortfolioChat(teamId);
 
     const kb = buildTeamKnowledgeBase(teamId);
 
-    const selection = chunksForLens(kb, activeMentorName(), mentorStageKey());
+    const stage = mentorStageKey();
 
-    const pool = selection.later ? selection.earlier : selection.chunks;
+    window.mentorReviseLoading = true;
 
-    window.mentorReviseNotes = text.split(/(?<=[.!?])\s+/).map(sentence => sentence.trim()).filter(Boolean).map(sentence => {
-
-      const sdd = matchingSddChunk(sentence, 12);
-
-      const sddCitation = sdd ? sdd.citation : '';
-
-      if(!selection.lens || selection.later || !pool.length){
-
-        const closest = closestLensChunk(sentence, pool);
-
-        return { sentence, supported: false, citation: closest ? closest.citation : '', sddCitation };
-
-      }
-
-      const scored = scoreAllChunks(sentence, { chunks: pool, dynamicHintIndex: [] });
-
-      const source = scored[0] && scored[0].score >= 12 ? scored[0].chunk : null;
-
-      const supported = !!(source && portfolioOverlap(sentence, source.text) >= 0.4);
-
-      const closest = closestLensChunk(sentence, pool);
-
-      return { sentence, supported, citation: supported ? source.citation : (closest ? closest.citation : ''), sddCitation: supported ? '' : sddCitation };
-
-    });
+    window.mentorReviseFallbackNote = '';
 
     window.mentorDashboardPanel = 'revise';
+
+    if(typeof render === 'function') render();
+
+    const modelResult = await reviseMentorWithModel(kb, stage, text);
+
+    window.mentorReviseLoading = false;
+
+    if(modelResult) applyReviseResult(modelResult.sections, stage, true, false);
+
+    else applyReviseResult(reviseMentorDraftLocal(kb, stage, text), stage, false, true);
 
     if(typeof render === 'function') render();
 
@@ -6612,7 +6914,23 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-  window.paintMentorWork = function(){ updateChatMessagesThread(); };
+  window.paintMentorWork = function(){
+    updateChatMessagesThread();
+    if(window.mentorAutoStartMcq){
+      const dimension = window.mentorAutoStartMcq;
+      window.mentorAutoStartMcq = '';
+      if(typeof window.startMentorMcq === 'function') window.startMentorMcq(dimension, false);
+      return;
+    }
+    if(window.mentorAutoStartRevise){
+      window.mentorAutoStartRevise = false;
+      const run = () => {
+        if(typeof window.reviseMentorDraft === 'function') window.reviseMentorDraft();
+      };
+      if(typeof requestAnimationFrame === 'function') requestAnimationFrame(run);
+      else run();
+    }
+  };
 
 
 
@@ -6679,6 +6997,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     buildPersonaMcq,
     facultyOptionRequest,
     applyFacultyOptions,
+    buildReviseSectionCatalog,
+    reviseSectionRequest,
+    applyReviseModelSections,
+    reviseMentorDraftLocal,
 
     buildPersonaDescriptive,
 
