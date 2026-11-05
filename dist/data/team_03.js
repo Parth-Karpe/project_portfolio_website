@@ -79,7 +79,7 @@ const team03Data = {
     ],
 
     // 4. Conceptual Workflow Diagram & Tables
-    conceptualFlowImage: 'assets/team03_conceptual_flow.jpg',
+    conceptualFlowImage: 'assets/team03_conceptual_flow.jpg?v=flow-2',
     conceptualFlowCaption: 'Conceptual Flow - Smart Campus Lab & Resource Optimizer',
     // 4. Conceptual Workflow Tables
     pipelineTable: [

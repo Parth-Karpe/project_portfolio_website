@@ -3597,7 +3597,28 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     thread.innerHTML = html;
 
-    thread.scrollTop = thread.scrollHeight;
+    const lastMsg = chatMessages[chatMessages.length - 1];
+    const isQuizView = lastMsg && (lastMsg.type === 'quiz' || lastMsg.type === 'descriptive');
+
+    if(isQuizView){
+      const resetScrollToTop = () => {
+        const quizEl = thread.querySelector('.quiz-container, .mentor-descriptive, .quiz-wrap');
+        if(quizEl){
+          const threadRect = thread.getBoundingClientRect();
+          const quizRect = quizEl.getBoundingClientRect();
+          const targetTop = quizRect.top - threadRect.top + thread.scrollTop;
+          thread.scrollTop = Math.max(0, targetTop);
+        } else {
+          thread.scrollTop = 0;
+        }
+        const quizBody = thread.querySelector('.quiz-body');
+        if(quizBody) quizBody.scrollTop = 0;
+      };
+      resetScrollToTop();
+      requestAnimationFrame(resetScrollToTop);
+    } else {
+      thread.scrollTop = thread.scrollHeight;
+    }
 
     syncMentorDrawer();
 
@@ -4356,39 +4377,87 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     const thread = activeMentorThread();
 
-    const card = thread && thread.querySelectorAll('.quiz-question-card')[questionIndex];
+    let card = thread && thread.querySelectorAll('.quiz-question-card')[questionIndex];
 
     if(!card){
 
-    updateChatMessagesThread();
+      updateChatMessagesThread();
 
-      return;
+      const updatedThread = activeMentorThread();
+      card = updatedThread && updatedThread.querySelectorAll('.quiz-question-card')[questionIndex];
 
     }
 
-    const chosenKey = optionKey.toUpperCase();
+    if(card){
 
-    card.querySelectorAll('.quiz-option-btn').forEach(btn => {
+      const chosenKey = optionKey.toUpperCase();
 
-      const label = ((btn.querySelector('.quiz-opt-key') || {}).textContent || '').trim().toUpperCase();
+      card.querySelectorAll('.quiz-option-btn').forEach(btn => {
 
-      btn.classList.toggle('selected', label === chosenKey);
+        const label = ((btn.querySelector('.quiz-opt-key') || {}).textContent || '').trim().toUpperCase();
 
-    });
+        btn.classList.toggle('selected', label === chosenKey);
 
-    const answeredCount = quiz.userAnswers.filter(answer => answer !== null).length;
+      });
 
-    const progress = thread.querySelector('.quiz-progress-text');
+    }
 
-    if(progress) progress.textContent = answeredCount + ' of ' + quiz.questions.length + ' answered';
+    const targetThread = activeMentorThread();
 
-    const grade = thread.querySelector('.quiz-actions .btn.quiz-btn-sm:not(.secondary)');
+    if(targetThread){
 
-    if(grade){
+      const answeredCount = quiz.userAnswers.filter(answer => answer !== null).length;
 
-      grade.disabled = answeredCount === 0;
+      const progress = targetThread.querySelector('.quiz-progress-text');
 
-      grade.textContent = answeredCount === quiz.questions.length ? 'Submit & Grade' : 'Grade Progress';
+      if(progress) progress.textContent = answeredCount + ' of ' + quiz.questions.length + ' answered';
+
+      const grade = targetThread.querySelector('.quiz-actions .btn.quiz-btn-sm:not(.secondary)');
+
+      if(grade){
+
+        grade.disabled = answeredCount === 0;
+
+        grade.textContent = answeredCount === quiz.questions.length ? 'Submit & Grade' : 'Grade Progress';
+
+      }
+
+      // Smoothly scroll down to the next question
+      const allCards = targetThread.querySelectorAll('.quiz-question-card');
+      const nextCard = allCards[questionIndex + 1];
+      if(nextCard){
+        const threadRect = targetThread.getBoundingClientRect();
+        const cardRect = nextCard.getBoundingClientRect();
+        const targetTop = cardRect.top - threadRect.top + targetThread.scrollTop;
+        if(typeof targetThread.scrollTo === 'function'){
+          targetThread.scrollTo({ top: Math.max(0, targetTop - 12), behavior: 'smooth' });
+        } else {
+          targetThread.scrollTop = Math.max(0, targetTop - 12);
+        }
+        const quizBody = nextCard.closest('.quiz-body');
+        if(quizBody && quizBody.scrollHeight > quizBody.clientHeight){
+          const bodyRect = quizBody.getBoundingClientRect();
+          const bodyTarget = cardRect.top - bodyRect.top + quizBody.scrollTop;
+          if(typeof quizBody.scrollTo === 'function'){
+            quizBody.scrollTo({ top: Math.max(0, bodyTarget - 12), behavior: 'smooth' });
+          } else {
+            quizBody.scrollTop = Math.max(0, bodyTarget - 12);
+          }
+        }
+      } else {
+        // Last question answered - scroll submit button into view
+        const actions = targetThread.querySelector('.quiz-actions') || targetThread.querySelector('.quiz-footer');
+        if(actions){
+          const threadRect = targetThread.getBoundingClientRect();
+          const actRect = actions.getBoundingClientRect();
+          const targetTop = actRect.top - threadRect.top + targetThread.scrollTop;
+          if(typeof targetThread.scrollTo === 'function'){
+            targetThread.scrollTo({ top: Math.max(0, targetTop - 16), behavior: 'smooth' });
+          } else {
+            targetThread.scrollTop = Math.max(0, targetTop - 16);
+          }
+        }
+      }
 
     }
 

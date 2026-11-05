@@ -1221,6 +1221,25 @@ html body .mentor-navigation-column .mentor-stage-choice {
   line-height: 1.4 !important;
 }
 
+/* AI Mentor: Enclosing box for stages matching Mentor Persona & Review the work */
+html body .mentor-stage-navigation,
+html body .mentor-navigation-column .mentor-stage-navigation {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  padding: 12px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 16px !important;
+  box-sizing: border-box !important;
+}
+
+html[data-theme="dark"] body .mentor-stage-navigation,
+html[data-theme="dark"] body .mentor-navigation-column .mentor-stage-navigation {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+}
+
 
 /* Functional Requirements Table: Balanced column widths allocating space to Source Need */
 html body #sec-fr .test-suite-table {

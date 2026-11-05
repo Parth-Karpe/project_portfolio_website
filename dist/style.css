@@ -3951,7 +3951,16 @@ html body:has(.mentor-split) .faculty-top {
 
 /* Mentor presentation: fixed menu, independent stage list and source-header split. */
 .mentor-navigation-column { display:flex; flex-direction:column; gap:16px; min-width:0; }
-.mentor-stage-navigation { display:flex; flex-direction:column; gap:8px; }
+.mentor-stage-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-sizing: border-box;
+}
 .mentor-stage-choice {
   display:flex; align-items:center; justify-content:flex-start; flex-shrink:0;
   width:100%; box-sizing:border-box; margin:0; padding:9px 16px; min-height:40px;
