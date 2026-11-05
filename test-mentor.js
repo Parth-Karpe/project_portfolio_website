@@ -570,21 +570,20 @@ test('Revise groups a Stage 0 objective sentence under the objectives section', 
   assert(section.items[0].citation.includes('Objectives'));
 });
 
-test('Revise model payload covers every Stage 0 section key', () => {
+test('Revise model payload returns 3–4 priority suggestions for Stage 0', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   const request = reviseSectionRequest(kb03, '0', 'Sample draft about objectives and scope.');
-  const mock = request.catalog.sections.map((section, index) => ({
+  assert(request.suggestionCount >= 3 && request.suggestionCount <= 4);
+  const mock = request.catalog.sections.slice(0, request.suggestionCount).map((section, index) => ({
     sectionKey: section.key,
     status: index === 0 ? 'aligned' : 'partial',
     summary: `Review ${section.label}.`,
-    gaps: ['Add more detail from the portfolio.'],
-    suggestions: [`Use the documented lines in ${section.label}.`],
-    draftQuotes: index === 0 ? ['Sample draft about objectives and scope.'] : []
+    suggestion: `Use the documented lines in ${section.label}.`
   }));
   const applied = applyReviseModelSections(request.catalog, mock);
-  assert.strictEqual(applied.length, request.catalog.sections.length);
-  assert(applied.every(section => section.suggestions.length >= 1));
-  assert.strictEqual(applyReviseModelSections(request.catalog, mock.slice(0, 1)), null);
+  assert.strictEqual(applied.length, request.suggestionCount);
+  assert(applied.every(section => section.suggestions.length === 1));
+  assert.strictEqual(applyReviseModelSections(request.catalog, mock.slice(0, request.suggestionCount - 1)), null);
 });
 
 test('Ask a Mentor follows up from the same team section', () => {

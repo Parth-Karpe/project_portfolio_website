@@ -1977,8 +1977,8 @@ function mentorDashboard(){
   const reviseSections = (window.mentorReviseSections || []).map(section => {
     const status = section.status ? `<span class="mentor-revise-status mentor-revise-status-${esc(section.status)}">${esc(reviseStatusLabel[section.status] || section.status)}</span>` : '';
     const summary = section.summary ? `<p class="mentor-revise-summary">${esc(section.summary)}</p>` : '';
-    const gaps = (section.gaps || []).length ? `<ul class="mentor-revise-gaps">${section.gaps.map(gap => `<li>${esc(gap)}</li>`).join('')}</ul>` : '';
-    const suggestions = (section.suggestions || []).length ? `<ul class="mentor-revise-suggestions">${section.suggestions.map(item => `<li>${esc(item)}</li>`).join('')}</ul>` : '';
+    const suggestions = (section.suggestions || []).slice(0, 1);
+    const suggestionList = suggestions.length ? `<ul class="mentor-revise-suggestions">${suggestions.map(item => `<li>${esc(item)}</li>`).join('')}</ul>` : '';
     const items = (section.items || []).map(note => {
       const sdd = !note.supported && note.sddCitation ? ` ${esc(note.sddCitation)}` : '';
       const mark = note.supported
@@ -1989,9 +1989,9 @@ function mentorDashboard(){
     const draftList = items ? `<ul class="mentor-revise-list">${items}</ul>` : '';
     const preview = !items && !suggestions.length && section.preview ? `<p class="mentor-revise-guide"><em>${esc(section.preview)}</em></p>` : '';
     const jump = section.elementId ? `<button type="button" class="mentor-revise-jump" onclick="window.backToPortfolioFromMentor();window.scrollToPortfolioCitation('${esc(section.elementId)}')">View in portfolio</button>` : '';
-    return `<article class="mentor-revise-section"><div class="mentor-revise-section-head"><h3 class="mentor-revise-section-title">${esc(section.label)}${section.citation ? `<span class="mentor-revise-section-tag">${esc(section.citation)}</span>` : ''}${status}${jump}</div>${summary}${gaps}${suggestions}${draftList}${preview}</article>`;
+    return `<article class="mentor-revise-section"><div class="mentor-revise-section-head"><h3 class="mentor-revise-section-title">${esc(section.label)}${section.citation ? `<span class="mentor-revise-section-tag">${esc(section.citation)}</span>` : ''}${status}${jump}</div>${summary}${suggestionList}${draftList}${preview}</article>`;
   }).join('');
-  const reviseIntro = `Section-wise suggestions for <strong>${esc(reviseStageLabel)}</strong> using this project’s documented sections.`;
+  const reviseIntro = `Up to four priority improvements for <strong>${esc(reviseStageLabel)}</strong>, grounded in this project’s documented sections.`;
   const reviseLoading = window.mentorReviseLoading ? `<div class="option-loader" role="status" aria-live="polite"><span class="option-loader-ring" aria-hidden="true"></span><strong>Preparing suggestions for this project.</strong></div>` : '';
   const reviseFallback = window.mentorReviseFallbackNote ? `<p class="mentor-revise-fallback">${esc(window.mentorReviseFallbackNote)}</p>` : '';
   const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>Revise My Work</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">${reviseIntro}</p>${reviseFallback}${reviseLoading}${reviseSections ? `<div class="mentor-revise-sections">${reviseSections}</div>` : ''}</section>`;

@@ -5137,6 +5137,35 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return chunk.label || key;
   }
 
+  function reviseStageSuggestionCount(sectionCount){
+    const n = Number(sectionCount) || 0;
+    if(n <= 0) return 0;
+    if(n <= 2) return n;
+    if(n === 3) return 3;
+    return 4;
+  }
+
+  function revisePrioritySectionKeys(catalog, count){
+    if(!catalog || !Array.isArray(catalog.sections) || !count) return [];
+    const prefer = {
+      '0': ['stage0-problem', 'stage0-objectives', 'table-0-1', 'table-0-3', 'table-0-4', 'table-fr', 'table-nfr'],
+      '1': ['table-fr', 'table-nfr', 'table-use-cases', 'diag-usecase', 'table-testsuite'],
+      'system-design': ['stage2-architecture', 'stage2-data-design', 'stage2-algorithm'],
+      '2': [],
+      '3': []
+    };
+    const stage = String(catalog.stage || '');
+    const order = [];
+    const keys = new Set(catalog.sections.map(section => section.key));
+    (prefer[stage] || []).forEach(key => {
+      if(keys.has(key) && !order.includes(key)) order.push(key);
+    });
+    catalog.sections.forEach(section => {
+      if(!order.includes(section.key)) order.push(section.key);
+    });
+    return order.slice(0, count);
+  }
+
   function buildReviseSectionCatalog(kb, stageId){
     const pack = orderedStageChunks(kb, stageId);
     const order = [];
@@ -5170,47 +5199,51 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function reviseSectionRequest(kb, stageId, draft){
     const catalog = buildReviseSectionCatalog(kb, stageId);
+    const suggestionCount = reviseStageSuggestionCount(catalog.sections.length);
     const sectionLines = catalog.sections.map(section => `${section.key} | ${section.label} | ${section.citation} | ${section.evidence}`).join('\n');
     const trimmed = String(draft || '').trim().slice(0, 1000);
-    const prompt = trimmed || 'No student draft pasted. Review every section and suggest what the student should write using only the portfolio evidence.';
+    const prompt = trimmed || `Pick the ${suggestionCount} most important improvements for this stage using only the portfolio evidence below.`;
     return {
       catalog,
       prompt,
-      systemInstruction: [
+      suggestionCount,
+      systemInstruction: suggestionCount ? [
         `You are the revise mentor for "${kb.title || 'this project'}" (Team ${kb.teamId || ''}). ${mentorStageLabel(String(stageId || mentorStageKey()))}.`,
-        'Compare the student draft to every section below. Use only the supplied evidence. Do not invent requirements, identifiers, metrics, or mechanisms.',
-        'Return only a JSON array with exactly one object per sectionKey listed, in the same order.',
-        'Each object: {"sectionKey":"...","status":"aligned|partial|missing|not_addressed","summary":"...","gaps":["..."],"suggestions":["..."],"draftQuotes":["..."]}',
-        'Give 1-3 short gaps and 1-3 actionable suggestions per section. summary is one sentence.',
+        'Use only the supplied evidence. Do not invent requirements, identifiers, metrics, or mechanisms.',
+        `Return only a JSON array of exactly ${suggestionCount} objects — the ${suggestionCount} highest-priority improvements for this stage, most important first.`,
+        'Each object: {"sectionKey":"...","status":"aligned|partial|missing|not_addressed","summary":"one sentence","suggestion":"one actionable sentence"}',
+        'sectionKey must match a key from SECTIONS. Do not return every section; omit lower-priority areas.',
         'SECTIONS:',
         sectionLines
-      ].join('\n')
+      ].join('\n') : ''
     };
   }
 
   function applyReviseModelSections(catalog, parsed){
     if(!catalog || !Array.isArray(catalog.sections) || !Array.isArray(parsed)) return null;
-    const byKey = {};
-    parsed.forEach(item => {
-      const key = item && item.sectionKey;
-      if(key) byKey[key] = item;
-    });
+    const need = reviseStageSuggestionCount(catalog.sections.length);
+    if(!need || parsed.length !== need) return null;
+    const specByKey = {};
+    catalog.sections.forEach(section => { specByKey[section.key] = section; });
+    const seen = new Set();
     const sections = [];
-    for(let index = 0; index < catalog.sections.length; index++){
-      const spec = catalog.sections[index];
-      const item = byKey[spec.key];
-      if(!item) return null;
+    for(let index = 0; index < parsed.length; index++){
+      const item = parsed[index];
+      const key = item && item.sectionKey;
+      if(!key || !specByKey[key] || seen.has(key)) return null;
+      seen.add(key);
+      const spec = specByKey[key];
       const status = String(item.status || '').toLowerCase();
       if(!REVISE_STATUS.includes(status)) return null;
-      const gaps = (item.gaps || []).map(gap => String(gap || '').replace(/\s+/g, ' ').trim()).filter(text => text.length >= 6).slice(0, 3);
-      let suggestions = (item.suggestions || []).map(text => String(text || '').replace(/\s+/g, ' ').trim()).filter(text => text.length >= 6).slice(0, 3);
-      if(!suggestions.length){
+      let suggestion = String(item.suggestion || '').replace(/\s+/g, ' ').trim();
+      if(!suggestion && Array.isArray(item.suggestions)) suggestion = String(item.suggestions[0] || '').replace(/\s+/g, ' ').trim();
+      if(suggestion.length < 12){
         const summary = String(item.summary || '').replace(/\s+/g, ' ').trim();
-        if(summary.length >= 12) suggestions = [summary.slice(0, 280)];
+        if(summary.length >= 12) suggestion = summary.slice(0, 280);
         else return null;
       }
-      if(gaps.concat(suggestions).some(text => /\[Table|\[FR|\[NFR|\[Stage/i.test(text))) return null;
-      const draftQuotes = (item.draftQuotes || []).map(text => String(text || '').trim()).filter(Boolean).slice(0, 3);
+      if(/\[Table|\[FR|\[NFR|\[Stage/i.test(suggestion)) return null;
+      const draftQuotes = (item.draftQuotes || []).map(text => String(text || '').trim()).filter(Boolean).slice(0, 1);
       sections.push({
         key: spec.key,
         label: spec.label,
@@ -5218,21 +5251,21 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         elementId: spec.elementId,
         status,
         summary: String(item.summary || '').slice(0, 280),
-        gaps,
-        suggestions,
+        gaps: [],
+        suggestions: [suggestion.slice(0, 320)],
         draftQuotes,
         items: draftQuotes.map(quote => ({ sentence: quote, supported: status === 'aligned', citation: spec.citation }))
       });
     }
-    return sections.length === catalog.sections.length ? sections : null;
+    return sections.length === need ? sections : null;
   }
 
   async function reviseMentorWithModel(kb, stage, draft){
     const request = reviseSectionRequest(kb, stage, draft);
-    if(!request.catalog.sections.length) return null;
+    if(!request.suggestionCount) return null;
     const first = applyReviseModelSections(request.catalog, parseModelJsonArray(await callPersonaModel(request.systemInstruction, request.prompt, true)));
     if(first) return { sections: first, fromModel: true };
-    const retry = 'Return only the JSON array with one entry per sectionKey. Each entry needs status, summary, gaps, and suggestions grounded in the evidence.';
+    const retry = `Return only the JSON array with exactly ${request.suggestionCount} entries. Each entry needs sectionKey, status, summary, and one suggestion grounded in the evidence.`;
     const second = applyReviseModelSections(request.catalog, parseModelJsonArray(await callPersonaModel(request.systemInstruction, retry, true)));
     if(second) return { sections: second, fromModel: true };
     return null;
@@ -6760,27 +6793,41 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
       const catalog = buildReviseSectionCatalog(kb, stage);
 
-      return catalog.sections.map(section => ({
+      const count = reviseStageSuggestionCount(catalog.sections.length);
 
-        key: section.key,
+      const priorityKeys = revisePrioritySectionKeys(catalog, count);
 
-        label: section.label,
+      const byKey = {};
 
-        citation: section.citation,
+      catalog.sections.forEach(section => { byKey[section.key] = section; });
 
-        elementId: section.elementId,
+      return priorityKeys.map(key => {
 
-        preview: section.evidence.slice(0, 240),
+        const section = byKey[key];
 
-        status: 'not_addressed',
+        return {
 
-        suggestions: ['Address this section using the documented portfolio lines.'],
+          key: section.key,
 
-        gaps: [],
+          label: section.label,
 
-        items: []
+          citation: section.citation,
 
-      }));
+          elementId: section.elementId,
+
+          preview: section.evidence.slice(0, 240),
+
+          status: 'not_addressed',
+
+          suggestions: [`Strengthen ${section.label} using the documented portfolio lines.`],
+
+          gaps: [],
+
+          items: []
+
+        };
+
+      });
 
     }
 
