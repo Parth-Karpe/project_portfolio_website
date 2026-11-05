@@ -3621,6 +3621,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
             class="quiz-option-btn ${isSelected ? 'selected' : ''}" 
 
+            onmousedown="event.preventDefault()"
+
             onclick="window.handleQuizOptionSelect('${quiz.teamId}', ${idx}, '${opt.key}')">
 
             <span class="quiz-opt-key">${opt.key}</span>
@@ -4353,7 +4355,43 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-    updateChatMessagesThread();
+    const thread = activeMentorThread();
+
+    const card = thread && thread.querySelectorAll('.quiz-question-card')[questionIndex];
+
+    if(!card){
+
+      updateChatMessagesThread();
+
+      return;
+
+    }
+
+    const chosenKey = optionKey.toUpperCase();
+
+    card.querySelectorAll('.quiz-option-btn').forEach(btn => {
+
+      const label = ((btn.querySelector('.quiz-opt-key') || {}).textContent || '').trim().toUpperCase();
+
+      btn.classList.toggle('selected', label === chosenKey);
+
+    });
+
+    const answeredCount = quiz.userAnswers.filter(answer => answer !== null).length;
+
+    const progress = thread.querySelector('.quiz-progress-text');
+
+    if(progress) progress.textContent = answeredCount + ' of ' + quiz.questions.length + ' answered';
+
+    const grade = thread.querySelector('.quiz-actions .btn.quiz-btn-sm:not(.secondary)');
+
+    if(grade){
+
+      grade.disabled = answeredCount === 0;
+
+      grade.textContent = answeredCount === quiz.questions.length ? 'Submit & Grade' : 'Grade Progress';
+
+    }
 
   };
 
