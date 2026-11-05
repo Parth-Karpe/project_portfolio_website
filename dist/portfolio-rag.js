@@ -3881,9 +3881,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
         <!-- Floating Action Button (FAB) -->
 
-        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.openMentorSplit()" title="AI Mentor" aria-label="AI Mentor" ${typeof page!=='undefined'&&page!=='Team Portfolio'?'hidden':''}>
+        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.openMentorSplit()" title="${window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor'}" aria-label="${window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor'}" ${typeof page!=='undefined'&&page!=='Team Portfolio'?'hidden':''}>
 
-          <span class="chat-fab-text">AI Mentor</span>
+          <span class="chat-fab-text">${window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor'}</span>
 
         </button>
 
@@ -4123,7 +4123,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
         const fabText = fab.querySelector('.chat-fab-text');
 
-        if(fabText) fabText.textContent = isChatOpen ? 'Close' : 'AI Mentor';
+        const actionLabel = window.mentorSplitOpen ? 'View Full Portfolio' : 'AI Mentor';
+        if(fabText) fabText.textContent = actionLabel;
+        fab.title = actionLabel;
+        fab.setAttribute('aria-label', actionLabel);
 
       }
 
@@ -4886,7 +4889,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     window.mentorDashboardStage = String((typeof activePortfolioStage !== 'undefined' && activePortfolioStage) || window.activePortfolioStage || '0');
 
-    window.mentorDashboardPanel = 'persona';
+    window.mentorDashboardPanel = window.mentorDashboardPanel || 'persona';
 
     if(typeof page !== 'undefined' && page !== 'Team Portfolio' && typeof go === 'function') go('Team Portfolio');
 
