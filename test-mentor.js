@@ -50,6 +50,9 @@ const {
   isFollowUpQuery,
   generateTeamBaseContext,
   generateVivaQuiz,
+  chunksForLens,
+  answerWithinLens,
+  buildDescriptiveQuiz,
   evaluateVivaQuiz,
   formatResponseWithClickableCitations,
   polishLiveAnswer,
@@ -367,10 +370,10 @@ test('fr1, NFR 2, and scpoe still reach the right section', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   const fr = classifyAndRouteIntent('show me fr1', kb03);
   assert.strictEqual(fr.intent, 'EXPLICIT_ENTITY');
-  assert.strictEqual(fr.chunks[0].label.toLowerCase(), 'fr-01');
+  assert.strictEqual(fr.chunks[0].label.toLowerCase(), 'fr id-01');
   const nfr = classifyAndRouteIntent('NFR 2', kb03);
   assert.strictEqual(nfr.intent, 'EXPLICIT_ENTITY');
-  assert.strictEqual(nfr.chunks[0].label.toLowerCase(), 'nfr-02');
+  assert.strictEqual(nfr.chunks[0].label.toLowerCase(), 'nfr id-02');
   const scope = classifyAndRouteIntent('what is the scpoe', kb03);
   assert(scope.chunks.some(chunk => chunk.id === 'table-0-4'));
 });
@@ -463,6 +466,47 @@ test('A ranking the portfolio does not state is replaced with the closest-sectio
   }, [objectives]);
   assert(guarded.answer.includes('does not discuss this directly'));
   assert(!guarded.answer.includes('Transaction management is the toughest'));
+});
+
+test('Systems Thinking and Project-Specific Knowledge ask different questions on Team A-03', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  global.window.mentorDashboardStage = '0';
+  const systems = buildDescriptiveQuiz(kb03, 'Systems Thinking');
+  const project = buildDescriptiveQuiz(kb03, 'Project-Specific Knowledge');
+  assert.strictEqual(systems.questions.length, 1);
+  assert.strictEqual(project.questions.length, 1);
+  assert.notStrictEqual(systems.questions[0].source, project.questions[0].source);
+  assert.notStrictEqual(systems.questions[0].citation, project.questions[0].citation);
+
+  const systemsIds = new Set(chunksForLens(kb03, 'Systems Thinking', '0').chunks.map(chunk => chunk.id));
+  const projectIds = new Set(chunksForLens(kb03, 'Project-Specific Knowledge', '0').chunks.map(chunk => chunk.id));
+  const systemsQuiz = generateVivaQuiz(kb03, 5, systemsIds);
+  const projectQuiz = generateVivaQuiz(kb03, 5, projectIds);
+  assert(systemsQuiz.questions.some(question => question.id === 'q1-scope'));
+  assert(!systemsQuiz.questions.some(question => question.id === 'q2-engine'));
+  assert(projectQuiz.questions.some(question => question.id === 'q2-engine'));
+  assert(!projectQuiz.questions.some(question => question.id === 'q1-scope'));
+});
+
+test('A fact outside the selected mentor is not answered from another section', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  global.window.mentorDashboardStage = '0';
+  global.window.mentorActiveDimension = 'Systems Thinking';
+  const reply = answerWithinLens('Zero conflicts in approved schedules', kb03);
+  assert(reply.text.includes('does not cover'));
+  assert(!reply.chunks.some(chunk => String(chunk.id).startsWith('nfr-')));
+  assert(!reply.text.includes('NFR ID-02'));
+});
+
+test('Stage 3 says the portfolio does not document that stage yet', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  global.window.mentorDashboardStage = '2';
+  global.window.mentorActiveDimension = 'Project-Specific Knowledge';
+  const reply = answerWithinLens('What are the implementation modules?', kb03);
+  assert(reply.text.includes('does not document'));
+  assert(reply.text.includes('Stage 3'));
+  assert(!/module diagram|class diagram|source code/i.test(reply.text));
+  global.window.mentorDashboardStage = '0';
 });
 
 console.log(`\n====================================================`);

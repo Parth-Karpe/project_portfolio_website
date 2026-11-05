@@ -1642,6 +1642,42 @@
 
   // ==========================================
 
+  function findRequirementChunk(kb, kind, rawId){
+
+    const num = String(rawId).replace(/\D/g, '');
+
+    const padded = num.padStart(2, '0');
+
+    const keys = new Set([
+
+      `${kind}-${padded}`,
+
+      `${kind}-${num}`,
+
+      `${kind} id-${padded}`,
+
+      `${kind} id-${num}`,
+
+      `${kind}-${kind}-${padded}`,
+
+      `${kind}-${kind} id-${padded}`
+
+    ]);
+
+    return (kb.chunks || []).find(chunk => {
+
+      const id = String(chunk.id || '').toLowerCase();
+
+      const label = String(chunk.label || '').toLowerCase();
+
+      return keys.has(id) || keys.has(label);
+
+    });
+
+  }
+
+
+
   function classifyAndRouteIntent(query, kb){
 
     const cleanQuery = normalizeMentorQuery(query);
@@ -1730,9 +1766,7 @@
 
     if(frMatch){
 
-      const frId = frMatch[1].toLowerCase();
-
-      const directChunk = kb.chunks.find(c => c.id === frId || c.label.toLowerCase() === frId);
+      const directChunk = findRequirementChunk(kb, 'fr', frMatch[1]);
 
       if(directChunk){
 
@@ -1748,9 +1782,7 @@
 
     if(nfrMatch){
 
-      const nfrId = nfrMatch[1].toLowerCase();
-
-      const directChunk = kb.chunks.find(c => c.id === nfrId || c.label.toLowerCase() === nfrId);
+      const directChunk = findRequirementChunk(kb, 'nfr', nfrMatch[1]);
 
       if(directChunk){
 
@@ -1840,7 +1872,9 @@
 
 
 
-  function generateVivaQuiz(kb, customSeed = null){
+  function generateVivaQuiz(kb, customSeed = null, allowedIds = null){
+
+    const allowChunk = (id) => !allowedIds || allowedIds.has(id);
 
     const sessionSeed = customSeed !== null ? customSeed : (Math.floor(Date.now() / 1000) % 100000);
 
@@ -1851,6 +1885,12 @@
     const st1 = kb.st1 || {};
 
     const questions = [];
+
+    const engineTable = (st0.enginesTable || []).filter(engine => allowChunk(`engine-${String(engine.id).toLowerCase()}`));
+
+    const frTable = (st1.frTable || []).filter(fr => allowChunk(`fr-${String(fr.id).toLowerCase()}`));
+
+    const nfrTable = (st1.nfrTable || []).filter(nfr => allowChunk(`nfr-${String(nfr.id).toLowerCase()}`));
 
 
 
@@ -1876,7 +1916,7 @@
 
     // Question 1: Scope Boundary (Out-of-Scope Exclusion)
 
-    if(st0.scopeOutTable && st0.scopeOutTable.length && st0.scopeInTable && st0.scopeInTable.length){
+    if(allowChunk('table-0-4') && st0.scopeOutTable && st0.scopeOutTable.length && st0.scopeInTable && st0.scopeInTable.length){
 
       const outIdx = Math.floor(rng() * st0.scopeOutTable.length);
 
@@ -1938,15 +1978,15 @@
 
     // Question 2: Engine Responsibility
 
-    if(st0.enginesTable && st0.enginesTable.length >= 2){
+    if(engineTable.length >= 2){
 
-      const engIdx = Math.floor(rng() * st0.enginesTable.length);
+      const engIdx = Math.floor(rng() * engineTable.length);
 
-      const targetEngine = st0.enginesTable[engIdx];
+      const targetEngine = engineTable[engIdx];
 
       const correctName = `Engine ${targetEngine.id}: ${targetEngine.name}`;
 
-      const otherEngineNames = st0.enginesTable.filter(e => e.id !== targetEngine.id).map(e => `Engine ${e.id}: ${e.name}`);
+      const otherEngineNames = engineTable.filter(e => e.id !== targetEngine.id).map(e => `Engine ${e.id}: ${e.name}`);
 
       const sampledEngines = sampleItems(otherEngineNames, 3);
 
@@ -2004,17 +2044,17 @@
 
 
 
-    if(rawTestList.length && st1.frTable && st1.frTable.length){
+    if(allowChunk('table-testsuite') && rawTestList.length && frTable.length){
 
       const tcIdx = Math.floor(rng() * rawTestList.length);
 
       const targetTC = rawTestList[tcIdx];
 
-      const correctFR = targetTC.req || (st1.frTable[0] && st1.frTable[0].id) || 'FR ID-01';
+      const correctFR = targetTC.req || (frTable[0] && frTable[0].id) || 'FR ID-01';
 
 
 
-      const allFRs = st1.frTable.map(f => f.id).filter(id => id !== correctFR);
+      const allFRs = frTable.map(f => f.id).filter(id => id !== correctFR);
 
       const sampledFRs = sampleItems(allFRs, 3);
 
@@ -2048,27 +2088,27 @@
 
     // Question 4: Quality Target Benchmark (NFR Target)
 
-    if(st1.nfrTable && st1.nfrTable.length){
+    if(nfrTable.length){
 
-      const nfrIdx = Math.floor(rng() * st1.nfrTable.length);
+      const nfrIdx = Math.floor(rng() * nfrTable.length);
 
-      const targetNFR = st1.nfrTable[nfrIdx];
+      const targetNFR = nfrTable[nfrIdx];
 
       const correctTarget = targetNFR.target || 'Sub-second response';
 
 
 
-      const otherTargets = st1.nfrTable.filter(n => n.id !== targetNFR.id).map(n => n.target).filter(t => t && t !== correctTarget);
+      const otherTargets = nfrTable.filter(n => n.id !== targetNFR.id).map(n => n.target).filter(t => t && t !== correctTarget);
 
       // If not enough NFR targets, provide plausible benchmarks
 
       const backupTargets = ['< 100ms latency', 'Zero data conflicts', '99.9% uptime SLA', 'Strict RBAC enforcement'];
 
-      const targetPool = otherTargets.length >= 2 ? otherTargets : [...otherTargets, ...backupTargets];
+      const targetPool = otherTargets.length >= 2 ? otherTargets : (allowedIds ? otherTargets : [...otherTargets, ...backupTargets]);
 
       const sampledTargets = sampleItems(targetPool, 3, correctTarget);
 
-
+      if(!allowedIds || sampledTargets.length >= 1){
 
       questions.push({
 
@@ -2091,6 +2131,48 @@
         defenseTip: `Avoid subjective words like "fast" or "secure"; quote exact target figures from Table 1.2 to satisfy evaluation committee standards.`
 
       });
+
+      }
+
+    }
+
+
+
+    if(allowedIds && !questions.some(question => question.id === 'q3-traceability') && frTable.length >= 2){
+
+      const frIdx = Math.floor(rng() * frTable.length);
+
+      const targetFR = frTable[frIdx];
+
+      const correctText = targetFR.desc;
+
+      const distractors = sampleItems(frTable.filter(fr => fr.id !== targetFR.id).map(fr => fr.desc).filter(Boolean), 3, correctText);
+
+      if(correctText && distractors.length >= 1){
+
+        questions.push({
+
+          id: 'q-fr',
+
+          type: 'Functional Requirement',
+
+          prompt: `What does ${targetFR.id} require?`,
+
+          correctAnswer: correctText,
+
+          distractors,
+
+          citation: `[${targetFR.id}]`,
+
+          elementId: `portfolio-fr-${targetFR.id}`,
+
+          explanation: `[${targetFR.id}] states: "${correctText}".`,
+
+          defenseTip: `Quote ${targetFR.id} directly when a guide asks what the project must do.`
+
+        });
+
+      }
 
     }
 
@@ -4456,7 +4538,33 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-      if(route.intent === 'QUIZ_TRIGGER'){
+      if(activeMentorLens()){
+
+        if(route.intent === 'QUIZ_TRIGGER'){
+
+          pushLensQuiz(kb);
+
+        } else {
+
+          const lensReply = answerWithinLens(rawQuery, kb);
+
+          chatMessages.push({
+
+            role: 'assistant',
+
+            text: lensReply.text,
+
+            html: formatResponseWithClickableCitations(lensReply.text, kb),
+
+            provider: 'AI Mentor',
+
+            chunks: lensReply.chunks
+
+          });
+
+        }
+
+      } else if(route.intent === 'QUIZ_TRIGGER'){
 
         const newQuiz = await generateVivaQuizWithAI(kb, rawQuery);
 
@@ -4600,6 +4708,28 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     } catch(err) {
 
+      if(activeMentorLens()){
+
+        const lensReply = answerWithinLens(rawQuery, kb);
+
+        chatMessages.push({
+
+          role: 'assistant',
+
+          text: lensReply.text,
+
+          html: formatResponseWithClickableCitations(lensReply.text, kb),
+
+          provider: 'AI Mentor',
+
+          chunks: lensReply.chunks
+
+        });
+
+        return;
+
+      }
+
       const offline = synthesizeCoreSectionOffline(buildCoreSectionPacket(rawQuery, kb));
 
       chatMessages.push({
@@ -4716,19 +4846,27 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-  window.startMentorMcq = function(){
+  window.startMentorMcq = function(dimension){
+
+    if(dimension) window.mentorActiveDimension = dimension;
 
     const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
 
     if(teamId) window.mountPortfolioChat(teamId);
 
+    const kb = buildTeamKnowledgeBase(teamId);
+
     window.mentorDashboardPanel = 'work';
 
     isChatOpen = false;
 
+    chatMessages = [];
+
+    pushLensQuiz(kb);
+
     if(page === 'Mentor Dashboard' && typeof render === 'function') render();
 
-    if(typeof window.startVivaQuizForActiveTeam === 'function') window.startVivaQuizForActiveTeam(false);
+    updateChatMessagesThread();
 
   };
 
@@ -4748,26 +4886,170 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
+  const MENTOR_LENSES = [
+    { name: 'Systems Thinking', help: 'Explain how the need, the boundary, and the flow fit together.', match: ['stage0-problem', 'stage0-objectives', 'table-0-4', 'table-0-5', 'table-0-2', 'diag-asis'] },
+    { name: 'Foundational CS Knowledge', help: 'Connect a course idea to this project.', match: ['table-0-1', 'table-0-3', 'engine-'] },
+    { name: 'Faculty Expertise', help: 'Prepare the defense a guide would ask, using only these sections.', match: ['stage0-objectives', 'fr-', 'nfr-', 'table-testsuite'] },
+    { name: 'Engineering Standards', help: 'Check the quality targets and how the project says they are verified.', match: ['nfr-', 'table-testsuite'] },
+    { name: 'Theme-Based Expertise', help: 'Explain why this project belongs to its theme.', match: ['team-meta', 'table-0-3', 'engine-', 'table-0-2', 'diag-asis'] },
+    { name: 'Project-Specific Knowledge', help: 'State what this project actually does.', match: ['stage0-objectives', 'table-0-3', 'engine-', 'fr-', 'table-use-cases', 'diag-usecase'] }
+  ];
+
+  const STAGE_KEEP = {
+    '0': { ids: ['stage0-problem', 'stage0-objectives', 'table-0-1', 'table-0-3', 'table-0-4', 'table-0-5'], prefixes: ['engine-'] },
+    '1': { ids: ['table-use-cases', 'diag-usecase', 'table-testsuite'], prefixes: ['fr-', 'nfr-'] }
+  };
+
+  function mentorLensByName(name){
+    return MENTOR_LENSES.find(item => item.name === name) || null;
+  }
+
+  function activeMentorName(){
+    return (typeof window !== 'undefined' && window.mentorActiveDimension) || '';
+  }
+
+  function activeMentorLens(){
+    return mentorLensByName(activeMentorName());
+  }
+
+  function mentorStageKey(){
+    const options = ['0', '1', 'system-design', '2', '3'];
+    const current = (typeof window !== 'undefined' && (window.mentorDashboardStage || window.activePortfolioStage)) || '0';
+    const id = String(current);
+    return options.includes(id) ? id : '0';
+  }
+
+  function mentorStageLabel(id){
+    return { '0': 'Stage 0', '1': 'Stage 1', 'system-design': 'Stage 2', '2': 'Stage 3', '3': 'Stage 4' }[id] || 'Stage 0';
+  }
+
+  function chunkMatchesToken(chunk, token){
+    if(token === 'engine-' || token === 'fr-' || token === 'nfr-') return String(chunk.id || '').startsWith(token);
+    return chunk.id === token;
+  }
+
+  function stageKeepsChunk(chunk, stageId){
+    const rule = STAGE_KEEP[stageId];
+    if(!rule) return false;
+    if(rule.ids.includes(chunk.id)) return true;
+    return rule.prefixes.some(prefix => String(chunk.id || '').startsWith(prefix));
+  }
+
+  function orderedLensChunks(kb, lens){
+    const chunks = (kb && kb.chunks) || [];
+    const used = new Set();
+    const ordered = [];
+    (lens.match || []).forEach(token => {
+      chunks.forEach(chunk => {
+        if(used.has(chunk.id) || !chunkMatchesToken(chunk, token)) return;
+        used.add(chunk.id);
+        ordered.push(chunk);
+      });
+    });
+    return ordered;
+  }
+
+  function chunksForLens(kb, name, stageId){
+    const lens = mentorLensByName(name);
+    const stage = stageId || mentorStageKey();
+    const ordered = lens ? orderedLensChunks(kb, lens) : [];
+    const later = stage === 'system-design' || stage === '2' || stage === '3';
+    if(!lens) return { lens: null, chunks: [], earlier: [], later: false, stage };
+    if(later){
+      return {
+        lens,
+        chunks: [],
+        earlier: ordered.filter(chunk => stageKeepsChunk(chunk, '0') || stageKeepsChunk(chunk, '1')),
+        later: true,
+        stage
+      };
+    }
+    return { lens, chunks: ordered.filter(chunk => stageKeepsChunk(chunk, stage)), earlier: [], later: false, stage };
+  }
+
+  function closestLensChunk(query, chunks){
+    if(!chunks || !chunks.length) return null;
+    const scored = scoreAllChunks(query, { chunks, dynamicHintIndex: [] });
+    if(scored.length && scored[0].score > 0) return scored[0].chunk;
+    return chunks[0];
+  }
+
+  function firstDocumentedLine(chunk){
+    const lines = String(chunk && chunk.text || '').split('\n').map(line => line.trim()).filter(Boolean);
+    const bullet = lines.find(line => /^[•\-]/.test(line));
+    return (bullet || lines[0] || '').replace(/^[•\-]\s*/, '').slice(0, 320);
+  }
+
+  function lensGapMessage(selection){
+    if(!selection || !selection.lens) return 'Choose a mentor, then ask about that part of the project.';
+    if(selection.later){
+      const closest = selection.earlier[0];
+      const offer = closest ? ` The closest earlier section is ${closest.citation}.` : '';
+      return `The portfolio does not document ${mentorStageLabel(selection.stage)} yet.${offer}`;
+    }
+    const closest = selection.chunks[0];
+    if(closest) return `This part of the project has no documented quiz facts yet. The closest section is ${closest.citation}.`;
+    return `The portfolio does not cover this. ${selection.lens.help}`;
+  }
+
+  function answerWithinLens(query, kb){
+    const selection = chunksForLens(kb, activeMentorName(), mentorStageKey());
+    if(!selection.lens) return { text: 'Choose a mentor, then ask about that part of the project.', chunks: [] };
+    if(selection.later){
+      const closest = closestLensChunk(query, selection.earlier);
+      const offer = closest ? ` The closest earlier section is ${closest.citation}.` : '';
+      return {
+        text: `The portfolio does not document ${mentorStageLabel(selection.stage)} yet.${offer} ${selection.lens.help}`,
+        chunks: closest ? [closest] : []
+      };
+    }
+    const scored = scoreAllChunks(query, { chunks: selection.chunks, dynamicHintIndex: [] }).filter(entry => entry.score >= 12);
+    if(!scored.length) return { text: `The portfolio does not cover this. ${selection.lens.help}`, chunks: [] };
+    const chunk = focusAskedPoint(query, scored.map(entry => entry.chunk))[0];
+    if(chunk.missingPoint) return { text: chunk.text, chunks: [chunk] };
+    return {
+      text: `${selection.lens.help}\n\n${chunk.text}\n\n${chunk.citation}`,
+      chunks: [chunk]
+    };
+  }
+
+  function clearActiveQuiz(teamId){
+    activeQuizState = null;
+    try {
+      if(teamId && typeof sessionStorage !== 'undefined') sessionStorage.removeItem('pg_quiz_' + teamId);
+    } catch(_) {}
+  }
+
+  function pushLensQuiz(kb){
+    const selection = chunksForLens(kb, activeMentorName(), mentorStageKey());
+    const allowed = new Set(selection.chunks.map(chunk => chunk.id));
+    const quiz = (!selection.later && allowed.size) ? generateVivaQuiz(kb, null, allowed) : null;
+    if(!quiz || !quiz.questions.length){
+      const text = lensGapMessage(selection);
+      const closest = selection.later ? selection.earlier[0] : selection.chunks[0];
+      chatMessages = chatMessages.filter(msg => msg.type !== 'quiz' && msg.type !== 'eval');
+      chatMessages.push({ role: 'assistant', text, html: esc(text), chunks: closest ? [closest] : [] });
+      clearActiveQuiz(kb && kb.teamId);
+      return;
+    }
+    quiz.dimension = selection.lens.name;
+    activeQuizState = quiz;
+    pushQuizCard(quiz);
+  }
+
   function buildDescriptiveQuiz(kb, dimension){
-
-    const questions = [];
-
-    const objectives = Array.isArray(kb.st0?.objectives) ? kb.st0.objectives : [];
-
-    if(objectives[0]) questions.push({ prompt: 'Explain this project objective in your own words.', source: objectives[0], citation: '[Stage 0: Objectives]', draft: '' });
-
-    const requirement = (kb.st1?.frTable || [])[0];
-
-    if(requirement) questions.push({ prompt: `What does ${requirement.id} require?`, source: requirement.desc, citation: `[${requirement.id}]`, draft: '' });
-
-    const engine = (kb.st0?.enginesTable || [])[0];
-
-    if(engine) questions.push({ prompt: `What is ${engine.name || engine.engine || engine.id} responsible for?`, source: engine.desc, citation: `[Engine ${engine.id}]`, draft: '' });
-
-    if(!questions.length && kb.st0?.problem) questions.push({ prompt: 'State the problem this project addresses.', source: kb.st0.problem, citation: '[Stage 0: Problem Statement]', draft: '' });
-
-    return { teamId: kb.teamId, dimension: dimension || 'Portfolio', questions };
-
+    const selection = chunksForLens(kb, dimension, mentorStageKey());
+    if(!selection.lens) return { teamId: kb.teamId, dimension: dimension || 'Portfolio', questions: [] };
+    if(selection.later || !selection.chunks.length){
+      return { teamId: kb.teamId, dimension: selection.lens.name, questions: [], stageNote: lensGapMessage(selection) };
+    }
+    const chunk = selection.chunks[0];
+    const line = firstDocumentedLine(chunk);
+    return {
+      teamId: kb.teamId,
+      dimension: selection.lens.name,
+      questions: [{ prompt: `Explain this documented line in your own words: ${line}`, source: line, citation: chunk.citation, draft: '' }]
+    };
   }
 
 
@@ -4790,7 +5072,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     }).join('');
 
-    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Answers are checked against the documented portfolio lines.</div></div>${questions || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>'}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div></div>`;
+    const note = quiz.stageNote ? `<p class="mentor-panel-note">${esc(quiz.stageNote)}</p>` : '';
+    const body = questions || note || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>';
+    const footer = (quiz.questions || []).length ? '<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div>' : '';
+    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Answers are checked against the documented portfolio lines.</div></div>${body}${footer}</div>`;
 
   }
 
@@ -4798,9 +5083,13 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   window.startMentorDescriptive = function(dimension){
 
+    if(dimension) window.mentorActiveDimension = dimension;
+
     const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
 
     if(teamId) window.mountPortfolioChat(teamId);
+
+    clearActiveQuiz(teamId);
 
     const kb = buildTeamKnowledgeBase(teamId);
 
@@ -4862,15 +5151,29 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     const kb = buildTeamKnowledgeBase(teamId);
 
+    const selection = chunksForLens(kb, activeMentorName(), mentorStageKey());
+
+    const pool = selection.later ? selection.earlier : selection.chunks;
+
     window.mentorReviseNotes = text.split(/(?<=[.!?])\s+/).map(sentence => sentence.trim()).filter(Boolean).map(sentence => {
 
-      const chunks = retrieveRelevantChunks(sentence, kb, 1);
+      if(!selection.lens || selection.later || !pool.length){
 
-      const source = chunks[0];
+        const closest = closestLensChunk(sentence, pool);
+
+        return { sentence, supported: false, citation: closest ? closest.citation : '' };
+
+      }
+
+      const scored = scoreAllChunks(sentence, { chunks: pool, dynamicHintIndex: [] });
+
+      const source = scored[0] && scored[0].score >= 12 ? scored[0].chunk : null;
 
       const supported = !!(source && portfolioOverlap(sentence, source.text) >= 0.4);
 
-      return { sentence, supported, citation: supported ? source.citation : '' };
+      const closest = closestLensChunk(sentence, pool);
+
+      return { sentence, supported, citation: supported ? source.citation : (closest ? closest.citation : '') };
 
     });
 
@@ -4923,6 +5226,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     generateVivaQuiz,
 
     generateVivaQuizWithAI,
+
+    chunksForLens,
+
+    answerWithinLens,
+
+    buildDescriptiveQuiz,
 
     evaluateVivaQuiz,
 

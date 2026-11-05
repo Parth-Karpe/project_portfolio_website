@@ -3746,3 +3746,8 @@ html body .mentor-dashboard .mentor-quiz-btn:not(.is-soon):hover {
     grid-template-columns: 1fr;
   }
 }
+html body #portfolio-chat-container .portfolio-chat-fab[hidden],
+html body:has(.mentor-dashboard) #portfolio-chat-container .portfolio-chat-fab,
+html body:has(.mentor-dashboard) #portfolio-chat-container #portfolio-chat-drawer {
+  display: none !important;
+}
