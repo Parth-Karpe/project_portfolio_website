@@ -63,7 +63,8 @@ async function handler(req, res) {
           { role: 'system', content: systemInstruction || 'You are an accurate academic project portfolio AI assistant.' },
           { role: 'user', content: prompt }
         ],
-        stream: false
+        stream: false,
+        options: { temperature: 0.2 }
       })
     });
 
