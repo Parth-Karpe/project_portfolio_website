@@ -4974,6 +4974,27 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return chunks[0];
   }
 
+  function sddKnowledge(){
+    return (typeof window !== 'undefined' && window.SDD_KB && window.SDD_KB.chunks) || [];
+  }
+
+  function matchingSddChunk(query, minScore){
+    const chunks = sddKnowledge();
+    if(!chunks.length) return null;
+    const scored = scoreAllChunks(query, { chunks, dynamicHintIndex: [] });
+    if(!scored.length || scored[0].score < minScore) return null;
+    return scored[0].chunk;
+  }
+
+  function sddFallbackClause(query, minScore){
+    const chunk = matchingSddChunk(query, minScore);
+    if(!chunk) return { text: '', chunks: [] };
+    return {
+      text: ` The SDD template, not this team's design, says: ${firstDocumentedLine(chunk)} ${chunk.citation}`,
+      chunks: [chunk]
+    };
+  }
+
   function firstDocumentedLine(chunk){
     const lines = String(chunk && chunk.text || '').split('\n').map(line => line.trim()).filter(Boolean);
     const bullet = lines.find(line => /^[•\-]/.test(line));
@@ -4998,13 +5019,18 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(selection.later){
       const closest = closestLensChunk(query, selection.earlier);
       const offer = closest ? ` The closest earlier section is ${closest.citation}.` : '';
+      const sdd = sddFallbackClause(query, 1);
       return {
-        text: `The portfolio does not document ${mentorStageLabel(selection.stage)} yet.${offer} ${selection.lens.help}`,
-        chunks: closest ? [closest] : []
+        text: `The portfolio does not document ${mentorStageLabel(selection.stage)} yet.${offer}${sdd.text} ${selection.lens.help}`,
+        chunks: (closest ? [closest] : []).concat(sdd.chunks)
       };
     }
     const scored = scoreAllChunks(query, { chunks: selection.chunks, dynamicHintIndex: [] }).filter(entry => entry.score >= 12);
-    if(!scored.length) return { text: `The portfolio does not cover this. ${selection.lens.help}`, chunks: [] };
+    if(!scored.length){
+      const sdd = sddFallbackClause(query, 12);
+      if(sdd.text) return { text: `The portfolio does not cover this.${sdd.text}`, chunks: sdd.chunks };
+      return { text: `The portfolio does not cover this. ${selection.lens.help}`, chunks: [] };
+    }
     const chunk = focusAskedPoint(query, scored.map(entry => entry.chunk))[0];
     if(chunk.missingPoint) return { text: chunk.text, chunks: [chunk] };
     return {
@@ -5157,11 +5183,15 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     window.mentorReviseNotes = text.split(/(?<=[.!?])\s+/).map(sentence => sentence.trim()).filter(Boolean).map(sentence => {
 
+      const sdd = matchingSddChunk(sentence, 12);
+
+      const sddCitation = sdd ? sdd.citation : '';
+
       if(!selection.lens || selection.later || !pool.length){
 
         const closest = closestLensChunk(sentence, pool);
 
-        return { sentence, supported: false, citation: closest ? closest.citation : '' };
+        return { sentence, supported: false, citation: closest ? closest.citation : '', sddCitation };
 
       }
 
@@ -5173,7 +5203,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
       const closest = closestLensChunk(sentence, pool);
 
-      return { sentence, supported, citation: supported ? source.citation : (closest ? closest.citation : '') };
+      return { sentence, supported, citation: supported ? source.citation : (closest ? closest.citation : ''), sddCitation: supported ? '' : sddCitation };
 
     });
 

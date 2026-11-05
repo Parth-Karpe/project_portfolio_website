@@ -2023,7 +2023,8 @@ function mentorDashboard(){
   const workTitle = mentorName || 'Ask a Mentor';
   const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2><span class="mentor-stage-badge">Stage: ${badge}</span></div><div id="mentor-work-messages" class="mentor-work-messages"></div><form class="mentor-work-form" onsubmit="event.preventDefault(); window.handleChatSubmit();"><textarea id="mentor-work-input" rows="3" placeholder="Ask about this part of the project…"></textarea><button type="submit" class="mentor-quiz-btn">Send</button></form></section>`;
   const notes = (window.mentorReviseNotes || []).map(note => {
-    const mark = note.supported ? esc(note.citation) : `Not in this part of the project${note.citation ? ` ${esc(note.citation)}` : ''}`;
+    const sdd = !note.supported && note.sddCitation ? ` ${esc(note.sddCitation)}` : '';
+    const mark = note.supported ? esc(note.citation) : `Not in this part of the project${note.citation ? ` ${esc(note.citation)}` : ''}${sdd}`;
     return `<li class="${note.supported ? 'supported' : 'missed'}"><span>${esc(note.sentence)}</span><em>${mark}</em></li>`;
   }).join('');
   const reviseTarget = mentorName || (team?.title || 'the portfolio');

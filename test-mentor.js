@@ -37,7 +37,8 @@ eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_01.js'), 'utf8')
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_08.js'), 'utf8'));
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_12.js'), 'utf8'));
 
-// 3. Load Portfolio RAG / AI Mentor
+// 3. Load the SDD template, then the Portfolio RAG / AI Mentor
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'sdd-kb.js'), 'utf8'));
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'portfolio-rag.js'), 'utf8'));
 
 const {
@@ -505,8 +506,35 @@ test('Stage 3 says the portfolio does not document that stage yet', () => {
   const reply = answerWithinLens('What are the implementation modules?', kb03);
   assert(reply.text.includes('does not document'));
   assert(reply.text.includes('Stage 3'));
+  assert(reply.text.includes('[SDD'));
   assert(!/module diagram|class diagram|source code/i.test(reply.text));
   global.window.mentorDashboardStage = '0';
+});
+
+test('A context viewpoint question cites the SDD template, not a project section', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  global.window.mentorDashboardStage = '0';
+  global.window.mentorActiveDimension = 'Engineering Standards';
+  const reply = answerWithinLens('what is the context viewpoint?', kb03);
+  assert(reply.text.includes('does not cover'));
+  assert(reply.text.includes('[SDD 2.2.1 Context]'));
+  assert(reply.text.includes('not this team\'s design'));
+  assert(!reply.chunks.some(chunk => String(chunk.id).startsWith('nfr-') || String(chunk.id).startsWith('engine-')));
+  assert(!reply.text.includes('NFR ID-'));
+});
+
+test('Revise marks a template sentence as outside the project and cites the SDD section', () => {
+  const previous = global.document.getElementById;
+  global.document.getElementById = (id) => id === 'mentor-revise-input'
+    ? { value: 'The context viewpoint defines the system as a black box.' }
+    : null;
+  global.window.mentorDashboardStage = '0';
+  global.window.mentorActiveDimension = 'Systems Thinking';
+  global.window.reviseMentorDraft();
+  const note = global.window.mentorReviseNotes[0];
+  assert.strictEqual(note.supported, false);
+  assert.strictEqual(note.sddCitation, '[SDD 2.2.1 Context]');
+  global.document.getElementById = previous;
 });
 
 console.log(`\n====================================================`);
