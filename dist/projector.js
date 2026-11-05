@@ -27,7 +27,7 @@
     app.querySelectorAll('#hod-projects-table button').forEach(button=>{
       if(/^(?:Project Portfolio|Open portfolio)/i.test(button.textContent.trim())) setText(button,'View Portfolio');
     });
-    app.querySelectorAll('[onclick^="backToThemes"]').forEach(button=>setText(button,'\u2190 Back to themes'));
+    app.querySelectorAll('[onclick^="backToThemes"]:not([data-page-back])').forEach(button=>setText(button,'\u2190 Back to themes'));
     app.querySelectorAll('.tag').forEach(badge=>{
       const text=badge.textContent.trim(),match=text.match(/^(\d+) Projects$/);
       if(match) setText(badge,`${match[1]} projects`);
@@ -101,15 +101,15 @@
         }
       });
     }
-    const back=app.querySelector('[onclick^="backToThemes"]');
+    const back=app.querySelector('[data-page-back][onclick^="backToThemes"]')?.closest('.page-navigation');
     if(back) {
       const banner=back.closest('.projector-theme-banner') || back.nextElementSibling;
       const heading=banner?.querySelector('h1');
       if(heading) {
         addClass(banner,'projector-theme-banner');
         addClass(back,'projector-back-themes');
-        setText(back,'\u2190 Back to Themes');
-        if(back.parentElement!==heading.parentElement) heading.before(back);
+
+        if(back.parentElement!==banner) banner.prepend(back);
       }
     }
   }
@@ -186,7 +186,7 @@
       sidebar.querySelector(':scope > .school')?.remove();
       app.querySelector('.topbar .crumb')?.remove();
     }
-    const back=app.querySelector('[onclick^="backToThemeProjects"]');
+    const back=app.querySelector('[data-page-back][onclick^="backToThemeProjects"]')?.closest('.page-navigation');
     const hero=app.querySelector('.portfolio-hero-banner > div');
     if(back && hero) {
       const theme=back.getAttribute('onclick')?.match(/backToThemeProjects\((\d+)\)/)?.[1];

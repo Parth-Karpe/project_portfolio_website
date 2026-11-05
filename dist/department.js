@@ -2086,6 +2086,15 @@ function openThemePage(themeNo){
   window.scrollTo(0, 0);
 }
 
+function goToProjectHome(){
+  selectedTheme = null;
+  go('Department');
+}
+
+function pageNavigationButtons(backAction){
+  return `<nav class="page-navigation" aria-label="Page navigation"><button type="button" class="btn secondary" data-page-back onclick="${backAction}">Back</button><button type="button" class="btn secondary" onclick="goToProjectHome()">Home</button></nav>`;
+}
+
 function backToThemes(){
   selectedTheme = null;
   render();
@@ -2198,9 +2207,7 @@ function department(){
 
     return `
       <div style="margin-bottom: 14px;">
-        <button class="btn secondary" style="padding:7px 15px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px; margin-bottom:12px; cursor:pointer" onclick="backToThemes()">
-          ← Back to Themes
-        </button>
+        ${pageNavigationButtons("backToThemes()") }
 
         <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding: 18px 22px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:var(--shadow-xs)">
           <div>
