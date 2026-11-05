@@ -6878,11 +6878,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   window.reviseMentorDraft = async function(){
 
-    const field = document.getElementById('mentor-revise-input');
-
-    const text = field ? field.value.trim() : '';
-
-    window.mentorReviseDraft = field ? field.value : '';
+    const text = '';
 
     const teamId = (typeof activeTeam === 'function' ? activeTeam()?.id : null) || activeChatTeamId;
 

@@ -1084,8 +1084,7 @@ html[data-theme="dark"] body .mentor-work-messages {
   background: #080F1C !important;
   border: 1px solid var(--line) !important;
 }
-html[data-theme="dark"] body #mentor-work-input,
-html[data-theme="dark"] body #mentor-revise-input {
+html[data-theme="dark"] body #mentor-work-input {
   background: #0D1B30 !important;
   color: #ffffff !important;
   border: 1.5px solid var(--line) !important;

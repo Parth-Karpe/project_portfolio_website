@@ -3571,8 +3571,7 @@ body:has(.mentor-dashboard) #portfolio-chat-fab {
   max-width: 100%;
   width: 100%;
 }
-html body .mentor-dashboard .mentor-work-form textarea,
-html body .mentor-dashboard #mentor-revise-input {
+html body .mentor-dashboard .mentor-work-form textarea {
   width: 100%;
   min-height: 96px;
   font-size: 16px !important;
