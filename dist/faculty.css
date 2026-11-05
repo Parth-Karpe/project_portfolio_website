@@ -19,9 +19,11 @@
   color-scheme:light;
 }
 :root[data-theme="dark"] {
-  --black:#ffffff; --blue:#8CB4FF; --tint:#142747; --line:#6583B3; --line-soft:#304C76;
-  --bg:#080F1C; --surface:#0D1B30; --surface-hover:var(--tint); --surface-elevated:var(--tint);
-  --ink-secondary:#E0E9FA; --on-blue:#080F1C; --figure-ink:#111111;
+  --black:#ffffff; --white:#ffffff; --blue:#8CB4FF; --tint:#10223D; --line:#3B5982; --line-soft:#243B5C;
+  --bg:#080F1C; --surface:#0D1B30; --surface-hover:#1E3A5F; --surface-elevated:#142747;
+  --ink:#ffffff; --ink-secondary:#CBD5E1; --muted:#94A3B8; --muted-light:#64748B;
+  --navy:#93C5FD; --brand:#3B82F6; --brand-hover:#60A5FA; --brand-subtle:#10223D;
+  --on-blue:#ffffff; --figure-ink:#ffffff;
   color-scheme:dark;
 }
 html { font-size:16px; scroll-padding-top:calc(var(--header-height) + var(--stage-height) + 16px); }

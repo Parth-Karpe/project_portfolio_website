@@ -24,9 +24,13 @@
   --p-member:20px; --p-usn:16px; --p-caption:17px; --p-prose:18px;
 }
 :root[data-theme="dark"] {
-  --ink:#fff; --blue:#60A5FA; --line:#6583B3; --tint:#142747; --soft:#233E64;
-  --bg:#080F1C; --surface:#0D1B30; --surface-elevated:var(--tint); --ink-secondary:#E0E9FA;
-  --on-blue:#080F1C; --figure-ink:#0a0a0a;
+  --ink:#ffffff; --black:#ffffff; --white:#ffffff; --blue:#60A5FA; --line:#3B5982; --line-soft:#243B5C;
+  --tint:#10223D; --soft:#1E3A5F; --navy:#93C5FD;
+  --bg:#080F1C; --surface:#0D1B30; --surface-elevated:#142747; --surface-hover:#1E3A5F;
+  --bg-subtle:#10223D; --ink-secondary:#CBD5E1; --muted:#94A3B8; --muted-light:#64748B;
+  --brand:#3B82F6; --brand-hover:#60A5FA; --brand-subtle:#10223D; --on-blue:#ffffff; --figure-ink:#ffffff;
+  --dot-color:rgba(96,165,250,0.06);
+  color-scheme:dark;
 }
 html { scroll-padding-top:16px!important; }
 html body { font-family:Inter,"Segoe UI",Arial,sans-serif; font-size:var(--p-body); font-weight:500; line-height:1.7; color:var(--ink); overflow-x:clip; }
@@ -471,21 +475,21 @@ html body #app .common-page-header + .main { padding-top:19px!important; }
   html body #app .topbar.common-page-header { height:auto!important; min-height:65px!important; padding-block:6px!important; }
   html body #app .common-page-header .school-top-header > strong { font-size:16px!important; }
 }
-/* Dashboard metrics: labels and values share one readable black type style. */
-html body #app.projector-dashboard-page .projector-stat-card {
+/* Dashboard metrics: labels and values share one readable black type style in light mode */
+html:not([data-theme="dark"]) body #app.projector-dashboard-page .projector-stat-card {
   background:#ffffff!important;
 }
-html body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) {
+html:not([data-theme="dark"]) body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) {
   font-size:24px!important; font-weight:600!important; color:#000000!important; line-height:1.3;
 }
 @media(min-width:1600px) {
-  html body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) { font-size:28px!important; }
+  html:not([data-theme="dark"]) body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) { font-size:28px!important; }
 }
-/* Softer dashboard overview with slightly larger metrics. */
-html body #app.projector-dashboard-page .projector-dashboard-hero {
+/* Softer dashboard overview with slightly larger metrics in light mode */
+html:not([data-theme="dark"]) body #app.projector-dashboard-page .projector-dashboard-hero {
   background:#E8EFF7!important; color:#111111!important;
 }
-html body #app.projector-dashboard-page .projector-dashboard-hero :is(h1,p,.faculty-dashboard-lead) {
+html:not([data-theme="dark"]) body #app.projector-dashboard-page .projector-dashboard-hero :is(h1,p,.faculty-dashboard-lead) {
   color:#111111!important;
 }
 html body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label,.projector-stat-number) {
@@ -603,33 +607,33 @@ html body #app.projector-dashboard-page .theme-card-item h3 {
   font-size:calc(var(--theme-fit-size,19px) + 1px)!important;
 }
 
-/* Theme listing banner matches the dashboard overview. */
-html body #app .projector-theme-banner {
+/* Theme listing banner matches the dashboard overview in light mode. */
+html:not([data-theme="dark"]) body #app .projector-theme-banner {
   background:#E8EFF7!important; color:#111111!important;
 }
-html body #app .projector-theme-banner h1,
-html body #app .projector-theme-banner .projector-back-themes {
+html:not([data-theme="dark"]) body #app .projector-theme-banner h1,
+html:not([data-theme="dark"]) body #app .projector-theme-banner .projector-back-themes {
   color:#111111!important;
 }
-/* Project listing rows keep a uniform white background. */
-html body #app #hod-projects-table tbody tr,
-html body #app #hod-projects-table tbody tr:nth-child(even),
-html body #app #hod-projects-table tbody tr:hover,
-html body #app #hod-projects-table tbody td {
+/* Project listing rows keep a uniform white background in light mode. */
+html:not([data-theme="dark"]) body #app #hod-projects-table tbody tr,
+html:not([data-theme="dark"]) body #app #hod-projects-table tbody tr:nth-child(even),
+html:not([data-theme="dark"]) body #app #hod-projects-table tbody tr:hover,
+html:not([data-theme="dark"]) body #app #hod-projects-table tbody td {
   background:#ffffff!important; color:#111111!important;
 }
-/* Match the project table header to the light overview banner. */
-html body #app #hod-projects-table thead,
-html body #app #hod-projects-table thead tr,
-html body #app #hod-projects-table thead th {
+/* Match the project table header to the light overview banner in light mode. */
+html:not([data-theme="dark"]) body #app #hod-projects-table thead,
+html:not([data-theme="dark"]) body #app #hod-projects-table thead tr,
+html:not([data-theme="dark"]) body #app #hod-projects-table thead th {
   background:#E8EFF7!important; color:#111111!important;
 }
-/* Light portfolio actions and a right-aligned theme project count. */
-html body #app #hod-projects-table td button {
+/* Light portfolio actions and a right-aligned theme project count in light mode. */
+html:not([data-theme="dark"]) body #app #hod-projects-table td button {
   background:#DCE8FF!important; color:#111111!important;
   border:1.5px solid var(--line)!important;
 }
-html body #app #hod-projects-table td button:hover { background:#C9DBF7!important; }
+html:not([data-theme="dark"]) body #app #hod-projects-table td button:hover { background:#C9DBF7!important; }
 html body #app .projector-theme-banner {
   display:flex!important; flex-wrap:nowrap!important;
   align-items:center!important; justify-content:space-between!important; gap:20px!important;
@@ -642,34 +646,34 @@ html body #app .projector-theme-banner > .tag {
   html body #app .projector-theme-banner { gap:12px!important; }
   html body #app .projector-theme-banner > .tag { font-size:16px!important; padding:4px 8px!important; }
 }
-/* Portfolio actions use a light tint of the hyperlink blue. */
-html body #app #hod-projects-table td button {
+/* Portfolio actions use a light tint of the hyperlink blue in light mode. */
+html:not([data-theme="dark"]) body #app #hod-projects-table td button {
   background:color-mix(in srgb,var(--blue) 12%,white)!important;
   color:var(--blue)!important; border-color:var(--blue)!important;
 }
-html body #app #hod-projects-table td button:hover {
+html:not([data-theme="dark"]) body #app #hod-projects-table td button:hover {
   background:color-mix(in srgb,var(--blue) 20%,white)!important;
 }
-/* Project page follows the light overview theme with white reading surfaces. */
-html body #app .portfolio-hero-banner {
+/* Project page follows the light overview theme with white reading surfaces in light mode. */
+html:not([data-theme="dark"]) body #app .portfolio-hero-banner {
   background:#E8EFF7!important; color:#111111!important;
 }
-html body #app .portfolio-hero-banner :is(.portfolio-hero-title,.portfolio-hero-meta,.portfolio-hero-meta span,.portfolio-hero-meta strong,.projector-project-back) {
+html:not([data-theme="dark"]) body #app .portfolio-hero-banner :is(.portfolio-hero-title,.portfolio-hero-meta,.portfolio-hero-meta span,.portfolio-hero-meta strong,.projector-project-back) {
   color:#111111!important;
 }
-html body #app:has(.portfolio-container) .main,
-html body #app .portfolio-container,
-html body #app .portfolio-content,
-html body #app .portfolio-content :is(.portfolio-section,.portfolio-subblock,.portfolio-prose,.notice,.demo-answer,.text-box,.req-card,.techstack-group,.faculty-placeholder),
-html body #app .portfolio-content table :is(tbody,tr,td),
-html body #app .portfolio-member-card {
+html:not([data-theme="dark"]) body #app:has(.portfolio-container) .main,
+html:not([data-theme="dark"]) body #app .portfolio-container,
+html:not([data-theme="dark"]) body #app .portfolio-content,
+html:not([data-theme="dark"]) body #app .portfolio-content :is(.portfolio-section,.portfolio-subblock,.portfolio-prose,.notice,.demo-answer,.text-box,.req-card,.techstack-group,.faculty-placeholder),
+html:not([data-theme="dark"]) body #app .portfolio-content table :is(tbody,tr,td),
+html:not([data-theme="dark"]) body #app .portfolio-member-card {
   background:#ffffff!important; color:#111111!important;
 }
-html body #app .portfolio-content :is(p,li,td,h2,h3,h4),
-html body #app .portfolio-member-card :is(strong,span,b,p,small) {
+html:not([data-theme="dark"]) body #app .portfolio-content :is(p,li,td,h2,h3,h4),
+html:not([data-theme="dark"]) body #app .portfolio-member-card :is(strong,span,b,p,small) {
   color:#111111!important;
 }
-html body #app .portfolio-content table th {
+html:not([data-theme="dark"]) body #app .portfolio-content table th {
   background:#E8EFF7!important; color:#111111!important;
 }
 
@@ -712,4 +716,446 @@ html body #app .portfolio-content.portfolio-content table :is(th,td) {
 html body #app .portfolio-content :is(.portfolio-prose,.notice,.demo-answer,.text-box),
 html body #app .portfolio-content :is(.portfolio-prose,.notice,.demo-answer,.text-box) :is(p,li) {
   hyphens:none!important;
+}
+
+/* ========================================================
+   LOGO & BRANDING STYLES (LIGHT & DARK MODES)
+   ======================================================== */
+.kle-header-logo {
+  height: 38px;
+  width: auto;
+  max-width: 260px;
+  display: block;
+  background: #ffffff;
+  padding: 3px 8px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  object-fit: contain;
+}
+.school-top-header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 3px !important;
+}
+.kle-header-dept {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--ink) !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  letter-spacing: 0.2px;
+}
+html[data-theme="dark"] body .kle-header-dept {
+  color: #ffffff !important;
+}
+
+/* ========================================================
+   COMPREHENSIVE DARK THEME SYSTEM (data-theme="dark")
+   ======================================================== */
+html[data-theme="dark"] body {
+  background: #080F1C !important;
+  color: #ffffff !important;
+}
+
+/* Topbar Header & Controls in Dark Mode */
+html[data-theme="dark"] body .topbar,
+html[data-theme="dark"] body header.common-page-header {
+  background: #0D1B30 !important;
+  border-bottom: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .user-role-card {
+  background: #142747 !important;
+  color: #ffffff !important;
+  border: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body .user-role-card svg {
+  color: #60A5FA !important;
+}
+html[data-theme="dark"] body .user-role-card span {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .theme-toggle-btn {
+  background: #142747 !important;
+  color: #ffffff !important;
+  border: 1px solid var(--line) !important;
+}
+
+/* Dashboard Hero Banner & Stat Cards in Dark Mode */
+html[data-theme="dark"] body #app.projector-dashboard-page .projector-dashboard-hero {
+  background: #0D1B30 !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app.projector-dashboard-page .projector-dashboard-hero :is(h1, p, .faculty-dashboard-lead) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app.projector-dashboard-page .projector-stat-card {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+  border-top: 3px solid var(--blue) !important;
+}
+html[data-theme="dark"] body #app.projector-dashboard-page .projector-stat-card :is(.projector-stat-label, .projector-stat-number, strong, span) {
+  color: #ffffff !important;
+}
+
+/* Dashboard Theme Cards & Tags in Dark Mode */
+html[data-theme="dark"] body .theme-card-item {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+  border-top: 3px solid var(--blue) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .theme-card-item h3 {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .projector-theme-number,
+html[data-theme="dark"] body #app.projector-dashboard-page .projector-theme-number,
+html[data-theme="dark"] body #app.projector-dashboard-page .theme-card-item .badge-num {
+  background: #142747 !important;
+  color: #ffffff !important;
+  border: 1.5px solid #60A5FA !important;
+}
+html[data-theme="dark"] body .theme-card-item .tag,
+html[data-theme="dark"] body #app.projector-dashboard-page .projector-theme-heading > .tag {
+  background: #1E3A5F !important;
+  color: #93C5FD !important;
+  border: 1.5px solid #60A5FA !important;
+  font-weight: 700 !important;
+}
+html[data-theme="dark"] body h2,
+html[data-theme="dark"] body h3 {
+  color: #ffffff !important;
+}
+
+/* Theme Detail View & Projects Table in Dark Mode */
+html[data-theme="dark"] body #app .projector-theme-banner {
+  background: #0D1B30 !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app .projector-theme-banner :is(h1, p) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .projector-theme-banner .projector-back-themes,
+html[data-theme="dark"] body #app [onclick^="backToThemes"] {
+  color: #60A5FA !important;
+}
+html[data-theme="dark"] body #app .projector-theme-banner > .tag {
+  background: #1E3A5F !important;
+  color: #93C5FD !important;
+  border: 1.5px solid #60A5FA !important;
+}
+html[data-theme="dark"] body #app :is(.tablewrap, .faculty-table-scroll) {
+  border: 1.5px solid var(--line) !important;
+  background: #0D1B30 !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table {
+  background: #0D1B30 !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table thead,
+html[data-theme="dark"] body #app #hod-projects-table thead tr,
+html[data-theme="dark"] body #app #hod-projects-table thead th {
+  background: #142747 !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table tbody tr,
+html[data-theme="dark"] body #app #hod-projects-table tbody td {
+  background: #0D1B30 !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table tbody tr:nth-child(even) td {
+  background: #10223D !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table tbody tr:hover td {
+  background: #1E3A5F !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table td :is(strong, span, p, small) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table td p.mini {
+  color: #CBD5E1 !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table td button {
+  background: #1D4ED8 !important;
+  color: #ffffff !important;
+  border: 1.5px solid #60A5FA !important;
+}
+html[data-theme="dark"] body #app #hod-projects-table td button:hover {
+  background: #2563EB !important;
+}
+
+/* Portfolio View Components in Dark Mode */
+html[data-theme="dark"] body aside.sidebar {
+  background: #0D1B30 !important;
+  border-right: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body aside.sidebar .school {
+  background: #142747 !important;
+  border: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body aside.sidebar .school :is(strong, span) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body aside.sidebar .nav-link,
+html[data-theme="dark"] body aside.sidebar .portfolio-subnav-btn,
+html[data-theme="dark"] body aside.sidebar .stage-link {
+  color: #CBD5E1 !important;
+}
+html[data-theme="dark"] body aside.sidebar :is(.nav-link.active, .portfolio-subnav-btn.active, .stage-link.active) {
+  background: #1E3A5F !important;
+  color: #93C5FD !important;
+  font-weight: 700 !important;
+}
+html[data-theme="dark"] body #app:has(.portfolio-container) .main,
+html[data-theme="dark"] body #app .portfolio-container,
+html[data-theme="dark"] body #app .portfolio-content {
+  background: #080F1C !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-hero-banner {
+  background: #0D1B30 !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app .portfolio-hero-banner :is(h1, .portfolio-hero-title, .portfolio-hero-meta, .portfolio-hero-meta span, .portfolio-hero-meta strong) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-hero-banner .projector-project-back {
+  color: #60A5FA !important;
+}
+html[data-theme="dark"] body #app .portfolio-member-card {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-member-card strong {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-member-card span {
+  color: #CBD5E1 !important;
+}
+html[data-theme="dark"] body #app .portfolio-content :is(.portfolio-section, .portfolio-subblock) {
+  background: #080F1C !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-content :is(h2, h3, h4) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-content :is(.portfolio-prose, .notice, .demo-answer, .text-box, .faculty-placeholder) {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-content :is(.portfolio-prose, .notice, .demo-answer, .text-box) :is(p, li, span, strong) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table th {
+  background: #142747 !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid var(--line) !important;
+  border-right: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table td {
+  background: #0D1B30 !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid var(--line) !important;
+  border-right: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table tbody tr:nth-child(even) td {
+  background: #10223D !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table tbody tr:hover td {
+  background: #1E3A5F !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table td :is(p, li, div, span:not(.req-tag):not(.tag), strong) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table .req-tag {
+  background: #142747 !important;
+  color: #93C5FD !important;
+  border: 1.5px solid #60A5FA !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table .nfr-target {
+  color: #60A5FA !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table .fr-source {
+  color: #94A3B8 !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table .requirement-meta-text {
+  color: #CBD5E1 !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table .tag.brand {
+  background: #142747 !important;
+  color: #60A5FA !important;
+  border-color: #60A5FA !important;
+}
+html[data-theme="dark"] body #app .portfolio-content table .tag.gray {
+  background: #142747 !important;
+  color: #CBD5E1 !important;
+  border-color: var(--line) !important;
+}
+html[data-theme="dark"] body #app .portfolio-content .diagram-frame {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body #app .portfolio-content .diagram-caption {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-content .course-role-text {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body #app .portfolio-content .engine-outline-id {
+  color: #ffffff !important;
+  border-color: var(--line) !important;
+}
+
+/* Stage Navigation Tabs in Dark Mode */
+html[data-theme="dark"] body .portfolio-stage-tabs {
+  background: #0D1B30 !important;
+  border-color: var(--line) !important;
+}
+html[data-theme="dark"] body .portfolio-stage-tab {
+  background: #142747 !important;
+  color: #CBD5E1 !important;
+  border: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body .portfolio-stage-tab.active {
+  background: #1D4ED8 !important;
+  color: #ffffff !important;
+  border-color: #60A5FA !important;
+}
+
+/* AI Mentor Dashboard, Panels & Dialogs in Dark Mode */
+html[data-theme="dark"] body .mentor-dashboard {
+  background: #080F1C !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .mentor-panel,
+html[data-theme="dark"] body .mentor-stage {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .mentor-panel :is(h2, h3, p, .mentor-panel-note),
+html[data-theme="dark"] body .mentor-stage :is(h2, h3, p, .mentor-panel-note) {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .mentor-dimension-card {
+  background: #142747 !important;
+  border: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .mentor-dimension-card h3 {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .mentor-stage-pill {
+  background: #142747 !important;
+  color: #CBD5E1 !important;
+  border: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body .mentor-stage-pill.active {
+  background: #1D4ED8 !important;
+  color: #ffffff !important;
+  border-color: #60A5FA !important;
+}
+html[data-theme="dark"] body .mentor-menu-btn {
+  background: #142747 !important;
+  color: #CBD5E1 !important;
+  border: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body .mentor-menu-btn.active {
+  background: #1D4ED8 !important;
+  color: #ffffff !important;
+  border-color: #60A5FA !important;
+}
+html[data-theme="dark"] body .mentor-back {
+  color: #60A5FA !important;
+}
+html[data-theme="dark"] body .mentor-work-messages {
+  background: #080F1C !important;
+  border: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body #mentor-work-input,
+html[data-theme="dark"] body #mentor-revise-input {
+  background: #0D1B30 !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body .chat-bubble-wrap.assistant .chat-bubble {
+  background: #142747 !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--line) !important;
+}
+html[data-theme="dark"] body .chat-bubble-wrap.user .chat-bubble {
+  background: #1D4ED8 !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .citation-pill {
+  background: #1E3A5F !important;
+  color: #93C5FD !important;
+  border: 1px solid #60A5FA !important;
+}
+html[data-theme="dark"] body .portfolio-chat-suggestions {
+  background: #142747 !important;
+}
+html[data-theme="dark"] body .prompt-pill {
+  background: #0D1B30 !important;
+  color: #CBD5E1 !important;
+  border: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body .mentor-revise-list li {
+  border-radius: 8px !important;
+}
+html[data-theme="dark"] body .mentor-revise-list li.supported {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1.5px solid #10B981 !important;
+}
+html[data-theme="dark"] body .mentor-revise-list li.missed {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1.5px solid #EF4444 !important;
+}
+html[data-theme="dark"] body .mentor-revise-list li span {
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .mentor-revise-list li em {
+  color: #93C5FD !important;
+}
+html[data-theme="dark"] body .quiz-container {
+  background: #0D1B30 !important;
+  border: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .quiz-question-card {
+  background: #142747 !important;
+  border: 1px solid var(--line) !important;
+}
+html[data-theme="dark"] body .quiz-option-btn {
+  background: #10223D !important;
+  border: 1.5px solid var(--line) !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .quiz-option-btn.selected {
+  background: #1E3A5F !important;
+  border-color: #60A5FA !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .quiz-eval-row {
+  background: #142747 !important;
+  color: #ffffff !important;
+}
+html[data-theme="dark"] body .viva-tip-card {
+  background: #064E3B !important;
+  border: 1px solid #10B981 !important;
+}
+html[data-theme="dark"] body .viva-tip-text {
+  color: #ffffff !important;
 }
