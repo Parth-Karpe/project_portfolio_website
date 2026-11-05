@@ -53,6 +53,8 @@ const {
   generateVivaQuiz,
   chunksForLens,
   answerWithinLens,
+  personaOpeningQuestion,
+  systemsThinkingFollowUp,
   buildDescriptiveQuiz,
   evaluateVivaQuiz,
   formatResponseWithClickableCitations,
@@ -537,25 +539,50 @@ test('Revise marks a template sentence as outside the project and cites the SDD 
   global.document.getElementById = previous;
 });
 
-test('Ask a Mentor follows up from the same cited section', () => {
+test('Ask a Mentor follows up from the same team section', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '0';
   global.window.mentorActiveDimension = 'Systems Thinking';
   const problem = answerWithinLens('what is the problem statement?', kb03);
   const problemFollow = problem.text.split('Follow-up:')[1] || '';
-  const problemChunk = kb03.chunks.find(chunk => chunk.id === 'stage0-problem');
   assert(problem.text.includes('[Stage 0: Problem Statement]'));
-  assert(problemFollow.includes('[Stage 0: Problem Statement]'));
-  assert(problemChunk.text.includes(problemFollow.replace('[Stage 0: Problem Statement]', '').replace('Explain this documented line in your own words:', '').trim().slice(0, 48)));
-  assert(!/\[Engine |NFR ID-/.test(problemFollow));
+  assert(problemFollow.includes('How does Data Structures shape the need and the flow?'));
+  assert(problemFollow.includes('[Table 0.1]'));
+  assert(/data structure/i.test(problemFollow));
+  assert(!/computer network|compiler/i.test(problemFollow));
+  assert(!/\[Engine |NFR ID-|\[SDD/.test(problemFollow));
 
   global.window.mentorActiveDimension = 'Engineering Standards';
-  const template = answerWithinLens('what is the context viewpoint?', kb03);
-  const templateFollow = template.text.split('Follow-up:')[1] || '';
-  assert(template.text.includes('[SDD 2.2.1 Context]'));
-  assert(templateFollow.includes('[SDD 2.2.1 Context]'));
-  assert(template.text.includes('not this team\'s design'));
-  assert(!/\[Engine |NFR ID-/.test(templateFollow));
+  const missing = answerWithinLens('what is the context viewpoint?', kb03);
+  const missingFollow = missing.text.split('Follow-up:')[1] || '';
+  assert(!missingFollow.includes('[SDD'));
+});
+
+test('Ask opens with a different team-doc question for each persona', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  global.window.mentorDashboardStage = '0';
+  global.window.activePortfolioStage = '0';
+  const systems = personaOpeningQuestion(kb03, 'Systems Thinking');
+  const courses = personaOpeningQuestion(kb03, 'Foundational CS Knowledge');
+  assert(systems.text.includes('How does Data Structures shape the need and the flow?'));
+  assert(systems.text.includes('[Table 0.1]'));
+  assert(/data structure/i.test(systems.text));
+  assert(!/computer network|compiler/i.test(systems.text));
+  assert(!/\[Engine |NFR ID-|\[SDD/.test(systems.text));
+  const algorithms = systemsThinkingFollowUp(kb03, systems.text);
+  assert(algorithms.includes('How does Algorithms shape the need and the flow?'));
+  assert(/design & analysis of algorithms/i.test(algorithms));
+  assert(!/data structure/i.test(algorithms));
+  assert(!/computer network|compiler/i.test(algorithms));
+  assert(courses.text.includes('Which course idea does this line use?'));
+  assert(courses.text.includes('[Table 0.1]'));
+  assert.notStrictEqual(systems.text, courses.text);
+
+  global.window.mentorDashboardStage = '0';
+  const standards = personaOpeningQuestion(kb03, 'Engineering Standards');
+  assert(standards.text.includes('does not cover'));
+  assert(!standards.text.includes('[SDD'));
+  assert(!standards.text.includes('Follow-up:'));
 });
 
 console.log(`\n====================================================`);
