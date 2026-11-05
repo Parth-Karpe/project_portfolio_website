@@ -3408,9 +3408,17 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   // Only re-renders #portfolio-chat-messages thread (Fix BUG-6: preserves textarea input and settings state)
 
+  function mentorSurfaceOpen(){
+
+    return (typeof page !== 'undefined' && page === 'Mentor Dashboard') || (typeof window !== 'undefined' && window.mentorSplitOpen && (typeof page === 'undefined' || page === 'Team Portfolio'));
+
+  }
+
+
+
   function activeMentorThread(){
 
-    if(typeof page !== 'undefined' && page === 'Mentor Dashboard'){
+    if(mentorSurfaceOpen()){
 
       return document.getElementById('mentor-work-messages');
 
@@ -3424,7 +3432,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function mentorComposer(){
 
-    if(typeof page !== 'undefined' && page === 'Mentor Dashboard'){
+    if(mentorSurfaceOpen()){
 
       return document.getElementById('mentor-work-input');
 
@@ -3442,7 +3450,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     if(!drawer) return;
 
-    if(typeof page !== 'undefined' && page === 'Mentor Dashboard'){
+    if(mentorSurfaceOpen()){
 
       isChatOpen = false;
 
@@ -3472,7 +3480,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     if(chatMessages.length === 0){
 
-      if(isGenerating && page === 'Mentor Dashboard'){
+      if(isGenerating && mentorSurfaceOpen()){
 
         thread.innerHTML = '<div class="mentor-wait">Preparing this from the portfolio…</div>';
 
@@ -3860,7 +3868,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
         <!-- Floating Action Button (FAB) -->
 
-        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="go('Mentor Dashboard')" title="AI Mentor" aria-label="AI Mentor" ${typeof page!=='undefined'&&page!=='Team Portfolio'?'hidden':''}>
+        <button id="portfolio-chat-fab" class="portfolio-chat-fab ${isChatOpen ? 'active' : ''}" onclick="window.openMentorSplit()" title="AI Mentor" aria-label="AI Mentor" ${typeof page!=='undefined'&&page!=='Team Portfolio'?'hidden':''}>
 
           <span class="chat-fab-text">AI Mentor</span>
 
@@ -4256,7 +4264,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     }
 
-    isChatOpen = page === 'Mentor Dashboard' ? false : true;
+    isChatOpen = mentorSurfaceOpen() ? false : true;
 
     isGenerating = true;
 
@@ -4380,7 +4388,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     input.value = '';
 
-    if(page === 'Mentor Dashboard') isChatOpen = false;
+    if(mentorSurfaceOpen()) isChatOpen = false;
 
     else isChatOpen = true;
 
@@ -4816,7 +4824,47 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-  window.openAskMentor = function(){
+  window.openMentorSplit = function(){
+
+    if(window.mentorSplitOpen && (typeof page === 'undefined' || page === 'Team Portfolio')){
+
+      window.mentorSplitOpen = false;
+
+      const stage = String((typeof activePortfolioStage !== 'undefined' && activePortfolioStage) || window.activePortfolioStage || '0');
+
+      if(typeof render === 'function') render();
+
+      if(typeof switchPortfolioStage === 'function') switchPortfolioStage(stage, false);
+
+      return;
+
+    }
+
+    window.mentorSplitOpen = true;
+
+    window.mentorDashboardStage = String((typeof activePortfolioStage !== 'undefined' && activePortfolioStage) || window.activePortfolioStage || '0');
+
+    window.mentorDashboardPanel = window.mentorDashboardPanel || 'persona';
+
+    if(typeof page !== 'undefined' && page !== 'Team Portfolio' && typeof go === 'function') go('Team Portfolio');
+
+    else if(typeof render === 'function') render();
+
+  };
+
+  window.openAskMentor = function(dimension){
+
+    if(dimension) window.mentorActiveDimension = dimension;
+
+    if(!activeMentorLens()){
+
+      window.mentorDashboardPanel = 'persona';
+
+      if(mentorSurfaceOpen() && typeof render === 'function') render();
+
+      return;
+
+    }
 
     window.mentorDashboardPanel = 'work';
 
@@ -4826,7 +4874,15 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     if(teamId) window.mountPortfolioChat(teamId);
 
-    if(page === 'Mentor Dashboard' && typeof render === 'function') render();
+    clearActiveQuiz(teamId);
+
+    const kb = buildTeamKnowledgeBase(teamId);
+
+    const question = personaOpeningQuestion(kb, activeMentorName());
+
+    chatMessages = [{ role: 'assistant', text: question.text, html: esc(question.text), chunks: question.chunks || [] }];
+
+    if(mentorSurfaceOpen() && typeof render === 'function') render();
 
     updateChatMessagesThread();
 
@@ -4856,7 +4912,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     pushLensQuiz(kb);
 
-    if(page === 'Mentor Dashboard' && typeof render === 'function') render();
+    if(mentorSurfaceOpen() && typeof render === 'function') render();
 
     updateChatMessagesThread();
 
@@ -4906,7 +4962,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function mentorStageKey(){
     const options = ['0', '1', 'system-design', '2', '3'];
-    const current = (typeof window !== 'undefined' && (window.mentorDashboardStage || window.activePortfolioStage)) || '0';
+    const current = (typeof activePortfolioStage !== 'undefined' && activePortfolioStage) || (typeof window !== 'undefined' && (window.activePortfolioStage || window.mentorDashboardStage)) || '0';
     const id = String(current);
     return options.includes(id) ? id : '0';
   }
@@ -4988,9 +5044,126 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function firstDocumentedLine(chunk){
-    const lines = String(chunk && chunk.text || '').split('\n').map(line => line.trim()).filter(Boolean);
-    const bullet = lines.find(line => /^[•\-]/.test(line));
-    return (bullet || lines[0] || '').replace(/^[•\-]\s*/, '').slice(0, 320);
+    const lines = documentedLines(chunk);
+    return (lines[0] || '').slice(0, 320);
+  }
+
+  function documentedLines(chunk){
+    return String(chunk && chunk.text || '')
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/^[•\-]\s*/, '').replace(/^Viewpoint:\s*/i, ''))
+      .filter(line => line.length > 1);
+  }
+
+  function isTemplateChunk(chunk){
+    return !!chunk && (String(chunk.id || '').startsWith('sdd-') || chunk.type === 'SDD Template');
+  }
+
+  const SYSTEMS_SUBJECTS = [
+    { label: 'Data Structures', match: line => /data structure/i.test(line) },
+    { label: 'Algorithms', match: line => /algorithm/i.test(line) && !/data structure/i.test(line) },
+    { label: 'DBMS', match: line => /\bdbms\b|database/i.test(line) },
+    { label: 'Computer Networks', match: line => /computer network|\bnetworks\b/i.test(line) },
+    { label: 'Operating Systems', match: line => /operating system/i.test(line) },
+    { label: 'Compiler Design', match: line => /compiler/i.test(line) }
+  ];
+
+  function courseTableForStage(kb){
+    const chunk = ((kb && kb.chunks) || []).find(item => item.id === 'table-0-1');
+    if(!chunk || !stageKeepsChunk(chunk, mentorStageKey())) return null;
+    return chunk;
+  }
+
+  function systemsSubjectLines(kb){
+    const chunk = courseTableForStage(kb);
+    if(!chunk) return [];
+    const lines = documentedLines(chunk);
+    const used = new Set();
+    const found = [];
+    SYSTEMS_SUBJECTS.forEach(subject => {
+      const line = lines.find(item => !used.has(item) && subject.match(item));
+      if(!line) return;
+      used.add(line);
+      found.push({ label: subject.label, line: line.slice(0, 320), citation: chunk.citation, chunk });
+    });
+    return found;
+  }
+
+  function systemsSubjectPrompt(subject){
+    return `How does ${subject.label} shape the need and the flow? ${subject.line} ${subject.citation}`;
+  }
+
+  function nextSystemsSubject(kb, answerText){
+    const answer = String(answerText || '');
+    return systemsSubjectLines(kb).find(subject => !answer.includes(subject.line.slice(0, 48))) || null;
+  }
+
+  function systemsThinkingFollowUp(kb, answerText){
+    const next = nextSystemsSubject(kb, answerText);
+    return next ? systemsSubjectPrompt(next) : '';
+  }
+
+  function personaAskStem(name){
+    return {
+      'Systems Thinking': 'How does this subject shape the need and the flow?',
+      'Foundational CS Knowledge': 'Which course idea does this line use?',
+      'Faculty Expertise': 'How would you defend this documented requirement?',
+      'Engineering Standards': 'How does this project say this quality target is verified?',
+      'Theme-Based Expertise': 'Why does this line show the project belongs to its theme?',
+      'Project-Specific Knowledge': 'What does this project actually do in this line?'
+    }[name] || 'What does this documented line say about the project?';
+  }
+
+  function followUpSource(kb, chunks){
+    const teamChunks = (chunks || []).filter(chunk => !isTemplateChunk(chunk));
+    const chosen = teamChunks[teamChunks.length - 1];
+    if(!chosen) return null;
+    return (kb && kb.chunks || []).find(chunk => chunk.id === chosen.id) || chosen;
+  }
+
+  function followUpLine(chunk, answerText){
+    const lines = documentedLines(chunk);
+    if(!lines.length) return '';
+    const answer = String(answerText || '');
+    const used = lines.map(line => answer.includes(line.slice(0, 48)));
+    if(lines.length > 1 && used.every(Boolean)) return lines[0].slice(0, 320);
+    const usedIndex = used.findIndex(Boolean);
+    if(usedIndex >= 0 && lines[usedIndex + 1]) return lines[usedIndex + 1].slice(0, 320);
+    return lines[0].slice(0, 320);
+  }
+
+  function withAskFollowUp(kb, result){
+    if(activeMentorName() === 'Systems Thinking'){
+      const prompt = systemsThinkingFollowUp(kb, result.text);
+      if(!prompt) return result;
+      return { text: `${result.text}\n\nFollow-up: ${prompt}`, chunks: result.chunks };
+    }
+    const chunk = followUpSource(kb, result.chunks || []);
+    const line = chunk ? followUpLine(chunk, result.text) : '';
+    if(!chunk || !line || !chunk.citation) return result;
+    return {
+      text: `${result.text}\n\nFollow-up: ${personaAskStem(activeMentorName())} ${line} ${chunk.citation}`,
+      chunks: result.chunks
+    };
+  }
+
+  function personaOpeningQuestion(kb, dimension){
+    const selection = chunksForLens(kb, dimension, mentorStageKey());
+    if(!selection.lens) return { text: 'Choose one mentor, then ask about that part of the project.', chunks: [] };
+    if(selection.lens.name === 'Systems Thinking'){
+      const subject = nextSystemsSubject(kb, '');
+      if(!subject) return { text: 'The portfolio does not document these subjects.', chunks: [] };
+      return { text: systemsSubjectPrompt(subject), chunks: [subject.chunk] };
+    }
+    const chunk = selection.chunks[0];
+    const line = chunk ? firstDocumentedLine(chunk) : '';
+    if(selection.later || !chunk || !line) return { text: lensGapMessage(selection), chunks: [] };
+    return {
+      text: `${personaAskStem(selection.lens.name)} ${line} ${chunk.citation}`,
+      chunks: [chunk]
+    };
   }
 
   function lensGapMessage(selection){
@@ -5012,23 +5185,23 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const closest = closestLensChunk(query, selection.earlier);
       const offer = closest ? ` The closest earlier section is ${closest.citation}.` : '';
       const sdd = sddFallbackClause(query, 1);
-      return {
+      return withAskFollowUp(kb, {
         text: `The portfolio does not document ${mentorStageLabel(selection.stage)} yet.${offer}${sdd.text} ${selection.lens.help}`,
         chunks: (closest ? [closest] : []).concat(sdd.chunks)
-      };
+      });
     }
     const scored = scoreAllChunks(query, { chunks: selection.chunks, dynamicHintIndex: [] }).filter(entry => entry.score >= 12);
     if(!scored.length){
       const sdd = sddFallbackClause(query, 12);
-      if(sdd.text) return { text: `The portfolio does not cover this.${sdd.text}`, chunks: sdd.chunks };
+      if(sdd.text) return withAskFollowUp(kb, { text: `The portfolio does not cover this.${sdd.text}`, chunks: sdd.chunks });
       return { text: `The portfolio does not cover this. ${selection.lens.help}`, chunks: [] };
     }
     const chunk = focusAskedPoint(query, scored.map(entry => entry.chunk))[0];
-    if(chunk.missingPoint) return { text: chunk.text, chunks: [chunk] };
-    return {
+    if(chunk.missingPoint) return withAskFollowUp(kb, { text: chunk.text, chunks: [chunk] });
+    return withAskFollowUp(kb, {
       text: `${selection.lens.help}\n\n${chunk.text}\n\n${chunk.citation}`,
       chunks: [chunk]
-    };
+    });
   }
 
   function clearActiveQuiz(teamId){
@@ -5117,7 +5290,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     isChatOpen = false;
 
-    if(page === 'Mentor Dashboard' && typeof render === 'function') render();
+    if(mentorSurfaceOpen() && typeof render === 'function') render();
 
     updateChatMessagesThread();
 
@@ -5252,6 +5425,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     chunksForLens,
 
     answerWithinLens,
+
+    personaOpeningQuestion,
+
+    systemsThinkingFollowUp,
 
     buildDescriptiveQuiz,
 

@@ -1190,7 +1190,7 @@ sendDiscussion=function(){if(state.role==='Faculty'&&activeTeam()?.faculty!==sta
 function accountStrip(){
   if(state.role==='HOD'||page==='Department') return '';const available=state.role==='Faculty'?visibleTeams():state.teams;return `<div class="account-strip"><div><span class="tag">CS AI</span> <span class="mini">HOD: <strong>${esc(state.department.hod)}</strong> &nbsp;·&nbsp; Faculty Admin: <strong>${esc(state.department.facultyAdmin)}</strong></span></div><div class="account-controls">${state.role==='Faculty'?`<label for="faculty-account">Demo faculty account</label><select id="faculty-account" onchange="selectFaculty(this.value)">${facultyNames().map(n=>`<option ${n===state.facultyAccount?'selected':''}>${esc(n)}</option>`).join('')}</select>`:''}<label for="team-account">${state.role==='Team Lead'?'Demo team account':'Active team'}</label><select id="team-account" onchange="switchTeam(this.value)">${available.map(t=>`<option value="${esc(t.id)}" ${t.id===state.activeTeamId?'selected':''}>Team ${esc(t.id)} · ${esc(t.members[0].name)}</option>`).join('')}</select></div></div>`}
 const renderWorkspace=render;
-render=function(){ensureDepartment();if(page==='Faculty Admin')page='Overview';renderWorkspace();const main=$('.main');if(state.role==='Faculty'&&!visibleTeams().length){main.innerHTML=accountStrip()+heading('No teams assigned','This faculty account has no team allocation. Ask Admin or Faculty Admin to allocate a guide.');return}let html=main.innerHTML;if(['Design Journey'].includes(page)||page==='Overview'&&['Team Lead','Faculty'].includes(state.role))html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));main.innerHTML=html;if(state.role!=='HOD'&&page!=='Department') main.insertAdjacentHTML('afterbegin',accountStrip());const f=$('#stageform');if(f){f.onsubmit=e=>{e.preventDefault();saveStage(true)};f.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();if((page==='Team Portfolio'||page==='Mentor Dashboard')&&typeof mountPortfolioChat==='function'&&activeTeam()?.id)mountPortfolioChat(activeTeam().id);else if(typeof unmountPortfolioChat==='function')unmountPortfolioChat();if(page==='Mentor Dashboard'&&typeof paintMentorWork==='function')paintMentorWork()};
+render=function(){ensureDepartment();if(page==='Faculty Admin')page='Overview';renderWorkspace();const main=$('.main');if(state.role==='Faculty'&&!visibleTeams().length){main.innerHTML=accountStrip()+heading('No teams assigned','This faculty account has no team allocation. Ask Admin or Faculty Admin to allocate a guide.');return}let html=main.innerHTML;if(['Design Journey'].includes(page)||page==='Overview'&&['Team Lead','Faculty'].includes(state.role))html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));main.innerHTML=html;if(state.role!=='HOD'&&page!=='Department') main.insertAdjacentHTML('afterbegin',accountStrip());const f=$('#stageform');if(f){f.onsubmit=e=>{e.preventDefault();saveStage(true)};f.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();if((page==='Team Portfolio'||page==='Mentor Dashboard')&&typeof mountPortfolioChat==='function'&&activeTeam()?.id)mountPortfolioChat(activeTeam().id);else if(typeof unmountPortfolioChat==='function')unmountPortfolioChat();if((page==='Mentor Dashboard'||window.mentorSplitOpen)&&typeof paintMentorWork==='function')paintMentorWork();if(window.mentorSplitOpen&&page==='Team Portfolio'&&typeof switchPortfolioStage==='function')switchPortfolioStage(String(window.mentorDashboardStage||window.activePortfolioStage||'0'), false)};
 const teamOverview=overview;
 overview=function(){if(state.role==='Faculty Admin')return facultyAdminPanel();return teamOverview()};
 function getDomainKnowledge(t){
@@ -1977,33 +1977,19 @@ portfolio=function(){
 
 function mentorStageId(){
   const options = ['0','1','system-design','2','3'];
-  const current = String(window.mentorDashboardStage || window.activePortfolioStage || '0');
+  const current = String((typeof activePortfolioStage !== 'undefined' && activePortfolioStage) || window.activePortfolioStage || '0');
   return options.includes(current) ? current : '0';
-}
-function setMentorDashboardStage(id){
-  window.mentorDashboardStage = String(id);
-  activePortfolioStage = window.mentorDashboardStage;
-  window.activePortfolioStage = window.mentorDashboardStage;
-  render();
 }
 function backToPortfolioFromMentor(){
   const stage = mentorStageId();
-  activePortfolioStage = stage;
-  window.activePortfolioStage = stage;
-  go('Team Portfolio');
+  window.mentorSplitOpen = false;
+  if(page === 'Team Portfolio') render();
+  else go('Team Portfolio');
   if(typeof switchPortfolioStage === 'function') switchPortfolioStage(stage, false);
 }
-window.setMentorDashboardStage = setMentorDashboardStage;
 window.backToPortfolioFromMentor = backToPortfolioFromMentor;
 
 function mentorDashboard(){
-  const stages = [
-    {id:'0', label:'Stage 0', badge:'0'},
-    {id:'1', label:'Stage 1', badge:'1'},
-    {id:'system-design', label:'Stage 2', badge:'2'},
-    {id:'2', label:'Stage 3', badge:'3'},
-    {id:'3', label:'Stage 4', badge:'4'}
-  ];
   const dimensions = [
     'Systems Thinking',
     'Foundational CS Knowledge',
@@ -2012,29 +1998,47 @@ function mentorDashboard(){
     'Theme-Based Expertise',
     'Project-Specific Knowledge'
   ];
-  const stage = mentorStageId();
-  const badge = (stages.find(item => item.id === stage) || stages[0]).badge;
   const panel = window.mentorDashboardPanel || 'persona';
   const team = typeof activeTeam === 'function' ? activeTeam() : null;
-  const pills = stages.map(item => `<button type="button" class="mentor-stage-pill${item.id===stage?' active':''}" aria-pressed="${item.id===stage}" onclick="setMentorDashboardStage('${item.id}')">${item.label}</button>`).join('');
   const mentorName = window.mentorActiveDimension || '';
-  const cards = dimensions.map(name => `<article class="mentor-dimension-card"><h3>${esc(name)}</h3><div class="mentor-dimension-actions"><button type="button" class="mentor-quiz-btn" onclick="window.startMentorMcq('${esc(name)}')">MCQ Quiz</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorDescriptive('${esc(name)}')">Descriptive Quiz</button></div></article>`).join('');
-  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona – Six Dimensions</h2><span class="mentor-stage-badge">Stage: ${badge}</span></div><p class="mentor-panel-note">${esc(team?.title || 'Open portfolio')}</p><div class="mentor-dimension-grid">${cards}</div></section>`;
+  const cards = dimensions.map(name => `<article class="mentor-dimension-card"><h3>${esc(name)}</h3><div class="mentor-dimension-actions"><button type="button" class="mentor-quiz-btn" onclick="window.openAskMentor('${esc(name)}')">Ask</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorMcq('${esc(name)}')">MCQ Quiz</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorDescriptive('${esc(name)}')">Descriptive Quiz</button></div></article>`).join('');
+  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona – Six Dimensions</h2></div><p class="mentor-panel-note">${esc(team?.title || 'Open portfolio')}</p><div class="mentor-dimension-grid">${cards}</div></section>`;
   const workTitle = mentorName || 'Ask a Mentor';
-  const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2><span class="mentor-stage-badge">Stage: ${badge}</span></div><div id="mentor-work-messages" class="mentor-work-messages"></div><form class="mentor-work-form" onsubmit="event.preventDefault(); window.handleChatSubmit();"><textarea id="mentor-work-input" rows="3" placeholder="Ask about this part of the project…"></textarea><button type="submit" class="mentor-quiz-btn">Send</button></form></section>`;
+  const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2></div><div id="mentor-work-messages" class="mentor-work-messages"></div><form class="mentor-work-form" onsubmit="event.preventDefault(); window.handleChatSubmit();"><textarea id="mentor-work-input" rows="3" placeholder="Ask about this part of the project…"></textarea><button type="submit" class="mentor-quiz-btn">Send</button></form></section>`;
   const notes = (window.mentorReviseNotes || []).map(note => {
     const sdd = !note.supported && note.sddCitation ? ` ${esc(note.sddCitation)}` : '';
     const mark = note.supported ? esc(note.citation) : `Not in this part of the project${note.citation ? ` ${esc(note.citation)}` : ''}${sdd}`;
     return `<li class="${note.supported ? 'supported' : 'missed'}"><span>${esc(note.sentence)}</span><em>${mark}</em></li>`;
   }).join('');
   const reviseTarget = mentorName || (team?.title || 'the portfolio');
-  const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(mentorName || 'Revise My Work')}</h2><span class="mentor-stage-badge">Stage: ${badge}</span></div><p class="mentor-panel-note">Paste a draft. Each sentence is checked against ${esc(reviseTarget)}. Nothing is added beyond the documented lines.</p><textarea id="mentor-revise-input" rows="8" placeholder="Paste the paragraph to check">${esc(window.mentorReviseDraft || '')}</textarea><button type="button" class="mentor-quiz-btn" onclick="window.reviseMentorDraft()">Check against portfolio</button>${notes ? `<ul class="mentor-revise-list">${notes}</ul>` : ''}</section>`;
+  const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(mentorName || 'Revise My Work')}</h2></div><p class="mentor-panel-note">Paste a draft. Each sentence is checked against ${esc(reviseTarget)}. Nothing is added beyond the documented lines.</p><textarea id="mentor-revise-input" rows="8" placeholder="Paste the paragraph to check">${esc(window.mentorReviseDraft || '')}</textarea><button type="button" class="mentor-quiz-btn" onclick="window.reviseMentorDraft()">Check against portfolio</button>${notes ? `<ul class="mentor-revise-list">${notes}</ul>` : ''}</section>`;
   const main = panel === 'revise' ? revise : panel === 'work' ? work : persona;
-  return `<div class="mentor-dashboard"><div class="mentor-dashboard-top"><button type="button" class="mentor-back" onclick="backToPortfolioFromMentor()">← Back to portfolio</button><div class="mentor-stage-row" role="tablist">${pills}</div></div><div class="mentor-layout"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='work'?' active':''}" onclick="window.openAskMentor()">Ask a Mentor</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.mentorDashboardPanel='revise';render()">Revise My Work</button></nav>${main}</div></div>`;
+  return `<div class="mentor-dashboard"><div class="mentor-layout"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='work'?' active':''}" onclick="window.openAskMentor(window.mentorActiveDimension||'')">Ask a Mentor</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.mentorDashboardPanel='revise';render()">Revise My Work</button></nav>${main}</div></div>`;
+}
+
+function hasTeamPortfolioData(t){
+  if (!t) return false;
+  const title = (t.title || '').trim().toLowerCase();
+  const id = (t.id || '').trim();
+  // Specifically disable HTTP Proxy Server with In-Memory Caching per user requirement
+  if (id === 'B-12' || title.includes('http proxy server with in-memory caching') || title.includes('http proxy server')) {
+    return false;
+  }
+  if (typeof window !== 'undefined' && window.STATIC_TEAMS_DATA) {
+    const staticTeam = window.STATIC_TEAMS_DATA[id] ||
+      (id === 'A-03' ? (window.STATIC_TEAMS_DATA['A-03'] || window.STATIC_TEAMS_DATA['03']) : null) ||
+      Object.values(window.STATIC_TEAMS_DATA).find(st => st && (st.id === id || (st.title && t.title && st.title.toLowerCase().trim() === title)));
+    if (staticTeam) return true;
+  }
+  return false;
 }
 
 function openTeamPortfolio(id){
   const next = state.teams.find(t => t.id === id);
+  if (!hasTeamPortfolioData(next)) {
+    // Keep button color identical, but do not redirect to portfolio
+    return;
+  }
   window.lastViewedTheme = (selectedTheme !== null && selectedTheme !== undefined) ? selectedTheme : (next?.theme_no || 1);
   activePortfolioStage = '0';
   window.activePortfolioStage = '0';
@@ -2150,7 +2154,9 @@ function hodProjectRowsForTheme(tab){
     return '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--ink);font-size:13.5px">No projects found in this theme.</td></tr>';
   }
 
-  return list.map(t=>`
+  return list.map(t=>{
+    const hasData = hasTeamPortfolioData(t);
+    return `
     <tr>
       <td style="padding: 12px 16px;">
         <strong style="color:var(--ink);font-size:14px;display:block;line-height:1.35">${esc(t.title)}</strong>
@@ -2167,7 +2173,7 @@ function hodProjectRowsForTheme(tab){
         </button>
       </td>
     </tr>
-  `).join('');
+  `;}).join('');
 }
 
 function downloadHODProjectCSVTemplate(){
