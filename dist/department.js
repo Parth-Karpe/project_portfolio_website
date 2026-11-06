@@ -1298,16 +1298,6 @@ function facultyProjectsDashboard(){
         <strong>${String(totalStudents).padStart(2, '0')}</strong>
         <small>B.Tech CSE(AI) · Semester V</small>
       </div>
-      <div class="stat">
-        <div class="stat-top">Department & Program 🏛️</div>
-        <strong>CSE(AI)</strong>
-        <small>KLE Technological University</small>
-      </div>
-      <div class="stat">
-        <div class="stat-top">Academic Session 📅</div>
-        <strong>2026–27</strong>
-        <small>Mini-Project Viva & Defense</small>
-      </div>
     </div>
   `;
 
