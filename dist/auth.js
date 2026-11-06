@@ -126,16 +126,29 @@
     if(typeof render === 'function') render();
   };
 
+  function clearAuthInputs(){
+    const inputs = document.querySelectorAll('#login-username, #login-password, #reg-name, #reg-id, #reg-email, #reg-password, #reg-confirm, input[id^="login-"], input[id^="reg-"]');
+    inputs.forEach(inp => {
+      inp.value = '';
+    });
+  }
+
   root.switchAuthMode = function(mode){
     authMode = mode;
     authErrorMsg = '';
     if(typeof render === 'function') render();
+    clearAuthInputs();
+    setTimeout(clearAuthInputs, 20);
+    setTimeout(clearAuthInputs, 80);
   };
 
   root.switchAuthRoleTab = function(role){
     authRoleTab = role;
     authErrorMsg = '';
     if(typeof render === 'function') render();
+    clearAuthInputs();
+    setTimeout(clearAuthInputs, 20);
+    setTimeout(clearAuthInputs, 80);
   };
 
   root.quickDemoLogin = function(role, identifier){
@@ -322,17 +335,17 @@
 
         ${errorHtml}
 
-        <form onsubmit="window.handleAuthLogin(event)" style="display:flex; flex-direction:column; gap:14px;">
+        <form onsubmit="window.handleAuthLogin(event)" autocomplete="off" style="display:flex; flex-direction:column; gap:14px;">
           <div>
             <label for="login-username" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">
               ${authRoleTab === 'Student' ? 'University Seat Number (USN) or College Email' : authRoleTab === 'Faculty' ? 'Faculty College Email' : 'HOD College Email'}
             </label>
-            <input id="login-username" type="text" required placeholder="${authRoleTab === 'Student' ? 'Enter USN or Email' : authRoleTab === 'Faculty' ? 'Enter college email' : 'Enter HOD email'}" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <input id="login-username" name="${authRoleTab.toLowerCase()}_user_identifier" type="text" autocomplete="off" required placeholder="${authRoleTab === 'Student' ? 'Enter USN or Email' : authRoleTab === 'Faculty' ? 'Enter college email' : 'Enter HOD email'}" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
           <div>
             <label for="login-password" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">Password</label>
-            <input id="login-password" type="password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <input id="login-password" name="${authRoleTab.toLowerCase()}_user_secret" type="password" autocomplete="new-password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
           <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:700; margin-top:6px;">
@@ -361,38 +374,38 @@
 
         ${errorHtml}
 
-        <form onsubmit="window.handleAuthRegister(event)" style="display:flex; flex-direction:column; gap:13px;">
+        <form onsubmit="window.handleAuthRegister(event)" autocomplete="off" style="display:flex; flex-direction:column; gap:13px;">
           <div>
             <label for="reg-name" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Full Name</label>
-            <input id="reg-name" type="text" required placeholder="Enter full name" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <input id="reg-name" name="${authRoleTab.toLowerCase()}_reg_fullname" type="text" autocomplete="off" required placeholder="Enter full name" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
           ${authRoleTab === 'Student' ? `
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
               <div>
                 <label for="reg-id" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">University Seat Number (USN)</label>
-                <input id="reg-id" type="text" required placeholder="Enter USN" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+                <input id="reg-id" name="student_reg_usn" type="text" autocomplete="off" required placeholder="Enter USN" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
               </div>
               <div>
                 <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
-                <input id="reg-email" type="email" required placeholder="Enter college email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+                <input id="reg-email" name="student_reg_email" type="email" autocomplete="off" required placeholder="Enter college email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
               </div>
             </div>
           ` : `
             <div>
               <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
-              <input id="reg-email" type="email" required placeholder="Enter faculty email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <input id="reg-email" name="faculty_reg_email" type="email" autocomplete="off" required placeholder="Enter faculty email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
           `}
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <label for="reg-password" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Password</label>
-              <input id="reg-password" type="password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <input id="reg-password" name="${authRoleTab.toLowerCase()}_reg_pass" type="password" autocomplete="new-password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
             <div>
               <label for="reg-confirm" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Confirm Password</label>
-              <input id="reg-confirm" type="password" required placeholder="Confirm password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <input id="reg-confirm" name="${authRoleTab.toLowerCase()}_reg_confirm" type="password" autocomplete="new-password" required placeholder="Confirm password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
           </div>
 
