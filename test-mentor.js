@@ -40,9 +40,18 @@ eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'team_12.js'), 'utf8')
 
 // 3. Load the SDD template, then the Portfolio RAG / AI Mentor
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'sdd-kb.js'), 'utf8'));
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'persona', 'systems_thinking_knowledge.js'), 'utf8'));
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'persona', 'systems_thinking_rules.js'), 'utf8'));
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'persona', 'foundational_cs_knowledge.js'), 'utf8'));
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'persona', 'foundational_cs_rules.js'), 'utf8'));
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'persona', 'engineering_standards_knowledge.js'), 'utf8'));
+eval(fs.readFileSync(path.join(__dirname, 'dist', 'data', 'persona', 'engineering_standards_rules.js'), 'utf8'));
 eval(fs.readFileSync(path.join(__dirname, 'dist', 'portfolio-rag.js'), 'utf8'));
 
 const {
+  getPersonaKnowledge,
+  getPersonaRules,
+  facultyMcq,
   buildTeamKnowledgeBase,
   retrieveRelevantChunks,
   classifyAndRouteIntent,
@@ -906,6 +915,37 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
     assert(stage4.stageNote.includes('Stage 4'));
   });
   global.sessionStorage.setItem('pg_assess_probe', '1');
+});
+
+test('Persona knowledge & rules modular files correctly ground questions and evaluate submissions for Systems Thinking, Foundational CS, and Engineering Standards', () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const personas = ['Systems Thinking', 'Foundational CS Knowledge', 'Engineering Standards'];
+
+  personas.forEach(persona => {
+    const knowledge = getPersonaKnowledge(persona);
+    const rules = getPersonaRules(persona);
+    assert(knowledge, 'Knowledge module missing for ' + persona);
+    assert(rules, 'Rules module missing for ' + persona);
+
+    const evidence0 = knowledge.extractEvidence(kb03, '0');
+    assert(evidence0.length > 50, 'Evidence 0 too short for ' + persona);
+    const evidence1 = knowledge.extractEvidence(kb03, '1');
+    assert(evidence1.length > 50, 'Evidence 1 too short for ' + persona);
+
+    assert.strictEqual(rules.stageTemplates['0'].mcq.length, 5, 'Stage 0 MCQ length for ' + persona);
+    assert.strictEqual(rules.stageTemplates['1'].mcq.length, 5, 'Stage 1 MCQ length for ' + persona);
+
+    const testQ = rules.stageTemplates['0'].mcq[0];
+    const correctResult = rules.evaluationRules.evaluateSubmission(testQ, ['A', 'B', 'C', 'D'][testQ.correct]);
+    assert.strictEqual(correctResult.score, 1);
+    assert(correctResult.defenseTip.length > 5);
+
+    const quiz = facultyMcq(kb03, persona, '0').quiz;
+    quiz.userAnswers[0] = quiz.questions[0].correctKey;
+    const evaluated = evaluateVivaQuiz(quiz);
+    assert.strictEqual(evaluated.details[0].isCorrect, true);
+    assert(evaluated.details[0].defenseTip.length > 5);
+  });
 });
 
 function stageSectionText(kb, stage){

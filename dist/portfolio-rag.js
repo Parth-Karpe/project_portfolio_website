@@ -2308,7 +2308,16 @@
 
       const chosenOption = q.options.find(o => o.key.toUpperCase() === (chosenKey || '').toUpperCase());
 
-
+      const personaRules = getPersonaRules(quizState.dimension || q.type);
+      let explanation = q.explanation;
+      let defenseTip = q.defenseTip;
+      if(personaRules && personaRules.evaluationRules && typeof personaRules.evaluationRules.evaluateSubmission === 'function'){
+        const evalOutput = personaRules.evaluationRules.evaluateSubmission(q, chosenKey);
+        if(evalOutput){
+          if(evalOutput.explanation) explanation = evalOutput.explanation;
+          if(evalOutput.defenseTip) defenseTip = evalOutput.defenseTip;
+        }
+      }
 
       return {
 
@@ -2332,9 +2341,9 @@
 
         elementId: q.elementId,
 
-        explanation: q.explanation,
+        explanation,
 
-        defenseTip: q.defenseTip
+        defenseTip
 
       };
 
@@ -6435,10 +6444,38 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     'Theme-Based Expertise': themeStage1Persona()
   };
 
-  function facultyBank(stage){
-    if(String(stage) === '1') return STAGE1_BANK;
-    if(String(stage) === '0') return STAGE0_BANK;
+  function getPersonaKnowledge(persona){
+    const g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : {});
+    if(persona === 'Systems Thinking') return (typeof SYSTEMS_THINKING_KNOWLEDGE !== 'undefined' ? SYSTEMS_THINKING_KNOWLEDGE : g.SYSTEMS_THINKING_KNOWLEDGE) || null;
+    if(persona === 'Foundational CS Knowledge') return (typeof FOUNDATIONAL_CS_KNOWLEDGE !== 'undefined' ? FOUNDATIONAL_CS_KNOWLEDGE : g.FOUNDATIONAL_CS_KNOWLEDGE) || null;
+    if(persona === 'Engineering Standards') return (typeof ENGINEERING_STANDARDS_KNOWLEDGE !== 'undefined' ? ENGINEERING_STANDARDS_KNOWLEDGE : g.ENGINEERING_STANDARDS_KNOWLEDGE) || null;
     return null;
+  }
+
+  function getPersonaRules(persona){
+    const g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : {});
+    if(persona === 'Systems Thinking') return (typeof SYSTEMS_THINKING_RULES !== 'undefined' ? SYSTEMS_THINKING_RULES : g.SYSTEMS_THINKING_RULES) || null;
+    if(persona === 'Foundational CS Knowledge') return (typeof FOUNDATIONAL_CS_RULES !== 'undefined' ? FOUNDATIONAL_CS_RULES : g.FOUNDATIONAL_CS_RULES) || null;
+    if(persona === 'Engineering Standards') return (typeof ENGINEERING_STANDARDS_RULES !== 'undefined' ? ENGINEERING_STANDARDS_RULES : g.ENGINEERING_STANDARDS_RULES) || null;
+    return null;
+  }
+
+  function facultyBank(stage){
+    const s = String(stage);
+    let base = null;
+    if(s === '1') base = STAGE1_BANK;
+    else if(s === '0') base = STAGE0_BANK;
+    if(!base) return null;
+
+    const bank = Object.assign({}, base);
+    const targetPersonas = ['Systems Thinking', 'Foundational CS Knowledge', 'Engineering Standards'];
+    targetPersonas.forEach(persona => {
+      const rules = getPersonaRules(persona);
+      if(rules && rules.stageTemplates && rules.stageTemplates[s]){
+        bank[persona] = rules.stageTemplates[s];
+      }
+    });
+    return bank;
   }
 
   function resolveQuizItem(item, kb){
@@ -6511,7 +6548,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return { teamId: kb && kb.teamId, dimension: persona, stage: String(stage), kind: 'descriptive', personaStage: true, templateGuided: true, questions };
   }
 
-  function facultyContextLines(kb, stage){
+  function facultyContextLines(kb, stage, persona){
+    const pk = getPersonaKnowledge(persona);
+    if(pk && typeof pk.extractEvidence === 'function'){
+      const evidence = pk.extractEvidence(kb, stage);
+      if(evidence && evidence.trim().length > 0) return evidence;
+    }
     const stageKey = String(stage);
     const tokens = stageKey === '1'
       ? ['stage0-objectives', 'table-0-4', 'table-0-5', 'fr-', 'nfr-', 'table-use-cases', 'diag-usecase', 'table-testsuite']
@@ -6548,7 +6590,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         'QUESTIONS:',
         questions,
         'PROJECT:',
-        facultyContextLines(kb, stage)
+        facultyContextLines(kb, stage, persona)
       ].join('\n')
     };
   }
@@ -7061,6 +7103,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   // Programmatic API & Testing Namespace
 
   window.PortfolioRAG = {
+
+    getPersonaKnowledge,
+
+    getPersonaRules,
+
+    facultyMcq,
 
     buildTeamKnowledgeBase,
 
