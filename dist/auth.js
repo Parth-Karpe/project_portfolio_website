@@ -181,7 +181,7 @@
         applyUserLogin(matched);
         return;
       }
-      authErrorMsg = 'Invalid credentials for ' + authRoleTab + '. Check your input or use the 1-click demo login below.';
+      authErrorMsg = 'Invalid credentials for ' + authRoleTab + '. Please check your identifier and password.';
       if(typeof render === 'function') render();
       return;
     }
@@ -293,15 +293,12 @@
             <label for="login-username" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">
               ${authRoleTab === 'Student' ? 'University Seat Number (USN) or College Email' : authRoleTab === 'Faculty' ? 'Faculty Email or Employee ID' : 'HOD Email or Admin ID'}
             </label>
-            <input id="login-username" type="text" required placeholder="${authRoleTab === 'Student' ? 'e.g. 01FE23BCS103 or vedant.k@kletech.ac.in' : authRoleTab === 'Faculty' ? 'e.g. amit.k@kletech.ac.in' : 'e.g. hod.cseai@kletech.ac.in'}" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <input id="login-username" type="text" required placeholder="${authRoleTab === 'Student' ? 'Enter USN or Email' : authRoleTab === 'Faculty' ? 'Enter Faculty Email or ID' : 'Enter HOD Email or ID'}" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
           <div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <label for="login-password" style="font-size:12.5px; font-weight:700; color:var(--ink);">Password</label>
-              <span class="mini" style="color:var(--muted);">Default: password123</span>
-            </div>
-            <input id="login-password" type="password" required value="password123" placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <label for="login-password" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">Password</label>
+            <input id="login-password" type="password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
           <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:700; margin-top:6px;">
@@ -309,22 +306,7 @@
           </button>
         </form>
 
-        <div style="margin-top:22px; padding-top:16px; border-top:1px solid var(--line);">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-            <span class="mini" style="font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px;">⚡ Quick 1-Click Demo Login</span>
-          </div>
-          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
-            <button type="button" class="btn secondary" style="font-size:11.5px; padding:7px 4px; justify-content:center; font-weight:700;" onclick="window.quickDemoLogin('Student', '03')">
-              🎓 Student (T-03)
-            </button>
-            <button type="button" class="btn secondary" style="font-size:11.5px; padding:7px 4px; justify-content:center; font-weight:700;" onclick="window.quickDemoLogin('Faculty', 'Amit')">
-              👨‍🏫 Faculty (Amit K)
-            </button>
-            <button type="button" class="btn secondary" style="font-size:11.5px; padding:7px 4px; justify-content:center; font-weight:700;" onclick="window.quickDemoLogin('HOD')">
-              🏛️ HOD (Narayan)
-            </button>
-          </div>
-        </div>
+
 
         <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--muted);">
           Don't have an account? 
@@ -348,7 +330,7 @@
         <form onsubmit="window.handleAuthRegister(event)" style="display:flex; flex-direction:column; gap:13px;">
           <div>
             <label for="reg-name" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Full Name</label>
-            <input id="reg-name" type="text" required placeholder="e.g. Nupur Bagave" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <input id="reg-name" type="text" required placeholder="Enter full name" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
@@ -356,11 +338,11 @@
               <label for="reg-id" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">
                 ${authRoleTab === 'Student' ? 'USN' : 'Faculty ID'}
               </label>
-              <input id="reg-id" type="text" required placeholder="${authRoleTab === 'Student' ? 'e.g. 01FE23BCS102' : 'e.g. EMP_FAC_15'}" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <input id="reg-id" type="text" required placeholder="${authRoleTab === 'Student' ? 'Enter USN' : 'Enter Faculty ID'}" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
             <div>
               <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
-              <input id="reg-email" type="email" required placeholder="name@kletech.ac.in" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <input id="reg-email" type="email" required placeholder="Enter college email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
           </div>
 
@@ -381,11 +363,11 @@
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
               <label for="reg-password" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Password</label>
-              <input id="reg-password" type="password" required placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <input id="reg-password" type="password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
             <div>
               <label for="reg-confirm" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Confirm Password</label>
-              <input id="reg-confirm" type="password" required placeholder="••••••••" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <input id="reg-confirm" type="password" required placeholder="Confirm password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
           </div>
 
@@ -410,12 +392,9 @@
             <img src="assets/kle_tech_logo.png" alt="KLE Technological University" style="height:36px; object-fit:contain;">
             <span style="font-size:13.5px; font-weight:800; color:var(--ink); letter-spacing:0.3px;">Department of CSE(AI)</span>
           </div>
-          <h1 style="font-size:26px; font-weight:800; color:var(--ink); margin:0 0 6px; letter-spacing:-0.02em;">
+          <h1 style="font-size:26px; font-weight:800; color:var(--ink); margin:0; letter-spacing:-0.02em;">
             ProjectGate <span style="color:var(--brand);">AI</span>
           </h1>
-          <p style="font-size:14px; color:var(--muted); margin:0;">
-            Mini-Project Mentoring & Viva Defense Platform
-          </p>
         </div>
 
         <!-- Auth Card -->
