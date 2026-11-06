@@ -6,7 +6,7 @@ function upgradeState(){
     state.role=state.role==='Team Admin'||state.role==='Student'?'Team Lead':state.role;
     state.questions=[];state.answers={};state.version=2;
   }
-  if(!['Admin','HOD','Faculty','Team Lead','Faculty Admin'].includes(state.role))state.role='Team Lead';
+  if(!['Admin','HOD','Faculty','Student','Team Lead','Faculty Admin'].includes(state.role))state.role='Student';
   state.guide=state.guide||'Amit K';state.messages=state.messages||[];state.mentorMessages=state.mentorMessages||[];
   state.media=state.media||[];state.questions=state.questions||[];
   state.forms=state.forms||{};
@@ -16,7 +16,7 @@ function upgradeState(){
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();
-const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department'],HOD:['Department','Team Portfolio','Mentor Dashboard'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor']};
+const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department'],HOD:['Department','Team Portfolio','Mentor Dashboard'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor','Department'],Student:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
@@ -353,15 +353,246 @@ journey=function(){
 overview=function(){if(state.role==='Admin')return adminPanel();if(state.role==='HOD')return department();return originalOverview().replaceAll('Design & develop','Requirements & realization')};
 mentor=function(){let html=originalMentor().replaceAll('Design & develop','Requirements & realization').replace('Demo mode uses deterministic question templates with excerpts from your submission. It is not live AI, RAG, or automated assessment.','Each demo question quotes a specific section of your saved submission and asks about that claim. This is a rule-based coaching demo, not a live language model.').replace('DEMO · TEMPLATE QUESTIONS','DEMO · SUBMISSION-BASED').replace('Demo templates · works offline','Submission coach · offline demo');return html+mentorChat()};
 function currentIdentity(){return state.role==='Faculty'?state.guide:state.role==='Team Lead'?state.members[0].name:state.role==='HOD'?'Head of Department':'Workspace Administrator'}
+window.rbacActiveTab = window.rbacActiveTab || 'Student';
+
 function sharedPageHeader(){
-  return `<header class="topbar common-page-header"><div class="topbar-left"><div class="school-top-header"><img src="assets/kle_tech_logo.png" alt="KLE Technological University" class="kle-header-logo"><span class="kle-header-dept">Department of CSE(AI)</span></div></div><div class="topright" style="display:flex; align-items:center; gap:10px">
-  <button type="button" class="user-role-card" onclick="switchRole('HOD');go('Department')" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <span>Dr. Narayan D G</span>
-  </button>
-  <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
-</div></header>`;
+  const role = state.role === 'Team Lead' ? 'Student' : state.role;
+  let identity = (typeof currentIdentity === 'function' ? currentIdentity() : (state.members && state.members[0] ? state.members[0].name : 'User'));
+  if(role === 'Student' && activeTeam()?.id) identity = (activeTeam()?.members?.[0]?.name || 'Student') + ' (Team ' + activeTeam().id + ')';
+  
+  let roleIcon = '';
+  let roleClass = 'role-student';
+
+  if(role === 'HOD'){
+    roleIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#7c3aed"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 9h6"/></svg>`;
+    roleClass = 'role-hod';
+  } else if(role === 'Faculty'){
+    roleIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#059669"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>`;
+    roleClass = 'role-faculty';
+  } else {
+    roleIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:#2563eb"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    roleClass = 'role-student';
+  }
+
+  return `<header class="topbar common-page-header">
+    <div class="topbar-left">
+      <div class="school-top-header">
+        <img src="assets/kle_tech_logo.png" alt="KLE Technological University" class="kle-header-logo">
+        <span class="kle-header-dept">Department of CSE(AI)</span>
+      </div>
+    </div>
+    <div class="topright" style="display:flex; align-items:center; gap:10px">
+      <button type="button" class="user-role-card ${roleClass}" onclick="window.openRbacModal()" title="Click to switch role (Student, Faculty, HOD)" style="display:inline-flex; align-items:center; gap:8px; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs); cursor:pointer;">
+        ${roleIcon}
+        <span><strong style="font-weight:800">${esc(role)}:</strong> ${esc(identity)}</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;opacity:0.6"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
+    </div>
+  </header>`;
 }
+
+window.openRbacModal = function(){
+  const curRole = state.role === 'Team Lead' ? 'Student' : (state.role || 'Student');
+  window.rbacActiveTab = ['Student', 'Faculty', 'HOD'].includes(curRole) ? curRole : 'Student';
+
+  modal = `<div class="modal rbac-modal" role="dialog" aria-modal="true" aria-label="Role-Based Access Control">
+    <section class="card" style="max-width:560px; width:100%; border-radius:14px; box-shadow:var(--shadow-lg); overflow:hidden;">
+      <div class="card-head" style="border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:16px;">
+        <div>
+          <h2 style="font-size:1.15rem; margin-bottom:4px; font-weight:800; color:var(--ink);">Role-Based Access Control (RBAC)</h2>
+          <p class="mini" style="margin:0; color:var(--muted);">Select your active portal perspective: Student, Faculty Mentor, or HOD.</p>
+        </div>
+        <button class="textbtn" onclick="closeModal()" style="font-size:18px; line-height:1;">✕</button>
+      </div>
+
+      <div class="rbac-role-tabs" style="display:flex; gap:8px; margin-bottom:18px;">
+        <button type="button" class="btn rbac-tab-btn ${window.rbacActiveTab==='Student'?'':'secondary'}" data-tab="Student" style="flex:1; justify-content:center; padding:10px 8px; font-size:13px; font-weight:700;" onclick="window.selectRbacTab('Student')">
+          🎓 Student
+        </button>
+        <button type="button" class="btn rbac-tab-btn ${window.rbacActiveTab==='Faculty'?'':'secondary'}" data-tab="Faculty" style="flex:1; justify-content:center; padding:10px 8px; font-size:13px; font-weight:700;" onclick="window.selectRbacTab('Faculty')">
+          👨‍🏫 Faculty
+        </button>
+        <button type="button" class="btn rbac-tab-btn ${window.rbacActiveTab==='HOD'?'':'secondary'}" data-tab="HOD" style="flex:1; justify-content:center; padding:10px 8px; font-size:13px; font-weight:700;" onclick="window.selectRbacTab('HOD')">
+          🏛️ HOD
+        </button>
+      </div>
+
+      <div id="rbac-tab-content">
+        ${renderRbacTabContent(window.rbacActiveTab)}
+      </div>
+    </section>
+  </div>`;
+  render();
+};
+
+window.selectRbacTab = function(tab){
+  window.rbacActiveTab = tab;
+  const contentEl = document.getElementById('rbac-tab-content');
+  if(contentEl){
+    contentEl.innerHTML = renderRbacTabContent(tab);
+    document.querySelectorAll('.rbac-tab-btn').forEach(btn => {
+      const active = btn.dataset.tab === tab;
+      btn.className = 'btn rbac-tab-btn ' + (active ? '' : 'secondary');
+    });
+  }
+};
+
+function renderRbacTabContent(tab){
+  const allTeams = (typeof state !== 'undefined' && state.teams) || (typeof seedTeams === 'function' ? seedTeams() : []);
+  const faculties = typeof facultyNames === 'function' ? facultyNames() : [];
+  const curTeamId = (typeof activeTeam === 'function' && activeTeam()?.id) || state.activeTeamId || '03';
+  const curFaculty = state.facultyAccount || faculties[0] || 'Mr. Amit Kachavimath';
+
+  if(tab === 'Student'){
+    const options = allTeams.map(t => {
+      const lead = (t.members && t.members[0]) ? t.members[0].name : '';
+      const selected = t.id === curTeamId ? 'selected' : '';
+      return `<option value="${esc(t.id)}" ${selected}>Team ${esc(t.id)} · ${esc(lead)} · ${esc(t.title.slice(0, 46))}</option>`;
+    }).join('');
+
+    return `
+      <div style="background:var(--surface-sunken, rgba(0,0,0,0.02)); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="font-size:18px;">🎓</span>
+          <strong style="font-size:14px; color:var(--ink);">Student Workspace Permissions</strong>
+        </div>
+        <ul style="margin:0 0 0 18px; padding:0; font-size:12.5px; color:var(--muted); line-height:1.6;">
+          <li>View and edit your team's Stage 0 to Stage 4 portfolio documentation</li>
+          <li>Upload architecture figures, data designs, and demo video walkthroughs</li>
+          <li>Conduct interactive AI Mentor defense practices (MCQs & Viva Questions)</li>
+          <li>Submit milestone stages for Faculty Mentor evaluation</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label for="rbac-team-select" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">
+          Select Active Student Team:
+        </label>
+        <select id="rbac-team-select" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13px; font-weight:600;">
+          ${options}
+        </select>
+      </div>
+
+      <button type="button" class="btn" style="width:100%; justify-content:center; padding:11px; font-weight:700;" onclick="window.confirmRbacSwitch('Student')">
+        Enter as Student
+      </button>
+    `;
+  }
+
+  if(tab === 'Faculty'){
+    const options = faculties.map(f => {
+      const selected = f === curFaculty ? 'selected' : '';
+      return `<option value="${esc(f)}" ${selected}>${esc(f)}</option>`;
+    }).join('');
+
+    const assignedTeams = allTeams.filter(t => t.faculty === curFaculty);
+    const assignedList = assignedTeams.length
+      ? assignedTeams.map(t => `<span class="tag" style="background:var(--surface); border:1px solid var(--line); font-size:11.5px; padding:4px 8px; border-radius:6px;">Team ${esc(t.id)}: ${esc(t.title.slice(0, 30))}...</span>`).join(' ')
+      : '<span class="mini">No teams currently assigned.</span>';
+
+    return `
+      <div style="background:var(--surface-sunken, rgba(0,0,0,0.02)); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="font-size:18px;">👨‍🏫</span>
+          <strong style="font-size:14px; color:var(--ink);">Faculty Mentor Permissions</strong>
+        </div>
+        <ul style="margin:0 0 0 18px; padding:0; font-size:12.5px; color:var(--muted); line-height:1.6;">
+          <li>Review submissions from your allocated student project teams</li>
+          <li>Provide qualitative evaluation feedback and score each stage (0–10)</li>
+          <li>Approve milestone stages to unlock next progress gates, or request revisions</li>
+          <li>Monitor student AI Mentor defense scores and committee preparedness</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label for="rbac-faculty-select" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">
+          Select Faculty Mentor Account:
+        </label>
+        <select id="rbac-faculty-select" onchange="window.updateFacultyRbacPreview(this.value)" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13px; font-weight:600;">
+          ${options}
+        </select>
+      </div>
+
+      <div style="margin-bottom:18px;">
+        <div class="mini" style="font-weight:700; margin-bottom:6px; color:var(--ink);">Allocated Mentees & Teams:</div>
+        <div id="rbac-faculty-mentees" style="display:flex; flex-wrap:wrap; gap:6px;">
+          ${assignedList}
+        </div>
+      </div>
+
+      <button type="button" class="btn" style="width:100%; justify-content:center; padding:11px; font-weight:700;" onclick="window.confirmRbacSwitch('Faculty')">
+        Enter as Faculty Mentor
+      </button>
+    `;
+  }
+
+  // HOD Tab
+  const hodName = (state.department && state.department.hod) || 'Dr. Narayan D G';
+  return `
+    <div style="background:var(--surface-sunken, rgba(0,0,0,0.02)); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="font-size:18px;">🏛️</span>
+        <strong style="font-size:14px; color:var(--ink);">Head of Department (HOD) Oversight</strong>
+      </div>
+      <ul style="margin:0 0 0 18px; padding:0; font-size:12.5px; color:var(--muted); line-height:1.6;">
+        <li>Executive department-wide visibility across all 10 Project Themes and 33 Teams</li>
+        <li>Real-time stage completion funnel tracking (Stage 0 to Stage 4 milestones)</li>
+        <li>Faculty evaluation velocity and pending review bottlenecks</li>
+        <li>Viva Defense Committee readiness and AI Mentor performance distributions</li>
+      </ul>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:18px; display:flex; align-items:center; gap:12px;">
+      <div style="width:40px; height:40px; border-radius:50%; background:var(--brand-surface, #e0e7ff); color:var(--brand, #4338ca); display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:800;">
+        N
+      </div>
+      <div>
+        <strong style="font-size:13.5px; color:var(--ink);">${esc(hodName)}</strong>
+        <p class="mini" style="margin:2px 0 0;">Head of Department &middot; Department of CSE(AI)</p>
+      </div>
+    </div>
+
+    <button type="button" class="btn" style="width:100%; justify-content:center; padding:11px; font-weight:700;" onclick="window.confirmRbacSwitch('HOD')">
+      Enter as Head of Department (HOD)
+    </button>
+  `;
+}
+
+window.updateFacultyRbacPreview = function(facultyName){
+  const menteesEl = document.getElementById('rbac-faculty-mentees');
+  if(!menteesEl) return;
+  const allTeams = (typeof state !== 'undefined' && state.teams) || [];
+  const assigned = allTeams.filter(t => t.faculty === facultyName);
+  menteesEl.innerHTML = assigned.length
+    ? assigned.map(t => `<span class="tag" style="background:var(--surface); border:1px solid var(--line); font-size:11.5px; padding:4px 8px; border-radius:6px;">Team ${esc(t.id)}: ${esc(t.title.slice(0, 30))}...</span>`).join(' ')
+    : '<span class="mini">No teams currently assigned.</span>';
+};
+
+window.confirmRbacSwitch = function(role){
+  if(role === 'Student'){
+    const sel = document.getElementById('rbac-team-select');
+    const teamId = (sel && sel.value) || state.activeTeamId || '03';
+    state.role = 'Student';
+    if(typeof switchTeam === 'function') switchTeam(teamId);
+    closeModal();
+    if(typeof go === 'function') go('Team Portfolio');
+    toast('Active Role: Student (Team ' + teamId + ')');
+  } else if(role === 'Faculty'){
+    const sel = document.getElementById('rbac-faculty-select');
+    const facultyName = (sel && sel.value) || state.facultyAccount;
+    state.role = 'Faculty';
+    if(typeof selectFaculty === 'function') selectFaculty(facultyName);
+    closeModal();
+    if(typeof go === 'function') go('Overview');
+    toast('Active Role: Faculty Mentor (' + facultyName + ')');
+  } else if(role === 'HOD'){
+    state.role = 'HOD';
+    closeModal();
+    if(typeof go === 'function') go('Department');
+    toast('Active Role: Head of Department (Dr. Narayan D G)');
+  }
+};
 render=function(){
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
   const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Mentor Dashboard':typeof mentorDashboard==='function'?mentorDashboard:()=>'','Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};

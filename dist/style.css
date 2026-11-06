@@ -3987,3 +3987,35 @@ html body:has(.mentor-split) #portfolio-chat-container .portfolio-chat-fab { rig
   background:var(--blue,#1D4ED8); color:#fff;
   font-size:14px; font-weight:700; line-height:1.4; white-space:nowrap;
 }
+
+
+/* ============================================================
+   RBAC (Role-Based Access Control) Navigation & Modal Styles
+   ============================================================ */
+.user-role-card {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.user-role-card:hover {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.04)) !important;
+  border-color: var(--line-strong, #94a3b8) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm) !important;
+}
+.user-role-card.role-student {
+  border-left: 3.5px solid #2563eb !important;
+}
+.user-role-card.role-faculty {
+  border-left: 3.5px solid #059669 !important;
+}
+.user-role-card.role-hod {
+  border-left: 3.5px solid #7c3aed !important;
+}
+
+.rbac-modal .card {
+  max-width: 580px !important;
+  border-radius: 14px;
+}
+.rbac-role-tabs button {
+  transition: all 0.15s ease;
+}

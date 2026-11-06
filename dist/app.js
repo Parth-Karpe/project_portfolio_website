@@ -29,7 +29,7 @@ function toggleSidebar(){setSidebarCollapsed(!isSidebarCollapsed())}
 if(typeof window!=='undefined'){window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='b'){e.preventDefault();toggleSidebar()}})}
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safe=s=>{try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)?esc(u.href):'#'}catch{return '#'}};
-const isFaculty=()=>state.role==='Faculty',isAdmin=()=>state.role==='Team Lead';
+const isFaculty=()=>state.role==='Faculty',isHOD=()=>state.role==='HOD',isStudent=()=>state.role==='Student'||state.role==='Team Lead',isAdmin=()=>isStudent()||state.role==='Admin';
 function toast(t){$('#toast').textContent=t;$('#toast').style.display='block';clearTimeout(window.tt);window.tt=setTimeout(()=>$('#toast').style.display='none',3500)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));if(window.saveTeamStateToCloud&&window.db){const tid=(typeof activeTeam==='function'&&activeTeam()?.id)||state.activeTeamId||'A-03';window.saveTeamStateToCloud(tid,state).then(ok=>{const h=$('#savehint');if(h&&ok)h.textContent='✓ Cloud Synced · '+new Date().toLocaleTimeString()}).catch(e=>console.warn('[Firebase] sync notice:',e))}return true}catch{toast('Storage full. Remove a photo or export your work before continuing.');return false}}
 function log(text){state.activities.unshift({text,time:new Date().toLocaleString()});save()}
