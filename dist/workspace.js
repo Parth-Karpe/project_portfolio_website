@@ -357,8 +357,34 @@ window.rbacActiveTab = window.rbacActiveTab || 'Student';
 
 function sharedPageHeader(){
   const role = state.role === 'Team Lead' ? 'Student' : state.role;
-  let identity = (typeof currentIdentity === 'function' ? currentIdentity() : (state.members && state.members[0] ? state.members[0].name : 'User'));
-  if(role === 'Student' && activeTeam()?.id) identity = (activeTeam()?.members?.[0]?.name || 'Student') + ' (Team ' + activeTeam().id + ')';
+  const authUser = (typeof getAuthUser === 'function' ? getAuthUser() : null);
+  let displayText = '';
+
+  if(role === 'Student'){
+    let stuName = '';
+    let stuUsn = '';
+    if(authUser && authUser.role === 'Student'){
+      stuName = authUser.name || '';
+      stuUsn = authUser.identifier || '';
+    }
+    if(!stuName && typeof activeTeam === 'function' && activeTeam()?.members?.[0]){
+      stuName = activeTeam().members[0].name;
+      stuUsn = activeTeam().members[0].usn || '';
+    }
+    if(!stuName){
+      stuName = state.members?.[0]?.name || 'Student';
+      stuUsn = state.members?.[0]?.usn || '';
+    }
+    displayText = stuUsn ? `${stuName} (${stuUsn})` : stuName;
+  } else if(role === 'Faculty'){
+    const facName = (authUser && authUser.role === 'Faculty' ? authUser.name : (state.facultyAccount || state.guide || 'Faculty Mentor'));
+    displayText = `Faculty: ${facName}`;
+  } else if(role === 'HOD'){
+    const hodName = (authUser && authUser.role === 'HOD' ? authUser.name : (state.department?.hod || 'Dr. Narayan DG'));
+    displayText = `HOD: ${hodName}`;
+  } else {
+    displayText = role;
+  }
   
   let roleIcon = '';
   let roleClass = 'role-student';
@@ -382,11 +408,10 @@ function sharedPageHeader(){
       </div>
     </div>
     <div class="topright" style="display:flex; align-items:center; gap:10px">
-      <button type="button" class="user-role-card ${roleClass}" onclick="window.openRbacModal()" title="Click to switch role (Student, Faculty, HOD)" style="display:inline-flex; align-items:center; gap:8px; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs); cursor:pointer;">
+      <div class="user-role-card ${roleClass}" style="display:inline-flex; align-items:center; gap:8px; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs); cursor:default; user-select:none;">
         ${roleIcon}
-        <span><strong style="font-weight:800">${esc(role)}:</strong> ${esc(identity)}</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;opacity:0.6"><path d="m6 9 6 6 6-6"/></svg>
-      </button>
+        <span>${esc(displayText)}</span>
+      </div>
       <button type="button" class="btn secondary" onclick="window.signOutUser()" title="Sign out" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span>Sign Out</span>

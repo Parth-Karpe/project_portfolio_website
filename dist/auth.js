@@ -196,11 +196,27 @@
     const email = (document.getElementById('reg-email')?.value || '').trim();
     const password = (document.getElementById('reg-password')?.value || '').trim();
     const confirm = (document.getElementById('reg-confirm')?.value || '').trim();
-    const teamSel = document.getElementById('reg-team');
-    const teamId = teamSel ? teamSel.value : '03';
 
-    if(!name || !identifier || !email || !password){
-      authErrorMsg = 'All fields are required to register.';
+    if(!name){
+      authErrorMsg = 'Please enter your full name.';
+      if(typeof render === 'function') render();
+      return;
+    }
+
+    if(authRoleTab === 'Student' && !identifier){
+      authErrorMsg = 'Please enter your University Seat Number (USN).';
+      if(typeof render === 'function') render();
+      return;
+    }
+
+    if(!email){
+      authErrorMsg = 'Please enter your college email address.';
+      if(typeof render === 'function') render();
+      return;
+    }
+
+    if(!password){
+      authErrorMsg = 'Please enter a password.';
       if(typeof render === 'function') render();
       return;
     }
@@ -211,16 +227,25 @@
       return;
     }
 
+    const finalIdentifier = authRoleTab === 'Student' ? identifier : email;
+
     const users = getStoredUsers();
-    if(users.some(u => u.identifier.toLowerCase() === identifier.toLowerCase() || u.email.toLowerCase() === email.toLowerCase())){
-      authErrorMsg = 'An account with this USN / Email already exists. Please sign in.';
+    if(users.some(u => (u.identifier && u.identifier.toLowerCase() === finalIdentifier.toLowerCase()) || (u.email && u.email.toLowerCase() === email.toLowerCase()))){
+      authErrorMsg = 'An account with this ' + (authRoleTab === 'Student' ? 'USN or Email' : 'Email') + ' already exists. Please sign in.';
       if(typeof render === 'function') render();
       return;
     }
 
+    let teamId = '03';
+    if(authRoleTab === 'Student'){
+      const allTeams = (typeof state !== 'undefined' && state.teams) || (typeof seedTeams === 'function' ? seedTeams() : []);
+      const matchedTeam = allTeams.find(t => t.members && t.members.some(m => m.usn && m.usn.toLowerCase() === finalIdentifier.toLowerCase()));
+      if(matchedTeam) teamId = matchedTeam.id;
+    }
+
     const newUser = {
       id: 'usr_' + Date.now(),
-      identifier,
+      identifier: finalIdentifier,
       email,
       name,
       role: authRoleTab,
@@ -264,9 +289,18 @@
     const isDark = typeof getTheme === 'function' && getTheme() === 'dark';
     const allTeams = (typeof state !== 'undefined' && state.teams) || (typeof seedTeams === 'function' ? seedTeams() : []);
 
+    const errorBg = isDark ? '#450a0a' : '#fef2f2';
+    const errorBorder = isDark ? '#ef4444' : '#dc2626';
+    const errorTitle = isDark ? '#fecaca' : '#991b1b';
+    const errorText = isDark ? '#fee2e2' : '#7f1d1d';
+
     const errorHtml = authErrorMsg
-      ? `<div style="background:rgba(239, 68, 68, 0.12); border:1px solid #ef4444; color:#ef4444; border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600; margin-bottom:16px;">
-          ⚠️ ${authErrorMsg}
+      ? `<div role="alert" style="background:${errorBg} !important; border:1.5px solid ${errorBorder} !important; border-radius:8px; padding:12px 14px; margin-bottom:16px; display:flex; align-items:flex-start; gap:10px; box-shadow:0 1px 3px rgba(220,38,38,0.12); box-sizing:border-box;">
+          <span style="font-size:16px; line-height:1.2; flex-shrink:0;">⚠️</span>
+          <div style="flex:1;">
+            <div style="color:${errorTitle} !important; font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">Error Notice</div>
+            <div style="color:${errorText} !important; font-weight:700; font-size:13.5px; line-height:1.4;">${esc(authErrorMsg)}</div>
+          </div>
         </div>`
       : '';
 
@@ -291,9 +325,9 @@
         <form onsubmit="window.handleAuthLogin(event)" style="display:flex; flex-direction:column; gap:14px;">
           <div>
             <label for="login-username" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">
-              ${authRoleTab === 'Student' ? 'University Seat Number (USN) or College Email' : authRoleTab === 'Faculty' ? 'Faculty Email or Employee ID' : 'HOD Email or Admin ID'}
+              ${authRoleTab === 'Student' ? 'University Seat Number (USN) or College Email' : authRoleTab === 'Faculty' ? 'Faculty College Email' : 'HOD College Email'}
             </label>
-            <input id="login-username" type="text" required placeholder="${authRoleTab === 'Student' ? 'Enter USN or Email' : authRoleTab === 'Faculty' ? 'Enter Faculty Email or ID' : 'Enter HOD Email or ID'}" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <input id="login-username" type="text" required placeholder="${authRoleTab === 'Student' ? 'Enter USN or Email' : authRoleTab === 'Faculty' ? 'Enter college email' : 'Enter HOD email'}" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
           <div>
@@ -333,30 +367,21 @@
             <input id="reg-name" type="text" required placeholder="Enter full name" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div>
-              <label for="reg-id" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">
-                ${authRoleTab === 'Student' ? 'USN' : 'Faculty ID'}
-              </label>
-              <input id="reg-id" type="text" required placeholder="${authRoleTab === 'Student' ? 'Enter USN' : 'Enter Faculty ID'}" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
-            </div>
-            <div>
-              <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
-              <input id="reg-email" type="email" required placeholder="Enter college email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
-            </div>
-          </div>
-
           ${authRoleTab === 'Student' ? `
-            <div>
-              <label for="reg-team" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Select Project Team</label>
-              <select id="reg-team" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13px; font-weight:600;">
-                ${allTeams.map(t => `<option value="${t.id}">Team ${t.id} · ${t.title.slice(0, 42)}</option>`).join('')}
-              </select>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <label for="reg-id" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">University Seat Number (USN)</label>
+                <input id="reg-id" type="text" required placeholder="Enter USN" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              </div>
+              <div>
+                <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
+                <input id="reg-email" type="email" required placeholder="Enter college email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              </div>
             </div>
           ` : `
             <div>
-              <label style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Department</label>
-              <input type="text" readonly value="Department of CSE(AI)" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface-sunken, rgba(0,0,0,0.02)); color:var(--muted); font-size:13.5px;">
+              <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
+              <input id="reg-email" type="email" required placeholder="Enter faculty email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
           `}
 
