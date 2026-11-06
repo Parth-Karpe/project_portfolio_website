@@ -1370,12 +1370,9 @@ window.facultyOpenTeamPortfolio = function(id){
 
 window.facultyEditTeamPortfolio = function(id){
   if(typeof switchTeam === 'function') switchTeam(id);
-  if(typeof go === 'function') go('Team Portfolio');
-  setTimeout(() => {
-    if(typeof openStageDataEditor === 'function'){
-      openStageDataEditor('0');
-    }
-  }, 120);
+  if(typeof openStageDataEditor === 'function'){
+    openStageDataEditor('0');
+  }
 };
 
 window.facultyOpenTeamReview = function(id){

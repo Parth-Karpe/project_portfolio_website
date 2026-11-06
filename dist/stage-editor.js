@@ -189,17 +189,26 @@
     }
 
     if(typeof modal !== 'undefined'){
+      const isFacOverview = (typeof state !== 'undefined' && state.role === 'Faculty' && (typeof page === 'undefined' || page === 'Overview'));
+      const closeBtnLabel = isFacOverview ? '✕ Back to Faculty Dashboard' : '✕ Close';
+
       modal = `
-        <div class="modal stage-editor-modal" role="dialog" aria-modal="true" style="position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg,#f8fafc);z-index:99999;display:flex;flex-direction:column;overflow:hidden;">
-          <div style="background:var(--surface,#ffffff);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+        <div class="stage-editor-fullpage" role="dialog" aria-modal="true" style="position:fixed !important;top:0 !important;left:0 !important;right:0 !important;bottom:0 !important;inset:0 !important;width:100vw !important;height:100vh !important;max-width:100vw !important;max-height:100vh !important;margin:0 !important;padding:0 !important;background:var(--bg,#f8fafc) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;z-index:999999 !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;box-sizing:border-box !important;">
+          <div style="background:var(--surface,#ffffff) !important;width:100% !important;height:100% !important;max-width:100% !important;max-height:100% !important;margin:0 !important;padding:0 !important;border:none !important;border-radius:0 !important;box-shadow:none !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;box-sizing:border-box !important;">
             
-            <!-- Full Page Header -->
-            <div style="padding:16px 32px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0;">
-              <div>
-                <h2 style="margin:0 0 2px;font-size:20px;font-weight:800;color:var(--ink);">Insert / Edit Stage Data</h2>
-                <span style="font-size:13px;color:var(--muted);font-weight:600;">Team ${esc(teamId)} · Enter project data for milestone evaluation</span>
+            <!-- Full Page Header Bar -->
+            <div style="padding:14px 32px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0;">
+              <div style="display:flex;align-items:center;gap:16px;">
+                <img src="assets/kle_tech_logo.png" alt="KLE Tech" style="height:34px;width:auto;object-fit:contain;">
+                <div>
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:12px;font-weight:800;background:var(--accent,#2563eb);color:#fff;padding:2px 8px;border-radius:4px;letter-spacing:0.5px;">TEAM ${esc(teamId)}</span>
+                    <h2 style="margin:0;font-size:18px;font-weight:800;color:var(--ink);">Edit Project Portfolio &amp; Stage Data</h2>
+                  </div>
+                  <span style="font-size:12.5px;color:var(--muted);font-weight:600;">${esc(curTeam?.title || 'Mini-Project')} · Department of CSE(AI)</span>
+                </div>
               </div>
-              <button type="button" class="btn secondary" onclick="closeModal()" style="padding:8px 16px;font-size:13px;font-weight:700;">✕ Close</button>
+              <button type="button" class="btn secondary" onclick="closeModal()" style="padding:8px 18px;font-size:13px;font-weight:700;">${closeBtnLabel}</button>
             </div>
 
             <!-- Full-width Stage Switcher Tabs -->
@@ -220,7 +229,7 @@
 
             <!-- Full-width Sticky Footer -->
             <div style="padding:16px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0;">
-              <span style="font-size:12.5px;color:var(--muted);">All inputs are saved directly to the team portfolio and verified in stage milestones.</span>
+              <span style="font-size:12.5px;color:var(--muted);">All inputs are saved directly to the team portfolio and verified across all stage milestones.</span>
               <div style="display:flex;gap:12px;">
                 <button type="button" class="btn secondary" onclick="closeModal()" style="padding:10px 22px;font-size:13.5px;font-weight:700;">Cancel</button>
                 <button type="button" class="btn" onclick="window.saveStageDataFromModal('${stageId}')" style="padding:10px 26px;font-size:13.5px;font-weight:700;">
@@ -334,7 +343,7 @@
     if(typeof modal !== 'undefined') modal = null;
     if(typeof toast === 'function') toast('✓ Stage data saved successfully! Portfolio updated.');
     if(typeof render === 'function') render();
-    if(typeof switchPortfolioStage === 'function') switchPortfolioStage(stageId, true);
+    if(typeof page !== 'undefined' && page === 'Team Portfolio' && typeof switchPortfolioStage === 'function') switchPortfolioStage(stageId, true);
   };
 
 })(typeof window !== 'undefined' ? window : global);
