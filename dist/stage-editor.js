@@ -38,6 +38,96 @@
     }
   };
 
+  root.__stagePendingImages = root.__stagePendingImages || {};
+  if(typeof window !== 'undefined') window.__stagePendingImages = root.__stagePendingImages;
+
+  root.handleStageImageUpload = function(event, key){
+    const file = event.target.files && event.target.files[0];
+    if(!file) return;
+    if(!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)){
+      if(typeof toast === 'function') toast('Please select a PNG or JPEG image file.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const img = new Image();
+      img.onload = function(){
+        const maxDim = 1400;
+        let width = img.width;
+        let height = img.height;
+        if(width > maxDim || height > maxDim){
+          if(width > height){
+            height = Math.round(height * (maxDim / width));
+            width = maxDim;
+          } else {
+            width = Math.round(width * (maxDim / height));
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const dataUrl = canvas.toDataURL(mime, 0.88);
+        root.__stagePendingImages[key] = dataUrl;
+        const previewBox = document.getElementById('preview-box-' + key);
+        const previewImg = document.getElementById('preview-img-' + key);
+        if(previewBox && previewImg){
+          previewImg.src = dataUrl;
+          previewBox.style.display = 'flex';
+        }
+        if(typeof toast === 'function') toast('✓ Image attached! Click "Save Stage Data" to apply.');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  if(typeof window !== 'undefined') window.handleStageImageUpload = root.handleStageImageUpload;
+
+  root.removeStageImage = function(key){
+    root.__stagePendingImages[key] = '';
+    const previewBox = document.getElementById('preview-box-' + key);
+    const previewImg = document.getElementById('preview-img-' + key);
+    if(previewBox && previewImg){
+      previewImg.src = '';
+      previewBox.style.display = 'none';
+    }
+    const fileInput = document.getElementById('input-file-' + key);
+    if(fileInput) fileInput.value = '';
+    if(typeof toast === 'function') toast('Image removed. Click "Save Stage Data" to apply.');
+  };
+  if(typeof window !== 'undefined') window.removeStageImage = root.removeStageImage;
+
+  function renderImageUploadField(key, label, helpText, currentImageUrl){
+    const imgUrl = (root.__stagePendingImages[key] !== undefined) ? root.__stagePendingImages[key] : (currentImageUrl || '');
+    return `
+      <div style="border:1.5px dashed var(--line); border-radius:10px; padding:14px 18px; background:var(--bg); display:flex; flex-direction:column; gap:10px; margin-top:6px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--ink); margin:0 0 2px;">
+              ${esc(label)} (PNG or JPEG)
+            </label>
+            <span style="font-size:11.5px; color:var(--muted);">${esc(helpText)}</span>
+          </div>
+          <label class="btn secondary" style="cursor:pointer; padding:6px 14px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+            <span>📁 Choose PNG / JPEG</span>
+            <input type="file" id="input-file-${key}" accept="image/png, image/jpeg, image/jpg" style="display:none;" onchange="window.handleStageImageUpload(event, '${key}')">
+          </label>
+        </div>
+        <div id="preview-box-${key}" style="display:${imgUrl ? 'flex' : 'none'}; align-items:center; gap:14px; background:var(--surface); padding:10px 14px; border-radius:8px; border:1px solid var(--line);">
+          <img id="preview-img-${key}" src="${imgUrl || ''}" alt="Preview" style="max-height:80px; max-width:140px; border-radius:6px; object-fit:contain; border:1px solid var(--line); background:#fff;">
+          <div style="flex:1; font-size:12px; color:var(--ink);">
+            <strong style="display:block; color:var(--brand,#0284c7);">Image Attached (PNG / JPEG)</strong>
+            <span style="color:var(--muted); font-size:11px;">Will be displayed in your project portfolio</span>
+          </div>
+          <button type="button" class="btn secondary" style="padding:4px 10px; font-size:11.5px; color:#dc2626;" onclick="window.removeStageImage('${key}')">Remove ✕</button>
+        </div>
+      </div>
+    `;
+  }
+
   root.openStageDataEditor = function(initialStage){
     const stageId = String(initialStage || window.activePortfolioStage || '0');
     const curTeam = (typeof activeTeam === 'function' ? activeTeam() : (typeof state !== 'undefined' ? state.teams?.[0] : null));
@@ -91,6 +181,8 @@
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">5. Foundation Course Integration (Course : Concepts Used)</label>
           <textarea id="edit-stg0-courses" rows="3" placeholder="DAA : Constraint Satisfaction & Optimization\nOperating Systems : Multithreading & Concurrency\nSoftware Engineering : Architectural Modeling" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(coursesText)}</textarea>
         </div>
+
+        ${renderImageUploadField('stg0-flow', '6. Conceptual Workflow / Problem Scope Diagram', 'Insert conceptual flow diagram or problem scope illustration.', cur0.conceptualFlowImage)}
       `;
     } else if(stageId === '1'){
       const cur1 = Object.assign({}, staticTeam?.stage1 || {}, customData['1'] || {});
@@ -113,6 +205,8 @@
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. Use Cases / Core Scenarios</label>
           <textarea id="edit-stg1-uc" rows="4" placeholder="UC-01 - Student: Enters team details and stage submissions\nUC-02 - Faculty: Reviews milestone and provides approval" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(ucText)}</textarea>
         </div>
+
+        ${renderImageUploadField('stg1-uc', '4. Use Case Diagram / User Interaction Flow', 'Insert use case diagram or user interaction flow model.', cur1.useCaseImage)}
       `;
     } else if(stageId === 'system-design'){
       const curSys = Object.assign({}, staticTeam?.systemDesign || {}, customData['system-design'] || {});
@@ -135,6 +229,10 @@
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. Algorithm &amp; Logic Design *</label>
           <textarea id="edit-stgsys-algo" rows="4" placeholder="Algorithmic approach, constraints handling, optimization methods…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(algoText)}</textarea>
         </div>
+
+        ${renderImageUploadField('stgsys-arch', '4. System Architecture Diagram', 'Insert system architecture block diagram or microservices topology.', curSys.architectureImage)}
+        ${renderImageUploadField('stgsys-data', '5. Database / Schema / ER Diagram', 'Insert entity relationship diagram, relational schema, or table model.', curSys.dataDesignImage)}
+        ${renderImageUploadField('stgsys-algo', '6. Algorithm Logic / Optimization Flowchart', 'Insert algorithmic flow, state machine, or solver flowchart.', curSys.algorithmDesignImage)}
       `;
     } else if(stageId === '2'){
       const cur2 = Object.assign({}, staticTeam?.stage2 || {}, customData['2'] || {});
@@ -160,6 +258,8 @@
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">4. Technical Challenges &amp; Mitigations</label>
           <textarea id="edit-stg2-challenges" rows="3" placeholder="Key bottlenecks, bugs encountered, and how they were resolved…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(cur2.challenges || '')}</textarea>
         </div>
+
+        ${renderImageUploadField('stg2-impl', '5. Implementation / Component Evidence Diagram', 'Insert core component diagram, code pipeline, or UI screen implementation screenshot.', cur2.implImage)}
       `;
     } else if(stageId === '3'){
       const cur3 = Object.assign({}, staticTeam?.stage3 || {}, customData['3'] || {});
@@ -185,6 +285,8 @@
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">4. Evaluation &amp; Lessons Learned</label>
           <textarea id="edit-stg3-evaluation" rows="3" placeholder="Key insights gained, known limitations, and future directions…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(cur3.evaluation || '')}</textarea>
         </div>
+
+        ${renderImageUploadField('stg3-test', '5. Test Execution Results / Verification Benchmark Screenshot', 'Insert test execution terminal log, validation test suite pass screenshot, or performance metric graph.', cur3.testingImage)}
       `;
     }
 
@@ -269,6 +371,9 @@
       }).filter(x => x.course);
 
       data = { problem, objectives, scopeInTable, scopeOutTable, coursesTable };
+      if(root.__stagePendingImages && root.__stagePendingImages['stg0-flow'] !== undefined){
+        data.conceptualFlowImage = root.__stagePendingImages['stg0-flow'];
+      }
 
     } else if(stageId === '1'){
       const frRaw = (document.getElementById('edit-stg1-fr')?.value || '').trim();
@@ -289,6 +394,9 @@
       }).filter(x => x.desc);
 
       data = { fr: frRaw, nfr: nfrRaw, frTable, nfrTable, usecases: ucRaw };
+      if(root.__stagePendingImages && root.__stagePendingImages['stg1-uc'] !== undefined){
+        data.useCaseImage = root.__stagePendingImages['stg1-uc'];
+      }
 
     } else if(stageId === 'system-design'){
       const arch = (document.getElementById('edit-stgsys-arch')?.value || '').trim();
@@ -307,6 +415,15 @@
         algorithmDesign: algo,
         algorithmDesignPoints: algorithmDesignPoints.length ? algorithmDesignPoints : [algo]
       };
+      if(root.__stagePendingImages && root.__stagePendingImages['stgsys-arch'] !== undefined){
+        data.architectureImage = root.__stagePendingImages['stgsys-arch'];
+      }
+      if(root.__stagePendingImages && root.__stagePendingImages['stgsys-data'] !== undefined){
+        data.dataDesignImage = root.__stagePendingImages['stgsys-data'];
+      }
+      if(root.__stagePendingImages && root.__stagePendingImages['stgsys-algo'] !== undefined){
+        data.algorithmDesignImage = root.__stagePendingImages['stgsys-algo'];
+      }
 
     } else if(stageId === '2'){
       const summary = (document.getElementById('edit-stg2-summary')?.value || '').trim();
@@ -320,6 +437,9 @@
       }).filter(m => m.name);
 
       data = { summary, modules, repo, challenges, modulesText: modulesRaw };
+      if(root.__stagePendingImages && root.__stagePendingImages['stg2-impl'] !== undefined){
+        data.implImage = root.__stagePendingImages['stg2-impl'];
+      }
 
     } else if(stageId === '3'){
       const strategy = (document.getElementById('edit-stg3-strategy')?.value || '').trim();
@@ -337,6 +457,9 @@
       }).filter(t => t.feature);
 
       data = { strategy, tests, metrics, evaluation, testsText: testsRaw };
+      if(root.__stagePendingImages && root.__stagePendingImages['stg3-test'] !== undefined){
+        data.testingImage = root.__stagePendingImages['stg3-test'];
+      }
     }
 
     root.saveTeamCustomStageData(teamId, stageId, data);

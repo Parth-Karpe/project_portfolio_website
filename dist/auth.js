@@ -407,14 +407,14 @@
     if(authMode === 'login'){
       contentHtml = `
         <div class="auth-role-tabs" style="display:flex; gap:8px; margin-bottom:20px;">
-          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700;" onclick="window.switchAuthRoleTab('Student')">
-            🎓 Student
+          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Student'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Student')">
+            Student
           </button>
-          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700;" onclick="window.switchAuthRoleTab('Faculty')">
-            👨‍🏫 Faculty
+          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Faculty'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Faculty')">
+            Faculty
           </button>
-          <button type="button" class="btn ${authRoleTab==='HOD'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700;" onclick="window.switchAuthRoleTab('HOD')">
-            🏛️ HOD
+          <button type="button" class="btn ${authRoleTab==='HOD'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='HOD'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('HOD')">
+            HOD
           </button>
         </div>
 
@@ -433,7 +433,7 @@
             <input id="login-password" name="${authRoleTab.toLowerCase()}_user_secret" type="password" autocomplete="new-password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
-          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:700; margin-top:6px;">
+          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:800; margin-top:6px; background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;">
             Sign In as ${authRoleTab}
           </button>
         </form>
@@ -449,11 +449,11 @@
       // Registration screen
       contentHtml = `
         <div class="auth-role-tabs" style="display:flex; gap:8px; margin-bottom:20px;">
-          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700;" onclick="window.switchAuthRoleTab('Student')">
-            🎓 Student Registration
+          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Student'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Student')">
+            Student Registration
           </button>
-          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700;" onclick="window.switchAuthRoleTab('Faculty')">
-            👨‍🏫 Faculty Registration
+          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Faculty'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Faculty')">
+            Faculty Registration
           </button>
         </div>
 
@@ -466,38 +466,40 @@
           </div>
 
           ${authRoleTab === 'Student' ? `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-              <div>
-                <label for="reg-id" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">University Seat Number (USN)</label>
-                <input id="reg-id" name="student_reg_usn" type="text" autocomplete="off" required placeholder="Enter USN" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end;">
+              <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+                <label for="reg-id" style="display:flex; align-items:flex-end; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink); height:34px; line-height:1.25;">University Seat Number (USN)</label>
+                <input id="reg-id" name="student_reg_usn" type="text" autocomplete="off" required placeholder="Enter USN" style="width:100%; box-sizing:border-box; height:42px; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
               </div>
-              <div>
-                <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
-                <input id="reg-email" name="student_reg_email" type="email" autocomplete="off" required placeholder="Enter college email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+                <label for="reg-email" style="display:flex; align-items:flex-end; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink); height:34px; line-height:1.25;">College Email</label>
+                <input id="reg-email" name="student_reg_email" type="email" autocomplete="off" required placeholder="Enter college email" style="width:100%; box-sizing:border-box; height:42px; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
               </div>
             </div>
           ` : `
             <div>
-              <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">College Email</label>
-              <input id="reg-email" name="faculty_reg_email" type="email" autocomplete="off" required placeholder="Enter faculty email" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+              <label for="reg-email" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink);">College Email</label>
+              <input id="reg-email" name="faculty_reg_email" type="email" autocomplete="off" required placeholder="Enter faculty email" style="width:100%; box-sizing:border-box; height:42px; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
           `}
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-            <div>
-              <label for="reg-password" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Password</label>
-              <input id="reg-password" name="${authRoleTab.toLowerCase()}_reg_pass" type="password" autocomplete="new-password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:end;">
+            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+              <label for="reg-password" style="display:flex; align-items:flex-end; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink); height:20px; line-height:1.25;">Password</label>
+              <input id="reg-password" name="${authRoleTab.toLowerCase()}_reg_pass" type="password" autocomplete="new-password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; height:42px; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
-            <div>
-              <label for="reg-confirm" style="display:block; font-size:12.5px; font-weight:700; margin-bottom:5px; color:var(--ink);">Confirm Password</label>
-              <input id="reg-confirm" name="${authRoleTab.toLowerCase()}_reg_confirm" type="password" autocomplete="new-password" required placeholder="Confirm password" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
+            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+              <label for="reg-confirm" style="display:flex; align-items:flex-end; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--ink); height:20px; line-height:1.25;">Confirm Password</label>
+              <input id="reg-confirm" name="${authRoleTab.toLowerCase()}_reg_confirm" type="password" autocomplete="new-password" required placeholder="Confirm password" style="width:100%; box-sizing:border-box; height:42px; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
             </div>
           </div>
 
-          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:700; margin-top:8px;">
+          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:800; margin-top:8px; background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;">
             Create ${authRoleTab} Account
           </button>
         </form>
+
+
 
         <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--muted);">
           Already have an account? 
@@ -527,8 +529,8 @@
               ${authMode === 'login' ? 'Sign In to Portal' : 'Create Account'}
             </h2>
             <div style="display:flex; gap:6px;">
-              <button type="button" class="btn ${authMode==='login'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700;" onclick="window.switchAuthMode('login')">Sign In</button>
-              <button type="button" class="btn ${authMode==='register'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700;" onclick="window.switchAuthMode('register')">Register</button>
+              <button type="button" class="btn ${authMode==='login'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='login'?'background:#38bdf8 !important; color:#082f49 !important; border:1px solid #0284c7 !important;':''}" onclick="window.switchAuthMode('login')">Sign In</button>
+              <button type="button" class="btn ${authMode==='register'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='register'?'background:#38bdf8 !important; color:#082f49 !important; border:1px solid #0284c7 !important;':''}" onclick="window.switchAuthMode('register')">Register</button>
             </div>
           </div>
 

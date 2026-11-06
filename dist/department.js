@@ -1286,7 +1286,6 @@ function facultyProjectsDashboard(){
     `Welcome, ${esc(facName)} · Guiding ${assigned.length} Project Team${assigned.length===1?'':'s'} in CSE(AI)`,
     `<div style="display:flex; gap:8px; align-items:center;">
       <button type="button" class="btn secondary" onclick="window.openAddTeamModal()">+ Link Another Team</button>
-      <button type="button" class="btn secondary" onclick="go('Department')">Department Overview</button>
     </div>`
   );
 
@@ -1388,49 +1387,123 @@ window.facultyOpenTeamViva = function(id){
   if(typeof go === 'function') go('AI Mentor');
 };
 
-window.openAddTeamModal = function(){
+window.openAddTeamModal = function(searchQuery = ''){
   const facName = state.facultyAccount || (state.currentUser && state.currentUser.name) || state.guide || 'Faculty Mentor';
   const assigned = getFacultyAssignedTeams(facName);
   const assignedIds = new Set(assigned.map(t => t.id));
   const available = (state.teams || []).filter(t => !assignedIds.has(t.id));
+  const q = String(searchQuery !== undefined ? searchQuery : (window.__teamLinkSearch || '')).toLowerCase().trim();
+  const filtered = q ? available.filter(t => 
+    (t.id && t.id.toLowerCase().includes(q)) ||
+    (t.title && t.title.toLowerCase().includes(q)) ||
+    ((t.topic || t.theme_name) && (t.topic || t.theme_name).toLowerCase().includes(q)) ||
+    (t.faculty && t.faculty.toLowerCase().includes(q)) ||
+    (t.members && t.members.some(m => (m.name && m.name.toLowerCase().includes(q)) || (m.usn && m.usn.toLowerCase().includes(q))))
+  ) : available;
 
   modal = `
-    <div class="modal" role="dialog" aria-modal="true" style="position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(3px); padding:20px;">
-      <div class="card" style="max-width:680px; width:100%; max-height:85vh; display:flex; flex-direction:column; background:var(--surface); border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.25); overflow:hidden; padding:0;">
-        <div style="padding:18px 24px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;">
-          <div>
-            <h2 style="font-size:18px; font-weight:800; margin:0 0 4px; color:var(--ink);">Link Project Team to Mentoring Roster</h2>
-            <p class="mini" style="margin:0; color:var(--muted);">Select any mini-project team from CSE(AI) to add to your assigned mentoring list.</p>
-          </div>
-          <button type="button" class="btn secondary" style="padding:6px 10px;" onclick="window.closeAddTeamModal()">✕</button>
-        </div>
-        <div style="padding:18px 24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px;">
-          ${available.length ? available.map(t => `
-            <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px 14px; gap:12px;">
-              <div style="flex:1;">
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-                  <span style="font-size:11px; font-weight:800; background:#eff6ff; color:#1d4ed8; padding:2px 7px; border-radius:4px;">TEAM ${esc(t.id)}</span>
-                  <span style="font-size:11.5px; color:var(--muted);">${esc(t.topic || t.theme_name || '')}</span>
-                </div>
-                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">${esc(t.title || 'Untitled Project')}</div>
-                <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">Guide: ${esc(t.faculty || 'Unassigned')} · ${t.members ? t.members.length : 0} Members</div>
+    <div class="modal" role="dialog" aria-modal="true" style="position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; background:var(--bg,#f8fafc); overflow:hidden;">
+      <div style="width:100%; height:100%; display:flex; flex-direction:column; background:var(--bg,#f8fafc); overflow:hidden;">
+        
+        <!-- Full-width Header -->
+        <div style="padding:14px 32px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; background:var(--surface); flex-shrink:0; box-shadow:var(--shadow-xs);">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <img src="assets/kle_tech_logo.png" alt="KLE Tech" style="height:36px; width:auto; object-fit:contain;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h2 style="margin:0; font-size:18px; font-weight:800; color:var(--ink);">Link Project Team to Mentoring Roster</h2>
+                <span style="font-size:11.5px; font-weight:700; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; border:1px solid #7dd3fc;">${filtered.length} Available</span>
               </div>
-              <button type="button" class="btn" style="padding:7px 14px; font-size:12px; white-space:nowrap;" onclick="window.facultyClaimTeam('${esc(t.id)}')">
-                + Link Team
-              </button>
+              <span style="font-size:12.5px; color:var(--muted); font-weight:600;">Faculty Mentor: ${esc(facName)} · Department of CSE(AI)</span>
             </div>
-          `).join('') : '<div style="text-align:center; padding:30px; color:var(--muted);">All department teams are currently in your mentoring roster.</div>'}
+          </div>
+          <button type="button" class="btn secondary" onclick="window.closeAddTeamModal()" style="padding:8px 18px; font-size:13px; font-weight:700;">
+            ← Back to Faculty Dashboard
+          </button>
         </div>
-        <div style="padding:14px 24px; border-top:1px solid var(--line); display:flex; justify-content:flex-end;">
-          <button type="button" class="btn secondary" onclick="window.closeAddTeamModal()">Close</button>
+
+        <!-- Search Bar Toolbar -->
+        <div style="padding:14px 32px; background:var(--surface); border-bottom:1px solid var(--line); flex-shrink:0;">
+          <div style="max-width:1100px; margin:0 auto; display:flex; gap:12px; align-items:center;">
+            <input type="text" id="link-team-search" placeholder="Search by team ID (e.g. A-17), project title, theme, student name or USN…" value="${esc(q)}" oninput="window.__teamLinkSearch=this.value; window.openAddTeamModal(this.value);" style="flex:1; padding:11px 16px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font-size:13.5px; box-sizing:border-box;">
+            ${q ? `<button type="button" class="btn secondary" onclick="window.__teamLinkSearch=''; window.openAddTeamModal('');" style="padding:10px 16px; font-size:12.5px;">Clear Search</button>` : ''}
+          </div>
+        </div>
+
+        <!-- Scrollable Cards Grid Body -->
+        <div style="flex:1; overflow-y:auto; padding:28px 32px; background:var(--bg,#f8fafc);">
+          <div style="max-width:1100px; margin:0 auto;">
+            ${filtered.length ? `
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:18px;">
+                ${filtered.map(t => {
+                  const themeName = (t.topic || t.theme_name || 'General Specialization').replace(/^Theme\s*\d+\s*:\s*/i, '');
+                  return `
+                    <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 20px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:var(--shadow-sm); gap:12px;">
+                      <div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">
+                          <span style="font-size:11.5px; font-weight:800; background:#e0f2fe; color:#0369a1; padding:3px 9px; border-radius:6px; letter-spacing:0.3px;">
+                            TEAM ${esc(t.id)}
+                          </span>
+                          <span style="font-size:11px; font-weight:700; color:var(--muted); text-align:right;">
+                            Theme: ${esc(themeName)}
+                          </span>
+                        </div>
+                        <h3 style="font-size:14.5px; font-weight:700; color:var(--ink); line-height:1.35; margin:0 0 10px;">
+                          ${esc(t.title || 'Untitled Project')}
+                        </h3>
+                        <div style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+                          <strong>Current Guide:</strong> ${esc(t.faculty || 'Unassigned')}
+                        </div>
+                        ${t.members && t.members.length ? `
+                          <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">
+                            <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; color:var(--muted); letter-spacing:0.5px;">Members:</div>
+                            ${t.members.slice(0, 4).map(m => `
+                              <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:3px 8px;">
+                                <span style="font-weight:600;">${esc(m.name || m)}</span>
+                                <span style="font-family:monospace; color:var(--muted); font-size:11px;">${esc(m.usn || '')}</span>
+                              </div>
+                            `).join('')}
+                          </div>
+                        ` : ''}
+                      </div>
+
+                      <div style="border-top:1px solid var(--line); padding-top:12px; display:flex; justify-content:flex-end;">
+                        <button type="button" class="btn" style="width:100%; justify-content:center; padding:9px 16px; font-size:13px; font-weight:700; background:#38bdf8 !important; color:#082f49 !important; border:1px solid #0284c7 !important;" onclick="window.facultyClaimTeam('${esc(t.id)}')">
+                          + Link Team to My Roster
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            ` : `
+              <div style="text-align:center; padding:60px 20px; background:var(--surface); border:1px solid var(--line); border-radius:12px;">
+                <h3 style="font-size:16px; font-weight:700; color:var(--ink); margin:0 0 8px;">No matching teams found</h3>
+                <p style="font-size:13px; color:var(--muted); margin:0;">${q ? 'Try searching with a different keyword or USN.' : 'All department teams are currently in your mentoring roster.'}</p>
+              </div>
+            `}
+          </div>
+        </div>
+
+        <!-- Full-width Sticky Footer -->
+        <div style="padding:14px 32px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; background:var(--surface); flex-shrink:0;">
+          <span style="font-size:12.5px; color:var(--muted);">Selected teams will appear on your Faculty Assigned Projects Dashboard immediately.</span>
+          <button type="button" class="btn secondary" onclick="window.closeAddTeamModal()" style="padding:9px 22px; font-size:13px; font-weight:700;">
+            Close Full Page View
+          </button>
         </div>
       </div>
     </div>
   `;
   render();
+  setTimeout(() => {
+    const inp = document.getElementById('link-team-search');
+    if(inp && q) { inp.focus(); inp.selectionStart = inp.selectionEnd = inp.value.length; }
+  }, 50);
 };
 
 window.closeAddTeamModal = function(){
+  window.__teamLinkSearch = '';
   modal = null;
   render();
 };
@@ -1920,9 +1993,9 @@ portfolio=function(){
         repoUrl = safe(st2?.repo || staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
-  const authRole = (typeof getAuthUser === 'function' && getAuthUser()?.role) || (typeof state !== 'undefined' && state.role) || '';
-  const isFac = authRole === 'Faculty';
-  const isStu = authRole === 'Student' || authRole === 'Team Lead';
+  const authRole = String((typeof getAuthUser === 'function' && getAuthUser()?.role) || (typeof state !== 'undefined' && state.role) || '');
+  const isFac = authRole.toLowerCase() === 'faculty';
+  const isStu = authRole.toLowerCase() === 'student' || authRole.toLowerCase() === 'team lead';
   const navHtml = isStu ? '' : (isFac 
     ? `<nav class="page-navigation projector-project-back" aria-label="Page navigation" style="margin-bottom:12px;"><button type="button" class="btn secondary" data-page-back onclick="go('Overview')">← Back</button></nav>`
     : `<nav class="page-navigation projector-project-back" aria-label="Page navigation" style="margin-bottom:12px;"><button type="button" class="btn secondary" data-page-back onclick="backToThemeProjects(${themeNo})">Back to Theme ${themeNo}</button><button type="button" class="btn secondary" onclick="goToProjectHome()">Home</button></nav>`
@@ -2286,7 +2359,7 @@ portfolio=function(){
             ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.architectureImage || 'assets/team03_architecture_doc.png'}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <img src="${sys.architectureImage || (isSmartCampus ? 'assets/team03_architecture_doc.png' : '')}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink)">Fig 1. Architecture Diagram</p>
           </div>
         </article>
@@ -2297,7 +2370,7 @@ portfolio=function(){
             ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.dataDesignImage || 'assets/team03_datadesign_doc.jpeg'}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <img src="${sys.dataDesignImage || (isSmartCampus ? 'assets/team03_datadesign_doc.jpeg' : '')}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink)">Fig 2. Data Design</p>
           </div>
         </article>
@@ -2308,7 +2381,7 @@ portfolio=function(){
             ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.algorithmDesignImage || 'assets/team03_algorithmdesign_new.jpeg'}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            <img src="${sys.algorithmDesignImage || (isSmartCampus ? 'assets/team03_algorithmdesign_new.jpeg' : '')}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink)">Fig 3. Algorithm Design</p>
           </div>
         </article>
@@ -2338,7 +2411,7 @@ portfolio=function(){
           ` : ''}
         </div>
 
-        ${(st2.summary || (st2.modules && st2.modules.length) || st2.repo || st2.challenges) ? `
+        ${(st2.summary || (st2.modules && st2.modules.length) || st2.repo || st2.challenges || st2.implImage) ? `
           ${st2.summary ? `
             <article class="portfolio-subblock" id="sec-impl-summary">
               <h3>1. Implementation Summary</h3>
@@ -2391,6 +2464,15 @@ portfolio=function(){
               <div class="portfolio-prose" style="white-space:pre-line">${esc(st2.challenges)}</div>
             </article>
           ` : ''}
+
+          ${st2.implImage ? `
+            <article class="portfolio-subblock" id="sec-impl-image">
+              <h3>5. Implementation &amp; Component Evidence</h3>
+              <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
+                <img src="${esc(st2.implImage)}" alt="Implementation &amp; Component Architecture" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain; cursor:zoom-in;" onclick="window.open(this.src,'_blank')" />
+              </div>
+            </article>
+          ` : ''}
         ` : `
           <div class="empty-stage-notice" style="padding: 32px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
             <p style="font-size: 15px; font-weight: 700; margin: 0 0 8px; color: var(--ink);">Stage 3 Implementation data has not been inserted yet.</p>
@@ -2419,7 +2501,7 @@ portfolio=function(){
           ` : ''}
         </div>
 
-        ${(st3.strategy || (st3.tests && st3.tests.length) || st3.metrics || st3.evaluation) ? `
+        ${(st3.strategy || (st3.tests && st3.tests.length) || st3.metrics || st3.evaluation || st3.testingImage) ? `
           ${st3.strategy ? `
             <article class="portfolio-subblock" id="sec-test-strategy">
               <h3>1. Testing Strategy</h3>
@@ -2470,6 +2552,15 @@ portfolio=function(){
             <article class="portfolio-subblock" id="sec-test-evaluation">
               <h3>4. Critical Reflection &amp; Evaluation</h3>
               <div class="portfolio-prose" style="white-space:pre-line">${esc(st3.evaluation)}</div>
+            </article>
+          ` : ''}
+
+          ${st3.testingImage ? `
+            <article class="portfolio-subblock" id="sec-test-image">
+              <h3>5. Test Execution Results &amp; Verification Evidence</h3>
+              <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
+                <img src="${esc(st3.testingImage)}" alt="Test Execution &amp; Verification Evidence" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain; cursor:zoom-in;" onclick="window.open(this.src,'_blank')" />
+              </div>
             </article>
           ` : ''}
         ` : `
