@@ -1920,11 +1920,20 @@ portfolio=function(){
         repoUrl = safe(st2?.repo || staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
+  const authRole = (typeof getAuthUser === 'function' && getAuthUser()?.role) || (typeof state !== 'undefined' && state.role) || '';
+  const isFac = authRole === 'Faculty';
+  const isStu = authRole === 'Student' || authRole === 'Team Lead';
+  const navHtml = isStu ? '' : (isFac 
+    ? `<nav class="page-navigation projector-project-back" aria-label="Page navigation" style="margin-bottom:12px;"><button type="button" class="btn secondary" data-page-back onclick="go('Overview')">← Back</button></nav>`
+    : `<nav class="page-navigation projector-project-back" aria-label="Page navigation" style="margin-bottom:12px;"><button type="button" class="btn secondary" data-page-back onclick="backToThemeProjects(${themeNo})">Back to Theme ${themeNo}</button><button type="button" class="btn secondary" onclick="goToProjectHome()">Home</button></nav>`
+  );
+
   const html = `
 <div class="portfolio-container">
   <!-- Top Section: Theme, Title, Meta and Team Members -->
   <header class="portfolio-hero-banner">
     <div>
+      ${navHtml}
       <span class="portfolio-theme-pill">Theme: ${esc(themeName)}</span>
       <h1 class="portfolio-hero-title">${esc(title)}</h1>
       <div class="portfolio-hero-meta">

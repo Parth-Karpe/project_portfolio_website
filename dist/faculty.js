@@ -243,7 +243,7 @@
   };
   function enhance() {
     closeDrawer(); if(viewer.open) viewer.close(); headerObserver?.disconnect();
-    const app=document.getElementById('app'); normalizeInlinePresentation(app); enhanceTables(app);
+    const app=document.getElementById('app'); if(!app || (typeof isUserAuthenticated === 'function' && !isUserAuthenticated())) return; normalizeInlinePresentation(app); enhanceTables(app);
     const portfolio=app.querySelector('.portfolio-container');
     if(portfolio) {
       app.querySelectorAll('h2,.nav-label').forEach(el=>{if(!el.children.length) el.textContent=cleanHeading(el.textContent);});
@@ -261,7 +261,7 @@
           backBtn.setAttribute('onclick', "go('Overview')");
         }
         app.querySelectorAll('.page-navigation button').forEach(b => {
-          if(b !== backBtn && b.textContent.trim().toLowerCase() === 'home') b.remove();
+          if(b !== backBtn) b.remove();
         });
       } else {
         const back=app.querySelector('[onclick^="backToThemeProjects"]');if(back) back.textContent=`Back to Theme ${theme}`;

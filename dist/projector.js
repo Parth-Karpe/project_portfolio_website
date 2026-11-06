@@ -306,7 +306,7 @@
   function applyPresentation() {
     observer.disconnect();
     try {
-      const app=document.getElementById('app');if(!app) return;
+      const app=document.getElementById('app');if(!app || (typeof isUserAuthenticated==='function'&&!isUserAuthenticated())) return;
       normalizeInlineType(app);setLabels(app);dashboardPresentation(app);tablesPresentation(app);
       sidebarPresentation(app);stagePresentation(app);markEmptySections(app);imagesPresentation(app);
       document.querySelectorAll('.faculty-progress,#pf-progress,.reading-progress').forEach(element=>element.remove());

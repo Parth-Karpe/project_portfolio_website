@@ -99,8 +99,14 @@
   function clearAuthSession(){
     try {
       localStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
     } catch(e) {}
   }
+
+  // Always reset to login screen on initial page load / refresh:
+  // "after refreshing i should get the login page...then student/faculty/hod dashboard"
+  clearAuthSession();
+  try { sessionStorage.removeItem('pg_current_page'); } catch(e){}
 
   // Active UI state for auth screens
   let authMode = 'login'; // 'login' | 'register'
