@@ -1467,15 +1467,19 @@ render=function(){
     if(typeof renderAuthScreen === "function") $("#app").innerHTML = renderAuthScreen();
     return;
   }
+  if(typeof restoreAuthSession === "function" && !window.__authSessionRestored){
+    window.__authSessionRestored = true;
+    restoreAuthSession();
+  }
   ensureDepartment();
   if(page==='Faculty Admin') page='Overview';
   renderWorkspace();
   const main=$('.main');
   if(!main) return;
   let html=main.innerHTML;
-  if(['Design Journey'].includes(page) || (page==='Overview' && state.role==='Team Lead'))
+  if(['Design Journey'].includes(page) || (page==='Overview' && (state.role==='Team Lead'||state.role==='Student')))
     html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));
-  if(activeTeam() && page!=='Overview'){
+  if(activeTeam()){
     html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));
   }
   main.innerHTML=html;
@@ -2881,4 +2885,4 @@ function previewHTML(){if(!importPreview)return '';const p=importPreview;return 
 function commitRosterImport(){if(state.role!=='Admin'||!importPreview||importPreview.errors.length)return;syncTeam();const backup=clone(state);try{const p=importPreview;state.department={name:'CSE(AI)',hod:p.hod,facultyAdmin:p.facultyAdmin};p.teams.forEach(incoming=>{const old=state.teams.find(t=>t.id.toLowerCase()===incoming.id.toLowerCase()),t=clone(incoming);delete t.source;if(old){t.id=old.id;const w=state.workspaces[old.id];if(w){w.members=t.members.map((m,i)=>({...w.members[i],...m}));w.guide=t.faculty;w.forms[1].title=t.title}Object.assign(old,t)}else{state.teams.push(t);state.workspaces[t.id]=newTeamWorkspace(t)}});state.teams.forEach(t=>{t.hod=p.hod;t.facultyAdmin=p.facultyAdmin});const active=state.teams.find(t=>t.id===state.activeTeamId),w=state.workspaces[active.id];workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.guide=active.faculty;state.members=state.members.map((m,i)=>({...m,...active.members[i]}));state.forms[1].title=active.title;if(!save()){state=backup;return}const count=p.teams.length;importPreview=null;render();toast(`Imported ${count} teams. CSE(AI) roster saved in this browser.`)}catch(e){state=backup;toast('Import was not saved: '+e.message)}}
 function rosterMatrix(){const h=['Department','HOD','Faculty Admin','Team ID','Faculty Name','Topic','Project Title',...Array.from({length:4},(_,i)=>['Member '+(i+1)+' Name','Member '+(i+1)+' USN']).flat()];return [h,...state.teams.map(t=>['CSE(AI)',state.department.hod,state.department.facultyAdmin,t.id,t.faculty,t.topic,t.title,...t.members.flatMap(m=>[m.name,m.usn])])]}
 function exportRoster(){if(!['Admin','Faculty Admin'].includes(state.role))return;save();const matrix=rosterMatrix(),csv=matrix.map(r=>r.map(v=>'"'+String(v).replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"').join(',')).join('\r\n'),url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='CSE(AI)-Complete-Roster.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-save();render();
+if(typeof restoreAuthSession==='function')restoreAuthSession();save();render();

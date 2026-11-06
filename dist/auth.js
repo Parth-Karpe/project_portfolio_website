@@ -38,11 +38,11 @@
     },
     {
       id: 'usr_stu_01',
-      identifier: '01FE23BCS103',
+      identifier: '01FE24BCI028',
       email: 'vedant.k@kletech.ac.in',
       name: 'Vedant Khot',
       role: 'Student',
-      teamId: '03',
+      teamId: 'A-03',
       password: 'password123',
       department: 'Department of CSE(AI)'
     },
@@ -58,11 +58,11 @@
     },
     {
       id: 'usr_stu_03',
-      identifier: '01FE23BCS102',
+      identifier: '01FE24BCI029',
       email: 'nupur.b@kletech.ac.in',
       name: 'Nupur Bagave',
       role: 'Student',
-      teamId: '03',
+      teamId: 'A-03',
       password: 'password123',
       department: 'Department of CSE(AI)'
     }
@@ -117,6 +117,7 @@
 
   root.signOutUser = function(){
     clearAuthSession();
+    try { sessionStorage.removeItem('pg_current_page'); } catch(e){}
     authErrorMsg = '';
     authMode = 'login';
     if(typeof state !== 'undefined'){
@@ -282,14 +283,33 @@
       state.role = user.role;
 
       if(user.role === 'Student'){
-        const tid = user.teamId || state.activeTeamId || '03';
+        let tid = user.teamId || state.activeTeamId || 'A-03';
+        if(tid === '03') tid = 'A-03';
+        const allTeams = (typeof state !== 'undefined' && state.teams) || (typeof seedTeams === 'function' ? seedTeams() : []);
+        if(user.identifier){
+          const m = allTeams.find(t => t.members && t.members.some(mem => mem.usn && mem.usn.toLowerCase() === user.identifier.toLowerCase()));
+          if(m) tid = m.id;
+        }
         if(typeof switchTeam === 'function') switchTeam(tid);
+        else state.activeTeamId = tid;
+
+        if(state.members && state.members.length){
+          const sIdx = state.members.findIndex(m =>
+            (user.identifier && m.usn && m.usn.toLowerCase() === user.identifier.toLowerCase()) ||
+            (user.name && m.name && m.name.toLowerCase() === user.name.toLowerCase())
+          );
+          if(sIdx >= 0) state.student = sIdx;
+        }
+
+        try { sessionStorage.setItem('pg_current_page', 'Team Portfolio'); } catch(e){}
         if(typeof go === 'function') go('Team Portfolio');
       } else if(user.role === 'Faculty'){
         state.facultyAccount = user.name;
         if(typeof selectFaculty === 'function') selectFaculty(user.name);
+        try { sessionStorage.setItem('pg_current_page', 'Overview'); } catch(e){}
         if(typeof go === 'function') go('Overview');
       } else if(user.role === 'HOD'){
+        try { sessionStorage.setItem('pg_current_page', 'Department'); } catch(e){}
         if(typeof go === 'function') go('Department');
       }
     }
@@ -297,6 +317,65 @@
     if(typeof toast === 'function') toast('Welcome, ' + user.name + ' (' + user.role + ')');
     if(typeof render === 'function') render();
   }
+
+  function restoreAuthSession(){
+    const user = getAuthSession();
+    if(!user || typeof state === 'undefined') return;
+    state.currentUser = user;
+    state.role = user.role;
+
+    if(user.role === 'Student'){
+      let tid = user.teamId || state.activeTeamId || 'A-03';
+      if(tid === '03') tid = 'A-03';
+      const allTeams = (state.teams || (typeof seedTeams === 'function' ? seedTeams() : []));
+      if(user.identifier){
+        const m = allTeams.find(t => t.members && t.members.some(mem => mem.usn && mem.usn.toLowerCase() === user.identifier.toLowerCase()));
+        if(m) tid = m.id;
+      }
+      if(typeof switchTeam === 'function'){
+        if(state.activeTeamId !== tid) switchTeam(tid);
+      } else {
+        state.activeTeamId = tid;
+      }
+
+      if(state.members && state.members.length){
+        const sIdx = state.members.findIndex(m =>
+          (user.identifier && m.usn && m.usn.toLowerCase() === user.identifier.toLowerCase()) ||
+          (user.name && m.name && m.name.toLowerCase() === user.name.toLowerCase())
+        );
+        if(sIdx >= 0) state.student = sIdx;
+      }
+
+      let savedPage = null;
+      try { savedPage = sessionStorage.getItem('pg_current_page'); } catch(e){}
+      if(savedPage && typeof rolePages !== 'undefined' && rolePages.Student && rolePages.Student.includes(savedPage)){
+        page = savedPage;
+      } else {
+        page = 'Team Portfolio';
+        try { sessionStorage.setItem('pg_current_page', 'Team Portfolio'); } catch(e){}
+      }
+    } else if(user.role === 'Faculty'){
+      state.facultyAccount = user.name;
+      let savedPage = null;
+      try { savedPage = sessionStorage.getItem('pg_current_page'); } catch(e){}
+      if(savedPage && typeof rolePages !== 'undefined' && rolePages.Faculty && rolePages.Faculty.includes(savedPage)){
+        page = savedPage;
+      } else {
+        page = 'Overview';
+        try { sessionStorage.setItem('pg_current_page', 'Overview'); } catch(e){}
+      }
+    } else if(user.role === 'HOD'){
+      let savedPage = null;
+      try { savedPage = sessionStorage.getItem('pg_current_page'); } catch(e){}
+      if(savedPage && typeof rolePages !== 'undefined' && rolePages.HOD && rolePages.HOD.includes(savedPage)){
+        page = savedPage;
+      } else {
+        page = 'Department';
+        try { sessionStorage.setItem('pg_current_page', 'Department'); } catch(e){}
+      }
+    }
+  }
+  root.restoreAuthSession = restoreAuthSession;
 
   root.renderAuthScreen = function(){
     const isDark = typeof getTheme === 'function' && getTheme() === 'dark';
