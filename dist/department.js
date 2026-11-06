@@ -1314,84 +1314,44 @@ function facultyProjectsDashboard(){
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
         ${assigned.map(team => {
           const isActive = team.id === state.activeTeamId;
-          const isCustom = customIds.includes(team.id);
           const themeName = team.theme_name || team.topic || 'Data Systems & Engineering';
-          const w = (state.workspaces && state.workspaces[team.id]) || {};
-          const forms = w.forms || {};
-
-          const s0Done = !!(forms[0] && (forms[0].problem || forms[0].title));
-          const s1Done = !!(forms[1] && (forms[1].functional || forms[1].requirements));
-          const s2Done = !!(forms[2] && (forms[2].architecture || forms[2].implementation));
-          const s3Done = !!(forms[3] && forms[3].components);
-          const s4Done = !!(forms[4] && forms[4].testResults);
 
           return `
             <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-radius:12px; border:${isActive ? '2px solid var(--accent, #2563eb)' : '1px solid var(--line)'}; background:var(--surface); padding:20px; box-shadow:${isActive ? '0 4px 14px rgba(37,99,235,0.12)' : 'var(--shadow-xs)'}; transition:all 0.15s ease;">
               <div>
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px;">
                   <span style="display:inline-flex; align-items:center; gap:6px; background:${isActive ? '#2563eb' : '#eff6ff'}; color:${isActive ? '#fff' : '#1d4ed8'}; border:1px solid ${isActive ? '#2563eb' : '#bfdbfe'}; font-size:12px; font-weight:800; padding:4px 10px; border-radius:6px; letter-spacing:0.5px;">
-                    TEAM ${esc(team.id)} ${isActive ? '· ACTIVE' : ''}
+                    TEAM ${esc(team.id)}${isActive ? ' · ACTIVE' : ''}
                   </span>
                   <span style="font-size:11.5px; font-weight:600; color:var(--muted); background:var(--bg); border:1px solid var(--line); padding:3px 8px; border-radius:4px; max-width:210px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(themeName)}">
                     ${esc(themeName)}
                   </span>
                 </div>
 
-                <h3 style="font-size:16px; font-weight:700; color:var(--ink); line-height:1.4; margin:0 0 10px; min-height:44px;">
+                <h3 style="font-size:16px; font-weight:700; color:var(--ink); line-height:1.4; margin:0 0 14px; min-height:44px;">
                   ${esc(team.title || 'Mini-Project')}
                 </h3>
 
-                <div style="font-size:12px; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
-                  <span>👨‍🏫 Faculty Guide:</span>
-                  <strong style="color:var(--ink);">${esc(team.faculty || facName)}</strong>
-                </div>
-
                 <div style="margin-bottom:14px;">
-                  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:6px;">Team Members (USN):</div>
+                  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px;">Team Members (USN):</div>
                   <div style="display:flex; flex-direction:column; gap:5px;">
                     ${(team.members || []).map(m => `
-                      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:4px 9px; font-size:12px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 10px; font-size:12.5px;">
                         <span style="font-weight:600; color:var(--ink);">${esc(m.name)}</span>
-                        <span style="font-family:monospace; color:var(--muted); font-size:11px;">${esc(m.usn)}</span>
+                        <span style="font-family:monospace; color:var(--muted); font-size:11.5px;">${esc(m.usn)}</span>
                       </div>
                     `).join('')}
                   </div>
                 </div>
-
-                <div style="margin-bottom:16px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 12px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Milestone Stages</span>
-                    <span style="font-size:11px; font-weight:700; color:var(--accent, #2563eb);">Stages 0–4</span>
-                  </div>
-                  <div style="display:flex; gap:4px;">
-                    <span style="flex:1; height:6px; border-radius:3px; background:${s0Done ? '#10b981' : '#cbd5e1'};" title="Stage 0: Framing (${s0Done ? 'Documented' : 'Pending'})"></span>
-                    <span style="flex:1; height:6px; border-radius:3px; background:${s1Done ? '#10b981' : '#cbd5e1'};" title="Stage 1: Requirements (${s1Done ? 'Documented' : 'Pending'})"></span>
-                    <span style="flex:1; height:6px; border-radius:3px; background:${s2Done ? '#10b981' : '#cbd5e1'};" title="Stage 2: Architecture (${s2Done ? 'Documented' : 'Pending'})"></span>
-                    <span style="flex:1; height:6px; border-radius:3px; background:${s3Done ? '#10b981' : '#3b82f6'};" title="Stage 3: Implementation (${s3Done ? 'Documented' : 'In Progress'})"></span>
-                    <span style="flex:1; height:6px; border-radius:3px; background:${s4Done ? '#10b981' : '#f59e0b'};" title="Stage 4: Testing & Viva (${s4Done ? 'Documented' : 'In Progress'})"></span>
-                  </div>
-                </div>
               </div>
 
-              <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; border-top:1px solid var(--line); padding-top:14px;">
-                <div style="display:flex; gap:8px;">
-                  <button type="button" class="btn" style="flex:1; justify-content:center; font-size:12.5px; padding:8px 12px;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
-                    👁️ View Portfolio ↗
-                  </button>
-                  <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:12.5px; padding:8px 12px;" onclick="window.facultyOpenTeamReview('${esc(team.id)}')">
-                    📋 Review Stages
-                  </button>
-                </div>
-                <div style="display:flex; gap:8px;">
-                  <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:11.5px; padding:6px 10px; color:var(--muted);" onclick="window.facultyOpenTeamViva('${esc(team.id)}')">
-                    ✧ Practice Viva
-                  </button>
-                  ${isCustom ? `
-                    <button type="button" class="btn secondary" style="font-size:11.5px; padding:6px 10px; color:#ef4444;" title="Unlink this team from mentoring list" onclick="window.facultyRemoveTeam('${esc(team.id)}')">
-                      ✕ Unlink
-                    </button>
-                  ` : ''}
-                </div>
+              <div style="display:flex; gap:10px; margin-top:12px; border-top:1px solid var(--line); padding-top:14px;">
+                <button type="button" class="btn" style="flex:1; justify-content:center; font-size:13px; font-weight:700; padding:9px 12px;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
+                  👁️ View Portfolio
+                </button>
+                <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:13px; font-weight:700; padding:9px 12px;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
+                  ✏️ Edit Portfolio
+                </button>
               </div>
             </div>
           `;
@@ -1406,6 +1366,16 @@ function facultyProjectsDashboard(){
 window.facultyOpenTeamPortfolio = function(id){
   if(typeof switchTeam === 'function') switchTeam(id);
   if(typeof go === 'function') go('Team Portfolio');
+};
+
+window.facultyEditTeamPortfolio = function(id){
+  if(typeof switchTeam === 'function') switchTeam(id);
+  if(typeof go === 'function') go('Team Portfolio');
+  setTimeout(() => {
+    if(typeof openStageDataEditor === 'function'){
+      openStageDataEditor('0');
+    }
+  }, 120);
 };
 
 window.facultyOpenTeamReview = function(id){
