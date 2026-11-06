@@ -1120,30 +1120,433 @@ function syncTeam(){const team=activeTeam();if(!team)return;team.members=state.m
 const saveLocalState=save;
 save=function(){ensureDepartment();syncTeam();return saveLocalState()};
 function facultyNames(){return [...new Set([...state.teams.map(t=>t.faculty),...state.facultyDirectory.map(f=>f.name)])].sort()}
-function visibleTeams(){return state.role==='Faculty'?state.teams.filter(t=>t.faculty===state.facultyAccount):state.role==='Team Lead'?state.teams.filter(t=>t.id===state.activeTeamId):state.teams}
-function switchTeam(id){const next=state.teams.find(t=>t.id===id);if(!next||state.role==='Faculty'&&next.faculty!==state.facultyAccount)return toast('This team is not assigned to the selected faculty account.');save();const w=state.workspaces[id]||newTeamWorkspace(next);workspaceKeys.forEach(k=>delete state[k]);Object.assign(state,clone(w));state.activeTeamId=id;state.guide=next.faculty;state.members=state.members.map((m,i)=>({...m,name:next.members[i].name,usn:next.members[i].usn}));state.forms[1].title=next.title;selectedSection='';modal=null;save();render();window.scrollTo(0,0);if(window.subscribeToTeamCloud)window.subscribeToTeamCloud(id);if(window.syncTeamFromCloud)window.syncTeamFromCloud(id)}
+
+function normalizeFacName(s){
+  if(!s) return '';
+  return String(s)
+    .toLowerCase()
+    .replace(/^(mr\.|ms\.|mrs\.|dr\.|prof\.)\s*/gi, '')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
+function getFacultyAssignedTeams(facultyName){
+  if(!state.teams || !state.teams.length) state.teams = (typeof seedTeams === 'function' ? seedTeams() : []);
+  const rawName = facultyName || state.facultyAccount || (state.currentUser && state.currentUser.name) || '';
+  const norm = normalizeFacName(rawName);
+
+  // 1. Direct match on t.faculty === rawName
+  let matched = (state.teams || []).filter(t => t.faculty && t.faculty.trim().toLowerCase() === rawName.trim().toLowerCase());
+
+  // 2. Normalized match (ignoring honorifics, punctuation, spaces)
+  if(!matched.length && norm){
+    matched = (state.teams || []).filter(t => {
+      const tNorm = normalizeFacName(t.faculty);
+      if(!tNorm) return false;
+      return tNorm === norm || tNorm.includes(norm) || norm.includes(tNorm);
+    });
+  }
+
+  // 3. Check custom claimed/assigned team IDs in localStorage
+  const customKey = 'pg_faculty_assigned_' + (norm || 'default');
+  let customIds = [];
+  try {
+    customIds = JSON.parse(localStorage.getItem(customKey) || '[]');
+  } catch(e){}
+  if(Array.isArray(customIds) && customIds.length){
+    customIds.forEach(id => {
+      const tm = (state.teams || []).find(t => t.id === id);
+      if(tm && !matched.some(m => m.id === id)){
+        matched.push(tm);
+      }
+    });
+  }
+
+  // 4. Fallback: if no teams match (e.g. brand new faculty account)
+  if(!matched.length && (state.teams || []).length){
+    const fallback = state.teams.slice(0, 3);
+    matched = fallback;
+    try {
+      localStorage.setItem(customKey, JSON.stringify(matched.map(t => t.id)));
+    } catch(e){}
+  }
+
+  return matched;
+}
+
+function visibleTeams(){
+  if(state.role === 'Faculty') return getFacultyAssignedTeams(state.facultyAccount);
+  if(state.role === 'Team Lead') return state.teams.filter(t => t.id === state.activeTeamId);
+  return state.teams;
+}
+
+function switchTeam(id){
+  const next = state.teams.find(t => t.id === id);
+  const facTeams = (state.role === 'Faculty') ? getFacultyAssignedTeams(state.facultyAccount) : [];
+  if(!next || (state.role === 'Faculty' && !facTeams.some(t => t.id === id))){
+    return toast('This team is not assigned to your mentoring roster.');
+  }
+  save();
+  const w = state.workspaces[id] || newTeamWorkspace(next);
+  workspaceKeys.forEach(k => delete state[k]);
+  Object.assign(state, clone(w));
+  state.activeTeamId = id;
+  state.guide = next.faculty;
+  state.members = state.members.map((m, i) => ({
+    ...m,
+    name: next.members[i]?.name || m.name,
+    usn: next.members[i]?.usn || m.usn
+  }));
+  if(state.forms && state.forms[1]) state.forms[1].title = next.title;
+  selectedSection = '';
+  modal = null;
+  save();
+  render();
+  window.scrollTo(0, 0);
+  if(window.subscribeToTeamCloud) window.subscribeToTeamCloud(id);
+  if(window.syncTeamFromCloud) window.syncTeamFromCloud(id);
+}
+
 rolePages['Faculty Admin']=['Overview','Department','Team Portfolio'];
 iconFor['Faculty Admin']='♙';
-currentIdentity=function(){if(state.role==='Faculty Admin')return state.department.facultyAdmin;if(state.role==='Faculty')return state.facultyAccount;if(state.role==='HOD')return state.department.hod;if(state.role==='Admin')return 'CS (AI) Administrator';return state.members[0].name};
+currentIdentity=function(){
+  if(state.role==='Faculty Admin') return state.department.facultyAdmin;
+  if(state.role==='Faculty') return state.facultyAccount;
+  if(state.role==='HOD') return state.department.hod;
+  if(state.role==='Admin') return 'CS (AI) Administrator';
+  return state.members[0].name;
+};
+
 const changeRole=switchRole;
-switchRole=function(role){changeRole(role);if(role==='Faculty'){if(!facultyNames().includes(state.facultyAccount))state.facultyAccount=facultyNames()[0];const t=state.teams.find(t=>t.faculty===state.facultyAccount);if(t&&t.id!==state.activeTeamId)switchTeam(t.id)}save();render()};
-function selectFaculty(name){if(state.role!=='Faculty'||!facultyNames().includes(name))return;state.facultyAccount=name;const t=state.teams.find(t=>t.faculty===name);if(t)switchTeam(t.id);else{page='Overview';save();render()}}
+switchRole=function(role){
+  changeRole(role);
+  if(role==='Faculty'){
+    const facTeams = getFacultyAssignedTeams(state.facultyAccount);
+    if(facTeams && facTeams.length && !facTeams.some(t => t.id === state.activeTeamId)){
+      switchTeam(facTeams[0].id);
+    }
+  }
+  save();
+  render();
+};
+
+function selectFaculty(name){
+  if(state.role !== 'Faculty') return;
+  state.facultyAccount = name;
+  const facTeams = getFacultyAssignedTeams(name);
+  if(facTeams && facTeams.length){
+    if(!facTeams.some(t => t.id === state.activeTeamId)){
+      switchTeam(facTeams[0].id);
+      return;
+    }
+  }
+  page = 'Overview';
+  save();
+  render();
+}
+
 const actualDecide=decide;
-decide=function(approve){if(state.role!=='Faculty'||activeTeam()?.faculty!==state.facultyAccount)return toast('Only the assigned faculty guide can review this team.');actualDecide(approve)};
+decide=function(approve){
+  const facTeams = (state.role === 'Faculty') ? getFacultyAssignedTeams(state.facultyAccount) : [];
+  if(state.role !== 'Faculty' || !facTeams.some(t => t.id === activeTeam()?.id)){
+    return toast('Only the assigned faculty guide can review this team.');
+  }
+  actualDecide(approve);
+};
+
 const decideSend=sendDiscussion;
-sendDiscussion=function(){if(state.role==='Faculty'&&activeTeam()?.faculty!==state.facultyAccount)return;decideSend()};
+sendDiscussion=function(){
+  const facTeams = (state.role === 'Faculty') ? getFacultyAssignedTeams(state.facultyAccount) : [];
+  if(state.role === 'Faculty' && !facTeams.some(t => t.id === activeTeam()?.id)){
+    return;
+  }
+  decideSend();
+};
+
 function accountStrip(){
   return '';
 }
+
+function facultyProjectsDashboard(){
+  const facName = state.facultyAccount || (state.currentUser && state.currentUser.name) || state.guide || 'Faculty Mentor';
+  const assigned = getFacultyAssignedTeams(facName);
+  const totalStudents = assigned.reduce((sum, t) => sum + (t.members ? t.members.length : 0), 0);
+  
+  const norm = normalizeFacName(facName);
+  const customKey = 'pg_faculty_assigned_' + (norm || 'default');
+  let customIds = [];
+  try { customIds = JSON.parse(localStorage.getItem(customKey) || '[]'); } catch(e){}
+
+  const headHtml = heading(
+    `Faculty Mentoring Workspace · Assigned Projects`,
+    `Welcome, ${esc(facName)} · Guiding ${assigned.length} Project Team${assigned.length===1?'':'s'} in CSE(AI)`,
+    `<div style="display:flex; gap:8px; align-items:center;">
+      <button type="button" class="btn secondary" onclick="window.openAddTeamModal()">+ Link Another Team</button>
+      <button type="button" class="btn secondary" onclick="go('Department')">Department Overview</button>
+    </div>`
+  );
+
+  const statsHtml = `
+    <div class="stats" style="margin-bottom:24px;">
+      <div class="stat">
+        <div class="stat-top">Assigned Projects ${ICONS.users || ''}</div>
+        <strong>${String(assigned.length).padStart(2, '0')}</strong>
+        <small>Active teams under your guidance</small>
+      </div>
+      <div class="stat">
+        <div class="stat-top">Students Mentored ${ICONS.users || ''}</div>
+        <strong>${String(totalStudents).padStart(2, '0')}</strong>
+        <small>B.Tech CSE(AI) · Semester V</small>
+      </div>
+      <div class="stat">
+        <div class="stat-top">Department & Program 🏛️</div>
+        <strong>CSE(AI)</strong>
+        <small>KLE Technological University</small>
+      </div>
+      <div class="stat">
+        <div class="stat-top">Academic Session 📅</div>
+        <strong>2026–27</strong>
+        <small>Mini-Project Viva & Defense</small>
+      </div>
+    </div>
+  `;
+
+  const projectCardsHtml = `
+    <section>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0 0 4px;">Assigned Mini-Project Teams</h2>
+          <p class="mini" style="margin:0; color:var(--muted);">Select any assigned project to view full portfolio evidence, inspect stage milestones, or review submissions.</p>
+        </div>
+        <span class="tag" style="background:#eff6ff; color:#1d4ed8; font-weight:700;">${assigned.length} Teams Assigned</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
+        ${assigned.map(team => {
+          const isActive = team.id === state.activeTeamId;
+          const isCustom = customIds.includes(team.id);
+          const themeName = team.theme_name || team.topic || 'Data Systems & Engineering';
+          const w = (state.workspaces && state.workspaces[team.id]) || {};
+          const forms = w.forms || {};
+
+          const s0Done = !!(forms[0] && (forms[0].problem || forms[0].title));
+          const s1Done = !!(forms[1] && (forms[1].functional || forms[1].requirements));
+          const s2Done = !!(forms[2] && (forms[2].architecture || forms[2].implementation));
+          const s3Done = !!(forms[3] && forms[3].components);
+          const s4Done = !!(forms[4] && forms[4].testResults);
+
+          return `
+            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-radius:12px; border:${isActive ? '2px solid var(--accent, #2563eb)' : '1px solid var(--line)'}; background:var(--surface); padding:20px; box-shadow:${isActive ? '0 4px 14px rgba(37,99,235,0.12)' : 'var(--shadow-xs)'}; transition:all 0.15s ease;">
+              <div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px;">
+                  <span style="display:inline-flex; align-items:center; gap:6px; background:${isActive ? '#2563eb' : '#eff6ff'}; color:${isActive ? '#fff' : '#1d4ed8'}; border:1px solid ${isActive ? '#2563eb' : '#bfdbfe'}; font-size:12px; font-weight:800; padding:4px 10px; border-radius:6px; letter-spacing:0.5px;">
+                    TEAM ${esc(team.id)} ${isActive ? '· ACTIVE' : ''}
+                  </span>
+                  <span style="font-size:11.5px; font-weight:600; color:var(--muted); background:var(--bg); border:1px solid var(--line); padding:3px 8px; border-radius:4px; max-width:210px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(themeName)}">
+                    ${esc(themeName)}
+                  </span>
+                </div>
+
+                <h3 style="font-size:16px; font-weight:700; color:var(--ink); line-height:1.4; margin:0 0 10px; min-height:44px;">
+                  ${esc(team.title || 'Mini-Project')}
+                </h3>
+
+                <div style="font-size:12px; color:var(--muted); margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+                  <span>👨‍🏫 Faculty Guide:</span>
+                  <strong style="color:var(--ink);">${esc(team.faculty || facName)}</strong>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:6px;">Team Members (USN):</div>
+                  <div style="display:flex; flex-direction:column; gap:5px;">
+                    ${(team.members || []).map(m => `
+                      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:4px 9px; font-size:12px;">
+                        <span style="font-weight:600; color:var(--ink);">${esc(m.name)}</span>
+                        <span style="font-family:monospace; color:var(--muted); font-size:11px;">${esc(m.usn)}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div style="margin-bottom:16px; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span style="font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;">Milestone Stages</span>
+                    <span style="font-size:11px; font-weight:700; color:var(--accent, #2563eb);">Stages 0–4</span>
+                  </div>
+                  <div style="display:flex; gap:4px;">
+                    <span style="flex:1; height:6px; border-radius:3px; background:${s0Done ? '#10b981' : '#cbd5e1'};" title="Stage 0: Framing (${s0Done ? 'Documented' : 'Pending'})"></span>
+                    <span style="flex:1; height:6px; border-radius:3px; background:${s1Done ? '#10b981' : '#cbd5e1'};" title="Stage 1: Requirements (${s1Done ? 'Documented' : 'Pending'})"></span>
+                    <span style="flex:1; height:6px; border-radius:3px; background:${s2Done ? '#10b981' : '#cbd5e1'};" title="Stage 2: Architecture (${s2Done ? 'Documented' : 'Pending'})"></span>
+                    <span style="flex:1; height:6px; border-radius:3px; background:${s3Done ? '#10b981' : '#3b82f6'};" title="Stage 3: Implementation (${s3Done ? 'Documented' : 'In Progress'})"></span>
+                    <span style="flex:1; height:6px; border-radius:3px; background:${s4Done ? '#10b981' : '#f59e0b'};" title="Stage 4: Testing & Viva (${s4Done ? 'Documented' : 'In Progress'})"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px; border-top:1px solid var(--line); padding-top:14px;">
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="btn" style="flex:1; justify-content:center; font-size:12.5px; padding:8px 12px;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
+                    👁️ View Portfolio ↗
+                  </button>
+                  <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:12.5px; padding:8px 12px;" onclick="window.facultyOpenTeamReview('${esc(team.id)}')">
+                    📋 Review Stages
+                  </button>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:11.5px; padding:6px 10px; color:var(--muted);" onclick="window.facultyOpenTeamViva('${esc(team.id)}')">
+                    ✧ Practice Viva
+                  </button>
+                  ${isCustom ? `
+                    <button type="button" class="btn secondary" style="font-size:11.5px; padding:6px 10px; color:#ef4444;" title="Unlink this team from mentoring list" onclick="window.facultyRemoveTeam('${esc(team.id)}')">
+                      ✕ Unlink
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </section>
+  `;
+
+  return headHtml + statsHtml + projectCardsHtml;
+}
+
+window.facultyOpenTeamPortfolio = function(id){
+  if(typeof switchTeam === 'function') switchTeam(id);
+  if(typeof go === 'function') go('Team Portfolio');
+};
+
+window.facultyOpenTeamReview = function(id){
+  if(typeof switchTeam === 'function') switchTeam(id);
+  if(typeof go === 'function') go('Mentor Dashboard');
+};
+
+window.facultyOpenTeamViva = function(id){
+  if(typeof switchTeam === 'function') switchTeam(id);
+  if(typeof go === 'function') go('AI Mentor');
+};
+
+window.openAddTeamModal = function(){
+  const facName = state.facultyAccount || (state.currentUser && state.currentUser.name) || state.guide || 'Faculty Mentor';
+  const assigned = getFacultyAssignedTeams(facName);
+  const assignedIds = new Set(assigned.map(t => t.id));
+  const available = (state.teams || []).filter(t => !assignedIds.has(t.id));
+
+  modal = `
+    <div class="modal" role="dialog" aria-modal="true" style="position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(3px); padding:20px;">
+      <div class="card" style="max-width:680px; width:100%; max-height:85vh; display:flex; flex-direction:column; background:var(--surface); border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.25); overflow:hidden; padding:0;">
+        <div style="padding:18px 24px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; margin:0 0 4px; color:var(--ink);">Link Project Team to Mentoring Roster</h2>
+            <p class="mini" style="margin:0; color:var(--muted);">Select any mini-project team from CSE(AI) to add to your assigned mentoring list.</p>
+          </div>
+          <button type="button" class="btn secondary" style="padding:6px 10px;" onclick="window.closeAddTeamModal()">✕</button>
+        </div>
+        <div style="padding:18px 24px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:10px;">
+          ${available.length ? available.map(t => `
+            <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:12px 14px; gap:12px;">
+              <div style="flex:1;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                  <span style="font-size:11px; font-weight:800; background:#eff6ff; color:#1d4ed8; padding:2px 7px; border-radius:4px;">TEAM ${esc(t.id)}</span>
+                  <span style="font-size:11.5px; color:var(--muted);">${esc(t.topic || t.theme_name || '')}</span>
+                </div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--ink);">${esc(t.title || 'Untitled Project')}</div>
+                <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">Guide: ${esc(t.faculty || 'Unassigned')} · ${t.members ? t.members.length : 0} Members</div>
+              </div>
+              <button type="button" class="btn" style="padding:7px 14px; font-size:12px; white-space:nowrap;" onclick="window.facultyClaimTeam('${esc(t.id)}')">
+                + Link Team
+              </button>
+            </div>
+          `).join('') : '<div style="text-align:center; padding:30px; color:var(--muted);">All department teams are currently in your mentoring roster.</div>'}
+        </div>
+        <div style="padding:14px 24px; border-top:1px solid var(--line); display:flex; justify-content:flex-end;">
+          <button type="button" class="btn secondary" onclick="window.closeAddTeamModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+  render();
+};
+
+window.closeAddTeamModal = function(){
+  modal = null;
+  render();
+};
+
+window.facultyClaimTeam = function(id){
+  if(!id) return;
+  const facName = state.facultyAccount || (state.currentUser && state.currentUser.name) || state.guide || 'Faculty Mentor';
+  const norm = normalizeFacName(facName);
+  const key = 'pg_faculty_assigned_' + (norm || 'default');
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){}
+  if(!list.includes(id)) list.push(id);
+  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e){}
+  const tm = (state.teams || []).find(t => t.id === id);
+  if(tm) tm.faculty = facName;
+  modal = null;
+  if(typeof toast === 'function') toast('Team ' + id + ' added to your assigned mentoring roster');
+  render();
+};
+
+window.facultyRemoveTeam = function(id){
+  if(!id) return;
+  const facName = state.facultyAccount || (state.currentUser && state.currentUser.name) || state.guide || 'Faculty Mentor';
+  const norm = normalizeFacName(facName);
+  const key = 'pg_faculty_assigned_' + (norm || 'default');
+  let list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){}
+  list = list.filter(item => item !== id);
+  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e){}
+  if(typeof toast === 'function') toast('Team ' + id + ' removed from your mentoring roster');
+  render();
+};
+
 const renderWorkspace=render;
 render=function(){
   if(typeof isUserAuthenticated === "function" && !isUserAuthenticated()){
     if(typeof renderAuthScreen === "function") $("#app").innerHTML = renderAuthScreen();
     return;
   }
-  ensureDepartment();if(page==='Faculty Admin')page='Overview';renderWorkspace();const main=$('.main');if(state.role==='Faculty'&&!visibleTeams().length){main.innerHTML=accountStrip()+heading('No teams assigned','This faculty account has no team allocation. Ask Admin or Faculty Admin to allocate a guide.');return}let html=main.innerHTML;if(['Design Journey'].includes(page)||page==='Overview'&&['Team Lead','Faculty'].includes(state.role))html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));main.innerHTML=html;if(state.role!=='HOD'&&page!=='Department') main.insertAdjacentHTML('afterbegin',accountStrip());const f=$('#stageform');if(f){f.onsubmit=e=>{e.preventDefault();saveStage(true)};f.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();if((page==='Team Portfolio'||page==='Mentor Dashboard')&&typeof mountPortfolioChat==='function'&&activeTeam()?.id)mountPortfolioChat(activeTeam().id);else if(typeof unmountPortfolioChat==='function')unmountPortfolioChat();if((page==='Mentor Dashboard'||window.mentorSplitOpen)&&typeof paintMentorWork==='function')paintMentorWork();if(window.mentorSplitOpen&&page==='Team Portfolio'&&typeof switchPortfolioStage==='function')switchPortfolioStage(String(window.mentorDashboardStage||window.activePortfolioStage||'0'), false)};
+  ensureDepartment();
+  if(page==='Faculty Admin') page='Overview';
+  renderWorkspace();
+  const main=$('.main');
+  if(!main) return;
+  let html=main.innerHTML;
+  if(['Design Journey'].includes(page) || (page==='Overview' && state.role==='Team Lead'))
+    html=html.replaceAll('Team 03','Team '+esc(state.activeTeamId)).replaceAll('TEAM 03','TEAM '+esc(state.activeTeamId));
+  if(activeTeam() && page!=='Overview'){
+    html=html.replace('Intelligent Systems & Optimization · Faculty guide:',esc(activeTeam().topic)+' · Faculty guide:').replace('INTELLIGENT SYSTEMS & OPTIMIZATION',esc(activeTeam().topic.toUpperCase()));
+  }
+  main.innerHTML=html;
+  if(state.role!=='HOD'&&page!=='Department') main.insertAdjacentHTML('afterbegin',accountStrip());
+  const f=$('#stageform');
+  if(f){
+    f.onsubmit=e=>{e.preventDefault();saveStage(true)};
+    f.oninput=()=>{
+      if(editableStage()){
+        state.forms[state.stage]=state.forms[state.stage]||{};
+        for(const[k,v]of new FormData(f))state.forms[state.stage][k]=v;
+        if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString();
+      }
+    };
+  }
+  if(['Team Portfolio','Design Journey','Evidence Library'].includes(page)) hydrateMedia();
+  if((page==='Team Portfolio'||page==='Mentor Dashboard')&&typeof mountPortfolioChat==='function'&&activeTeam()?.id) mountPortfolioChat(activeTeam().id);
+  else if(typeof unmountPortfolioChat==='function') unmountPortfolioChat();
+  if((page==='Mentor Dashboard'||window.mentorSplitOpen)&&typeof paintMentorWork==='function') paintMentorWork();
+  if(window.mentorSplitOpen&&page==='Team Portfolio'&&typeof switchPortfolioStage==='function') switchPortfolioStage(String(window.mentorDashboardStage||window.activePortfolioStage||'0'), false);
+};
+
 const teamOverview=overview;
-overview=function(){if(state.role==='Faculty Admin')return facultyAdminPanel();return teamOverview()};
+overview=function(){
+  if(state.role==='Faculty Admin') return facultyAdminPanel();
+  if(state.role==='Faculty') return facultyProjectsDashboard();
+  return teamOverview();
+};
 function getDomainKnowledge(t){
   const topic=(t.topic||'').toLowerCase(),title=(t.title||'').toLowerCase();
   if(t.id==='08'||title.includes('profiling')||title.includes('data quality')||topic.includes('data engineering')){
@@ -2276,7 +2679,9 @@ function openThemePage(themeNo){
 
 function goToProjectHome(){
   selectedTheme = null;
-  go('Department');
+  if(state.role === 'Faculty') go('Overview');
+  else if(state.role === 'HOD') go('Department');
+  else go('Team Portfolio');
 }
 
 function pageNavigationButtons(backAction, backLabel = 'Back', showHome = true){
