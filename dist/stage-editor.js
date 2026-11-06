@@ -190,38 +190,43 @@
 
     if(typeof modal !== 'undefined'){
       modal = `
-        <div class="modal stage-editor-modal" role="dialog" aria-modal="true" style="position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;">
-          <div style="background:var(--surface);width:100%;max-width:680px;max-height:90vh;border-radius:16px;border:1px solid var(--line);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden;">
+        <div class="modal stage-editor-modal" role="dialog" aria-modal="true" style="position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg,#f8fafc);z-index:99999;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:var(--surface,#ffffff);width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;">
             
-            <!-- Modal Header -->
-            <div style="padding:18px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;">
+            <!-- Full Page Header -->
+            <div style="padding:16px 32px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0;">
               <div>
-                <h2 style="margin:0;font-size:18px;font-weight:800;color:var(--ink);">Insert / Edit Stage Data</h2>
-                <span style="font-size:12.5px;color:var(--muted);font-weight:600;">Team ${esc(teamId)} · Enter your project data for milestone evaluation</span>
+                <h2 style="margin:0 0 2px;font-size:20px;font-weight:800;color:var(--ink);">Insert / Edit Stage Data</h2>
+                <span style="font-size:13px;color:var(--muted);font-weight:600;">Team ${esc(teamId)} · Enter project data for milestone evaluation</span>
               </div>
-              <button type="button" class="textbtn" onclick="closeModal()" style="font-size:20px;cursor:pointer;padding:4px 8px;line-height:1;">✕</button>
+              <button type="button" class="btn secondary" onclick="closeModal()" style="padding:8px 16px;font-size:13px;font-weight:700;">✕ Close</button>
             </div>
 
-            <!-- Stage Switcher Tabs inside Modal -->
-            <div style="display:flex;gap:6px;padding:12px 20px;background:var(--bg-subtle);border-bottom:1px solid var(--line);overflow-x:auto;">
+            <!-- Full-width Stage Switcher Tabs -->
+            <div style="display:flex;gap:8px;padding:12px 32px;background:var(--bg-subtle,#f1f5f9);border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;">
               ${stageTabs.map(st => `
-                <button type="button" class="btn ${stageId === st.id ? '' : 'secondary'}" onclick="window.openStageDataEditor('${st.id}')" style="padding:6px 12px;font-size:12px;font-weight:700;white-space:nowrap;border-radius:6px;">
+                <button type="button" class="btn ${stageId === st.id ? '' : 'secondary'}" onclick="window.openStageDataEditor('${st.id}')" style="padding:8px 18px;font-size:13px;font-weight:700;white-space:nowrap;border-radius:6px;">
                   ${st.label}
                 </button>
               `).join('')}
             </div>
 
-            <!-- Modal Body Form -->
-            <div style="padding:20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;flex:1;">
-              ${contentHtml}
+            <!-- Full-width Scrollable Form Body with Clean Container -->
+            <div style="flex:1;overflow-y:auto;padding:32px;background:var(--bg,#f8fafc);">
+              <div style="max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:22px;background:var(--surface);padding:32px 36px;border-radius:12px;border:1px solid var(--line);box-shadow:var(--shadow-sm,0 1px 3px rgba(0,0,0,0.06));">
+                ${contentHtml}
+              </div>
             </div>
 
-            <!-- Modal Footer -->
-            <div style="padding:14px 24px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;background:var(--surface);">
-              <button type="button" class="btn secondary" onclick="closeModal()" style="padding:9px 16px;font-size:13px;font-weight:700;">Cancel</button>
-              <button type="button" class="btn" onclick="window.saveStageDataFromModal('${stageId}')" style="padding:9px 20px;font-size:13px;font-weight:700;">
-                ✓ Save Stage Data
-              </button>
+            <!-- Full-width Sticky Footer -->
+            <div style="padding:16px 32px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:var(--surface);flex-shrink:0;">
+              <span style="font-size:12.5px;color:var(--muted);">All inputs are saved directly to the team portfolio and verified in stage milestones.</span>
+              <div style="display:flex;gap:12px;">
+                <button type="button" class="btn secondary" onclick="closeModal()" style="padding:10px 22px;font-size:13.5px;font-weight:700;">Cancel</button>
+                <button type="button" class="btn" onclick="window.saveStageDataFromModal('${stageId}')" style="padding:10px 26px;font-size:13.5px;font-weight:700;">
+                  ✓ Save Stage Data
+                </button>
+              </div>
             </div>
           </div>
         </div>
