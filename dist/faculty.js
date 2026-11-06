@@ -251,7 +251,18 @@
       const theme=window.lastViewedTheme??team?.theme_no??1;
       const crumb=app.querySelector('.crumb');
       if(crumb) crumb.textContent=`Theme ${theme} › ${portfolio.querySelector('h1')?.textContent||team?.title||''}`;
-      const back=app.querySelector('[onclick^="backToThemeProjects"]');if(back) back.textContent=`Back to Theme ${theme}`;
+      if(typeof state !== 'undefined' && state.role === 'Faculty') {
+        const backBtn = app.querySelector('.page-navigation [data-page-back], .portfolio-hero-banner .page-navigation button');
+        if(backBtn) {
+          backBtn.textContent = '← Back';
+          backBtn.setAttribute('onclick', "go('Overview')");
+        }
+        app.querySelectorAll('.page-navigation button').forEach(b => {
+          if(b !== backBtn && b.textContent.trim().toLowerCase() === 'home') b.remove();
+        });
+      } else {
+        const back=app.querySelector('[onclick^="backToThemeProjects"]');if(back) back.textContent=`Back to Theme ${theme}`;
+      }
       portfolio.querySelectorAll('.portfolio-subblock,.portfolio-section').forEach(addEmptyState);
       orderedProse(portfolio);accordionNavigation(app);
       const sidebar=app.querySelector('#app-sidebar');

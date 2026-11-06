@@ -1313,43 +1313,42 @@ function facultyProjectsDashboard(){
 
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
         ${assigned.map(team => {
-          const isActive = team.id === state.activeTeamId;
-          const themeName = team.theme_name || team.topic || 'Data Systems & Engineering';
+          const themeName = team.theme_name || (team.topic ? team.topic.replace(/^Theme\s*\d+\s*:\s*/i, '') : 'Project Theme');
 
           return `
-            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-radius:12px; border:${isActive ? '2px solid var(--accent, #2563eb)' : '1px solid var(--line)'}; background:var(--surface); padding:20px; box-shadow:${isActive ? '0 4px 14px rgba(37,99,235,0.12)' : 'var(--shadow-xs)'}; transition:all 0.15s ease;">
+            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-radius:10px; border:1px solid var(--line); background:var(--surface); padding:16px; box-shadow:var(--shadow-xs); transition:all 0.15s ease;">
               <div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px;">
-                  <span style="display:inline-flex; align-items:center; gap:6px; background:${isActive ? '#2563eb' : '#eff6ff'}; color:${isActive ? '#fff' : '#1d4ed8'}; border:1px solid ${isActive ? '#2563eb' : '#bfdbfe'}; font-size:12px; font-weight:800; padding:4px 10px; border-radius:6px; letter-spacing:0.5px;">
-                    TEAM ${esc(team.id)}${isActive ? ' · ACTIVE' : ''}
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; gap:8px;">
+                  <span style="display:inline-flex; align-items:center; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.4px; flex-shrink:0;">
+                    TEAM ${esc(team.id)}
                   </span>
-                  <span style="font-size:11.5px; font-weight:600; color:var(--muted); background:var(--bg); border:1px solid var(--line); padding:3px 8px; border-radius:4px; max-width:210px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(themeName)}">
+                  <span style="font-size:11px; font-weight:600; color:var(--muted); background:var(--bg); border:1px solid var(--line); padding:3px 8px; border-radius:6px; line-height:1.35; text-align:right;">
                     ${esc(themeName)}
                   </span>
                 </div>
 
-                <h3 style="font-size:16px; font-weight:700; color:var(--ink); line-height:1.4; margin:0 0 14px; min-height:44px;">
+                <h3 style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.35; margin:0 0 10px;">
                   ${esc(team.title || 'Mini-Project')}
                 </h3>
 
-                <div style="margin-bottom:14px;">
-                  <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:8px;">Team Members (USN):</div>
-                  <div style="display:flex; flex-direction:column; gap:5px;">
+                <div style="margin-bottom:12px;">
+                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:6px;">Team Members (USN):</div>
+                  <div style="display:flex; flex-direction:column; gap:4px;">
                     ${(team.members || []).map(m => `
-                      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 10px; font-size:12.5px;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:3.5px 8px; font-size:11px;">
                         <span style="font-weight:600; color:var(--ink);">${esc(m.name)}</span>
-                        <span style="font-family:monospace; color:var(--muted); font-size:11.5px;">${esc(m.usn)}</span>
+                        <span style="font-family:monospace; color:var(--muted); font-size:10.5px;">${esc(m.usn)}</span>
                       </div>
                     `).join('')}
                   </div>
                 </div>
               </div>
 
-              <div style="display:flex; gap:10px; margin-top:12px; border-top:1px solid var(--line); padding-top:14px;">
-                <button type="button" class="btn" style="flex:1; justify-content:center; font-size:13px; font-weight:700; padding:9px 12px;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
+              <div style="display:flex; gap:8px; margin-top:10px; border-top:1px solid var(--line); padding-top:12px;">
+                <button type="button" class="btn" style="flex:1; justify-content:center; font-size:11.5px; font-weight:700; padding:7px 10px;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
                   👁️ View Portfolio
                 </button>
-                <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:13px; font-weight:700; padding:9px 12px;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
+                <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:11.5px; font-weight:700; padding:7px 10px;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
                   ✏️ Edit Portfolio
                 </button>
               </div>
@@ -2646,6 +2645,9 @@ function goToProjectHome(){
 }
 
 function pageNavigationButtons(backAction, backLabel = 'Back', showHome = true){
+  if(typeof state !== 'undefined' && state.role === 'Faculty'){
+    return `<nav class="page-navigation" aria-label="Page navigation"><button type="button" class="btn secondary" data-page-back onclick="go('Overview')">← Back</button></nav>`;
+  }
   return `<nav class="page-navigation" aria-label="Page navigation"><button type="button" class="btn secondary" data-page-back onclick="${backAction}">${backLabel}</button>${showHome ? `<button type="button" class="btn secondary" onclick="goToProjectHome()">Home</button>` : ''}</nav>`;
 }
 

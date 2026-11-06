@@ -186,14 +186,22 @@
       sidebar.querySelector(':scope > .school')?.remove();
       app.querySelector('.topbar .crumb')?.remove();
     }
-    const backBtn=app.querySelector('[data-page-back][onclick^="backToThemeProjects"]');
+    const backBtn=app.querySelector('.page-navigation [data-page-back], [data-page-back]');
     const backNav=backBtn?.closest('.page-navigation');
     const hero=app.querySelector('.portfolio-hero-banner > div');
     if(backNav && hero) {
-      const team=typeof activeTeam==='function'?activeTeam():null;
-      const themeMatch=backBtn.getAttribute('onclick')?.match(/backToThemeProjects\((\d+|['"]?\w+['"]?)\)/)?.[1];
-      const themeNo=(team?.theme_no)||(themeMatch && themeMatch!=='all'?themeMatch:(window.lastViewedTheme!=='all'?window.lastViewedTheme:1))||1;
-      if(backBtn) backBtn.textContent=`Back to Theme ${themeNo}`;
+      if(typeof state !== 'undefined' && state.role === 'Faculty') {
+        if(backBtn) {
+          backBtn.textContent = '← Back';
+          backBtn.setAttribute('onclick', "go('Overview')");
+        }
+        backNav.querySelectorAll('button:not([data-page-back])').forEach(b => b.remove());
+      } else {
+        const team=typeof activeTeam==='function'?activeTeam():null;
+        const themeMatch=backBtn?.getAttribute('onclick')?.match(/backToThemeProjects\((\d+|['"]?\w+['"]?)\)/)?.[1];
+        const themeNo=(team?.theme_no)||(themeMatch && themeMatch!=='all'?themeMatch:(window.lastViewedTheme!=='all'?window.lastViewedTheme:1))||1;
+        if(backBtn && backBtn.getAttribute('onclick')?.includes('backToThemeProjects')) backBtn.textContent=`Back to Theme ${themeNo}`;
+      }
       addClass(backNav,'projector-project-back');
       if(backNav.parentElement!==hero) {
         const row=backNav.parentElement;
