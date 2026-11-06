@@ -1533,11 +1533,15 @@ portfolio=function(){
           (t.id === 'A-03' ? (window.STATIC_TEAMS_DATA['A-03'] || window.STATIC_TEAMS_DATA['03']) : null) ||
           Object.values(window.STATIC_TEAMS_DATA).find(st => st && (st.id === t.id || (st.title && t.title && st.title.toLowerCase().trim() === t.title.toLowerCase().trim())))
         )) || null,
-        hasData = Boolean(staticTeam),
+        customData = (typeof window !== 'undefined' && typeof window.getTeamCustomStageData === 'function' ? window.getTeamCustomStageData(t.id) : null) || {},
+        hasData = Boolean(staticTeam || (customData && Object.keys(customData).length > 0)),
         isSmartCampus = (t.id === 'A-03' || t.title === 'Smart Campus Lab and Resource Optimizer' || t.title === 'Smart Campus Lab & Resource Optimizer'),
-        st0 = staticTeam?.stage0 || {},
-        st1 = staticTeam?.stage1 || {},
-        sys = staticTeam?.systemDesign || {},
+        isStudent = (state.role === 'Student' || state.role === 'Team Lead'),
+        st0 = Object.assign({}, staticTeam?.stage0 || {}, customData['0'] || {}),
+        st1 = Object.assign({}, staticTeam?.stage1 || {}, customData['1'] || {}),
+        sys = Object.assign({}, staticTeam?.systemDesign || {}, customData['system-design'] || {}),
+        st2 = Object.assign({}, staticTeam?.stage2 || {}, customData['2'] || {}),
+        st3 = Object.assign({}, staticTeam?.stage3 || {}, customData['3'] || {}),
         f0 = hasData ? (state.forms?.[0] || {}) : {},
         f1 = hasData ? (state.forms?.[1] || {}) : {},
         f2 = hasData ? (state.forms?.[2] || {}) : {},
@@ -1546,7 +1550,7 @@ portfolio=function(){
         themeName = (t.theme_name || (staticTeam?.theme) || topic || '').replace(/^Theme\s*\d+\s*:\s*/i, ''),
         title = (staticTeam?.title || t.title || 'Project Portfolio'),
         guide = (staticTeam?.guide || state.guide || t.faculty || 'Faculty Mentor'),
-        repoUrl = safe(staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
+        repoUrl = safe(st2?.repo || staticTeam?.repo || f2.repo || state.repo || t.repo || 'https://github.com'),
         themeNo = (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null) ? window.lastViewedTheme : (t.theme_no || 1);
 
   const html = `
@@ -1605,7 +1609,18 @@ portfolio=function(){
 
       <!-- STAGE 0: Problem Statement and Need Identification -->
       <section class="portfolio-section" id="stage-0">
-        
+        <div class="stage-section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Stage 0 – Problem Definition and Scope</h2>
+            <span style="font-size:12px; color:var(--muted); font-weight:600;">Gate 0 Milestone · Problem Identification & Stakeholder Needs</span>
+          </div>
+          ${isStudent ? `
+            <button type="button" class="btn secondary" onclick="window.openStageDataEditor('0')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Edit / Insert Stage 0 Data</span>
+            </button>
+          ` : ''}
+        </div>
 
         <article class="portfolio-subblock" id="sec-problem">
           <h3>1. Problem Statement</h3>
@@ -1749,7 +1764,18 @@ portfolio=function(){
 
       <!-- STAGE 1: Requirement Analysis -->
       <section class="portfolio-section" id="stage-1">
-        
+        <div class="stage-section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Stage 1 - Requirement Analysis</h2>
+            <span style="font-size:12px; color:var(--muted); font-weight:600;">Gate 1 Milestone · Functional &amp; Non-Functional Specifications</span>
+          </div>
+          ${isStudent ? `
+            <button type="button" class="btn secondary" onclick="window.openStageDataEditor('1')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Edit / Insert Stage 1 Data</span>
+            </button>
+          ` : ''}
+        </div>
 
         <article class="portfolio-subblock" id="sec-fr">
           <h3>1. Functional Requirements</h3>
@@ -1864,8 +1890,17 @@ portfolio=function(){
 
       <!-- System Design -->
       <section class="portfolio-section" id="sec-system-design">
-        <div class="portfolio-section-title">
-          <h2>Stage 2 - System Design</h2>
+        <div class="stage-section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Stage 2 - System Design</h2>
+            <span style="font-size:12px; color:var(--muted); font-weight:600;">Gate 2 Milestone · Architecture, Data &amp; Algorithm Design</span>
+          </div>
+          ${isStudent ? `
+            <button type="button" class="btn secondary" onclick="window.openStageDataEditor('system-design')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Edit / Insert Stage 2 Data</span>
+            </button>
+          ` : ''}
         </div>
 
         ${hasData && sys && sys.architecturePoints && sys.architecturePoints.length ? `
@@ -1914,22 +1949,164 @@ portfolio=function(){
 
       <!-- Implementation and Integration -->
       <section class="portfolio-section" id="stage-2">
-        <div class="portfolio-section-title">
-          <h2>Stage 3 - Implementation and Integration</h2>
+        <div class="stage-section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Stage 3 - Implementation and Integration</h2>
+            <span style="font-size:12px; color:var(--muted); font-weight:600;">Gate 3 Milestone · Core Modules, Code Repo &amp; Algorithmic Integration</span>
+          </div>
+          ${isStudent ? `
+            <button type="button" class="btn secondary" onclick="window.openStageDataEditor('2')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Edit / Insert Stage 3 Data</span>
+            </button>
+          ` : ''}
         </div>
-        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
-          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
-        </div>
+
+        ${(st2.summary || (st2.modules && st2.modules.length) || st2.repo || st2.challenges) ? `
+          ${st2.summary ? `
+            <article class="portfolio-subblock" id="sec-impl-summary">
+              <h3>1. Implementation Summary</h3>
+              <p class="portfolio-prose" style="white-space:pre-line">${esc(st2.summary)}</p>
+            </article>
+          ` : ''}
+
+          ${st2.modules && st2.modules.length ? `
+            <article class="portfolio-subblock" id="sec-impl-modules">
+              <h3>2. Core Modules &amp; Algorithm Integration</h3>
+              <div class="tablewrap">
+                <table class="test-suite-table">
+                  <thead>
+                    <tr>
+                      <th style="width:220px">Module / Component</th>
+                      <th>Description &amp; Integration Responsibility</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${st2.modules.map(m => `
+                      <tr>
+                        <td style="font-weight:700; color:var(--ink);">${esc(m.name || m.module || m)}</td>
+                        <td style="color:var(--ink); line-height:1.6;">${esc(m.desc || m.description || '')}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          ` : ''}
+
+          ${(st2.repo || repoUrl) ? `
+            <article class="portfolio-subblock" id="sec-impl-repo">
+              <h3>3. Code Repository &amp; Source Artifacts</h3>
+              <div style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; gap:16px;">
+                <div>
+                  <strong style="display:block; font-size:14px; color:var(--ink);">Project GitHub Repository</strong>
+                  <span style="font-size:12.5px; color:var(--muted);">${esc(st2.repo || repoUrl)}</span>
+                </div>
+                <a href="${safe(st2.repo || repoUrl)}" target="_blank" rel="noopener" class="btn secondary" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700;">
+                  <span>Open Repository ↗</span>
+                </a>
+              </div>
+            </article>
+          ` : ''}
+
+          ${st2.challenges ? `
+            <article class="portfolio-subblock" id="sec-impl-challenges">
+              <h3>4. Technical Challenges &amp; Mitigations</h3>
+              <div class="portfolio-prose" style="white-space:pre-line">${esc(st2.challenges)}</div>
+            </article>
+          ` : ''}
+        ` : `
+          <div class="empty-stage-notice" style="padding: 32px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+            <p style="font-size: 15px; font-weight: 700; margin: 0 0 8px; color: var(--ink);">Stage 3 Implementation data has not been inserted yet.</p>
+            <p style="font-size: 13px; margin: 0 0 16px; color: var(--muted);">Students can document their core code modules, repository link, and technical challenges here.</p>
+            ${isStudent ? `
+              <button type="button" class="btn" onclick="window.openStageDataEditor('2')" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:8px 18px; border-radius:8px;">
+                <span>+ Insert Stage 3 Data Now</span>
+              </button>
+            ` : ''}
+          </div>
+        `}
       </section>
 
       <!-- Testing and Validations -->
       <section class="portfolio-section" id="stage-3">
-        <div class="portfolio-section-title">
-          <h2>Stage 4 - Testing and Validations</h2>
+        <div class="stage-section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Stage 4 - Testing and Validations</h2>
+            <span style="font-size:12px; color:var(--muted); font-weight:600;">Gate 4 Milestone · Automated Test Suites, Benchmark Metrics &amp; Verification</span>
+          </div>
+          ${isStudent ? `
+            <button type="button" class="btn secondary" onclick="window.openStageDataEditor('3')" style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Edit / Insert Stage 4 Data</span>
+            </button>
+          ` : ''}
         </div>
-        <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
-          <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
-        </div>
+
+        ${(st3.strategy || (st3.tests && st3.tests.length) || st3.metrics || st3.evaluation) ? `
+          ${st3.strategy ? `
+            <article class="portfolio-subblock" id="sec-test-strategy">
+              <h3>1. Testing Strategy</h3>
+              <p class="portfolio-prose" style="white-space:pre-line">${esc(st3.strategy)}</p>
+            </article>
+          ` : ''}
+
+          ${st3.tests && st3.tests.length ? `
+            <article class="portfolio-subblock" id="sec-test-results">
+              <h3>2. Test Execution &amp; Verification Matrix</h3>
+              <div class="tablewrap">
+                <table class="test-suite-table">
+                  <thead>
+                    <tr>
+                      <th style="width:85px; text-align:center;">Test ID</th>
+                      <th style="width:40%;">Target Feature / Requirement</th>
+                      <th style="width:40%;">Observed Result</th>
+                      <th style="width:85px; text-align:center;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${st3.tests.map((t, idx) => `
+                      <tr>
+                        <td style="text-align:center; font-weight:700; color:var(--brand);">${esc(t.id || ('TC-0' + (idx + 1)))}</td>
+                        <td style="color:var(--ink); line-height:1.6;">${esc(t.feature || t.name || t.desc || t)}</td>
+                        <td style="color:var(--ink); line-height:1.6;">${esc(t.result || 'Expected assertion verified with 100% success')}</td>
+                        <td style="text-align:center;">
+                          <span style="display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:800; background:rgba(34,197,94,0.12); color:#16a34a; border:1px solid #16a34a;">
+                            ${esc((t.status || 'PASS').toUpperCase())}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          ` : ''}
+
+          ${st3.metrics ? `
+            <article class="portfolio-subblock" id="sec-test-metrics">
+              <h3>3. Performance &amp; Benchmark Metrics</h3>
+              <div class="portfolio-prose" style="white-space:pre-line">${esc(st3.metrics)}</div>
+            </article>
+          ` : ''}
+
+          ${st3.evaluation ? `
+            <article class="portfolio-subblock" id="sec-test-evaluation">
+              <h3>4. Critical Reflection &amp; Evaluation</h3>
+              <div class="portfolio-prose" style="white-space:pre-line">${esc(st3.evaluation)}</div>
+            </article>
+          ` : ''}
+        ` : `
+          <div class="empty-stage-notice" style="padding: 32px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
+            <p style="font-size: 15px; font-weight: 700; margin: 0 0 8px; color: var(--ink);">Stage 4 Testing data has not been inserted yet.</p>
+            <p style="font-size: 13px; margin: 0 0 16px; color: var(--muted);">Students can document their test matrix, performance benchmarks, and evaluation logs here.</p>
+            ${isStudent ? `
+              <button type="button" class="btn" onclick="window.openStageDataEditor('3')" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:8px 18px; border-radius:8px;">
+                <span>+ Insert Stage 4 Data Now</span>
+              </button>
+            ` : ''}
+          </div>
+        `}
       </section>
     </main>
   </div>

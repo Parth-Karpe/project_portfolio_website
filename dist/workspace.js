@@ -16,7 +16,7 @@ function upgradeState(){
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();
-const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department'],HOD:['Department','Team Portfolio','Mentor Dashboard'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor','Department'],Student:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor']};
+const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department'],HOD:['Department','Team Portfolio','Mentor Dashboard'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor','Department'],Student:['Overview','Team Portfolio','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor'],'Team Lead':['Overview','Team Portfolio','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
@@ -64,7 +64,16 @@ function switchPortfolioStage(stageNum, autoScroll = false){
 }
 window.switchPortfolioStage = switchPortfolioStage;
 function portfolioSubnav(){
+  const isStudent = (state.role === 'Student' || state.role === 'Team Lead');
   return `<div class="subnav portfolio-subnav">
+    ${isStudent ? `
+      <div style="padding:4px 4px 12px; margin-bottom:12px; border-bottom:1px solid var(--line);">
+        <button type="button" class="btn" onclick="window.openStageDataEditor(window.activePortfolioStage || '0')" style="width:100%; justify-content:center; gap:6px; font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:8px; box-shadow:var(--shadow-xs);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span>Insert Stage Data</span>
+        </button>
+      </div>
+    ` : ''}
     <!-- Stage 0 -->
 <div class="subtopics">
       <button class="portfolio-subnav-btn ${activePortfolioTopic==='sec-problem'?'selected':''}" data-target="sec-problem" onclick="scrollToPortfolioTopic('sec-problem')">
