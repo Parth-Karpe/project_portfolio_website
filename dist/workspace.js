@@ -387,6 +387,10 @@ function sharedPageHeader(){
         <span><strong style="font-weight:800">${esc(role)}:</strong> ${esc(identity)}</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;opacity:0.6"><path d="m6 9 6 6 6-6"/></svg>
       </button>
+      <button type="button" class="btn secondary" onclick="window.signOutUser()" title="Sign out" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Sign Out</span>
+      </button>
       <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
     </div>
   </header>`;
@@ -594,6 +598,10 @@ window.confirmRbacSwitch = function(role){
   }
 };
 render=function(){
+  if(typeof isUserAuthenticated === "function" && !isUserAuthenticated()){
+    if(typeof renderAuthScreen === "function") $("#app").innerHTML = renderAuthScreen();
+    return;
+  }
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
   const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Mentor Dashboard':typeof mentorDashboard==='function'?mentorDashboard:()=>'','Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
