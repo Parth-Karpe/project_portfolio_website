@@ -251,7 +251,10 @@
       const theme=window.lastViewedTheme??team?.theme_no??1;
       const crumb=app.querySelector('.crumb');
       if(crumb) crumb.textContent=`Theme ${theme} › ${portfolio.querySelector('h1')?.textContent||team?.title||''}`;
-      if(typeof state !== 'undefined' && state.role === 'Faculty') {
+      const authRole = (typeof getAuthUser === 'function' && getAuthUser()?.role) || (typeof state !== 'undefined' && state.role) || '';
+      if(authRole === 'Student' || authRole === 'Team Lead') {
+        app.querySelectorAll('.page-navigation, .projector-project-back, [data-page-back]').forEach(el => el.remove());
+      } else if(authRole === 'Faculty') {
         const backBtn = app.querySelector('.page-navigation [data-page-back], .portfolio-hero-banner .page-navigation button');
         if(backBtn) {
           backBtn.textContent = '← Back';

@@ -186,27 +186,35 @@
       sidebar.querySelector(':scope > .school')?.remove();
       app.querySelector('.topbar .crumb')?.remove();
     }
-    const backBtn=app.querySelector('.page-navigation [data-page-back], [data-page-back]');
-    const backNav=backBtn?.closest('.page-navigation');
-    const hero=app.querySelector('.portfolio-hero-banner > div');
-    if(backNav && hero) {
-      if(typeof state !== 'undefined' && state.role === 'Faculty') {
-        if(backBtn) {
-          backBtn.textContent = '← Back';
-          backBtn.setAttribute('onclick', "go('Overview')");
+    const authRole = (typeof getAuthUser === 'function' && getAuthUser()?.role) || (typeof state !== 'undefined' && state.role) || '';
+    const isStudent = (authRole === 'Student' || authRole === 'Team Lead');
+    const isFaculty = (authRole === 'Faculty');
+
+    if(isStudent) {
+      app.querySelectorAll('.page-navigation, .projector-project-back, [data-page-back]').forEach(el => el.remove());
+    } else {
+      const backBtn=app.querySelector('.page-navigation [data-page-back], [data-page-back]');
+      const backNav=backBtn?.closest('.page-navigation');
+      const hero=app.querySelector('.portfolio-hero-banner > div');
+      if(backNav && hero) {
+        if(isFaculty) {
+          if(backBtn) {
+            backBtn.textContent = '← Back';
+            backBtn.setAttribute('onclick', "go('Overview')");
+          }
+          backNav.querySelectorAll('button:not([data-page-back])').forEach(b => b.remove());
+        } else {
+          const team=typeof activeTeam==='function'?activeTeam():null;
+          const themeMatch=backBtn?.getAttribute('onclick')?.match(/backToThemeProjects\((\d+|['"]?\w+['"]?)\)/)?.[1];
+          const themeNo=(team?.theme_no)||(themeMatch && themeMatch!=='all'?themeMatch:(window.lastViewedTheme!=='all'?window.lastViewedTheme:1))||1;
+          if(backBtn && backBtn.getAttribute('onclick')?.includes('backToThemeProjects')) backBtn.textContent=`Back to Theme ${themeNo}`;
         }
-        backNav.querySelectorAll('button:not([data-page-back])').forEach(b => b.remove());
-      } else {
-        const team=typeof activeTeam==='function'?activeTeam():null;
-        const themeMatch=backBtn?.getAttribute('onclick')?.match(/backToThemeProjects\((\d+|['"]?\w+['"]?)\)/)?.[1];
-        const themeNo=(team?.theme_no)||(themeMatch && themeMatch!=='all'?themeMatch:(window.lastViewedTheme!=='all'?window.lastViewedTheme:1))||1;
-        if(backBtn && backBtn.getAttribute('onclick')?.includes('backToThemeProjects')) backBtn.textContent=`Back to Theme ${themeNo}`;
-      }
-      addClass(backNav,'projector-project-back');
-      if(backNav.parentElement!==hero) {
-        const row=backNav.parentElement;
-        hero.prepend(backNav);
-        if(row.classList.contains('projector-portfolio-back-row') || !row.children.length) row.remove();
+        addClass(backNav,'projector-project-back');
+        if(backNav.parentElement!==hero) {
+          const row=backNav.parentElement;
+          hero.prepend(backNav);
+          if(row.classList.contains('projector-portfolio-back-row') || !row.children.length) row.remove();
+        }
       }
     }
   }

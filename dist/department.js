@@ -1182,14 +1182,18 @@ function visibleTeams(){
 
 function switchTeam(id){
   const next = state.teams.find(t => t.id === id);
-  const facTeams = (state.role === 'Faculty') ? getFacultyAssignedTeams(state.facultyAccount) : [];
-  if(!next || (state.role === 'Faculty' && !facTeams.some(t => t.id === id))){
+  const authUser = (typeof getAuthUser === 'function' ? getAuthUser() : state.currentUser);
+  const currentRole = (authUser && authUser.role) || state.role;
+  const facTeams = (currentRole === 'Faculty') ? getFacultyAssignedTeams(state.facultyAccount) : [];
+  if(!next || (currentRole === 'Faculty' && !facTeams.some(t => t.id === id))){
     return toast('This team is not assigned to your mentoring roster.');
   }
   save();
   const w = state.workspaces[id] || newTeamWorkspace(next);
   workspaceKeys.forEach(k => delete state[k]);
   Object.assign(state, clone(w));
+  state.role = currentRole;
+  if(authUser) state.currentUser = authUser;
   state.activeTeamId = id;
   state.guide = next.faculty;
   state.members = state.members.map((m, i) => ({
@@ -2645,7 +2649,11 @@ function goToProjectHome(){
 }
 
 function pageNavigationButtons(backAction, backLabel = 'Back', showHome = true){
-  if(typeof state !== 'undefined' && state.role === 'Faculty'){
+  const authRole = (typeof getAuthUser === 'function' && getAuthUser()?.role) || (typeof state !== 'undefined' && state.role) || '';
+  if(authRole === 'Student' || authRole === 'Team Lead'){
+    return '';
+  }
+  if(authRole === 'Faculty'){
     return `<nav class="page-navigation" aria-label="Page navigation"><button type="button" class="btn secondary" data-page-back onclick="go('Overview')">← Back</button></nav>`;
   }
   return `<nav class="page-navigation" aria-label="Page navigation"><button type="button" class="btn secondary" data-page-back onclick="${backAction}">${backLabel}</button>${showHome ? `<button type="button" class="btn secondary" onclick="goToProjectHome()">Home</button>` : ''}</nav>`;
