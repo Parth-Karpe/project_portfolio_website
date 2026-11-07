@@ -53,30 +53,31 @@
   };
   if(typeof window !== 'undefined') window.isMediaVideo = root.isMediaVideo;
 
-  function updateMediaPreviewUI(key, mediaUrl, isVideo, isCloudSynced){
+    function updateMediaPreviewUI(key, mediaUrl, isVideo){
     const previewBox = document.getElementById('preview-box-' + key);
     const mediaContainer = document.getElementById('preview-media-container-' + key);
     const titleEl = document.getElementById('preview-title-' + key);
     const subEl = document.getElementById('preview-sub-' + key);
 
     if(mediaContainer){
-      if(isVideo){
+      const str = String(mediaUrl || '');
+      const ytMatch = str.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+      const driveMatch = str.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+      if(ytMatch){
+        mediaContainer.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" style="width:140px; height:80px; border:0; border-radius:6px;" allowfullscreen></iframe>`;
+      } else if(driveMatch){
+        mediaContainer.innerHTML = `<iframe src="https://drive.google.com/file/d/${driveMatch[1]}/preview" style="width:140px; height:80px; border:0; border-radius:6px;"></iframe>`;
+      } else if(isVideo){
         mediaContainer.innerHTML = `<video id="preview-video-${key}" src="${mediaUrl}" controls style="max-height:80px; max-width:140px; border-radius:6px; background:#000;"></video>`;
       } else {
         mediaContainer.innerHTML = `<img id="preview-img-${key}" src="${mediaUrl}" alt="Preview" style="max-height:80px; max-width:140px; border-radius:6px; object-fit:contain; border:1px solid var(--line); background:#fff;">`;
       }
     }
     if(titleEl){
-      if(isCloudSynced){
-        titleEl.innerHTML = isVideo ? '🎬 Video Attached (☁️ Firebase Cloud Storage)' : '🖼️ Image Attached (☁️ Firebase Cloud Storage)';
-      } else {
-        titleEl.innerHTML = isVideo ? '🎬 Video Attached (Project Storage)' : '🖼️ Image Attached (Project Storage)';
-      }
+      titleEl.innerHTML = isVideo ? '🎬 Video Attached (Cloud Firestore Ready)' : '🖼️ Diagram Attached (Cloud Firestore Ready)';
     }
     if(subEl){
-      subEl.textContent = isCloudSynced ? 
-        'Uploaded to Firebase Cloud Storage · Displayed in Project Portfolio' : 
-        'Attached to your project portfolio · Click "Save Stage Data" to apply';
+      subEl.textContent = 'Attached to your project portfolio · Click "Save Stage Data" to apply';
     }
     if(previewBox) previewBox.style.display = 'flex';
   }
@@ -92,7 +93,7 @@
   };
   if(typeof window !== 'undefined') window.promptMediaUrl = root.promptMediaUrl;
 
-  root.handleStageImageUpload = async function(event, key){
+    root.handleStageImageUpload = async function(event, key){
     const file = event.target.files && event.target.files[0];
     if(!file) return;
 
@@ -104,36 +105,32 @@
       return;
     }
 
-    const curTeam = (typeof activeTeam === 'function' ? activeTeam() : (typeof state !== 'undefined' ? state.teams?.[0] : null));
-    const teamId = curTeam?.id || '03';
-    const stageId = String(window.activePortfolioStage || '0');
-
-    // UI Progress Bar
-    const progressBox = document.getElementById('upload-progress-' + key);
-    const statusText = document.getElementById('upload-status-text-' + key);
-    const percentText = document.getElementById('upload-percent-' + key);
-    const progressBar = document.getElementById('upload-bar-' + key);
-
-    // 1. INSTANT LOCAL ATTACHMENT (Never blocks user UI)
     if(isImg){
       const reader = new FileReader();
       reader.onload = function(e){
         const img = new Image();
         img.onload = function(){
-          const maxDim = 1400;
-          let width = img.width, height = img.height;
-          if(width > maxDim || height > maxDim){
-            if(width > height){ height = Math.round(height * (maxDim / width)); width = maxDim; }
-            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
-          }
           const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1200;
+          if(width > maxDim || height > maxDim){
+            if(width > height){
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.88);
+          const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85);
           root.__stagePendingImages[key] = dataUrl;
-          updateMediaPreviewUI(key, dataUrl, false, false);
-          if(typeof toast === 'function') toast('✓ Image attached! Click "Save Stage Data" to apply.');
+          updateMediaPreviewUI(key, dataUrl, false);
+          if(typeof toast === 'function') toast('✓ Diagram attached! Click "Save Stage Data" to apply.');
         };
         img.src = e.target.result;
       };
@@ -141,37 +138,8 @@
     } else {
       const vidUrl = URL.createObjectURL(file);
       root.__stagePendingImages[key] = vidUrl;
-      updateMediaPreviewUI(key, vidUrl, true, false);
+      updateMediaPreviewUI(key, vidUrl, true);
       if(typeof toast === 'function') toast('✓ Video attached! Click "Save Stage Data" to apply.');
-    }
-
-    // 2. BACKGROUND FIREBASE STORAGE UPLOAD (with 4-second timeout protection)
-    if(typeof window !== 'undefined' && typeof window.uploadMediaToCloudStorage === 'function'){
-      if(progressBox){
-        progressBox.style.display = 'flex';
-        if(statusText) statusText.textContent = 'Syncing to Firebase Cloud Storage…';
-        if(progressBar) progressBar.style.width = '35%';
-        if(percentText) percentText.textContent = '35%';
-      }
-
-      try {
-        const timeoutPromise = new Promise((_, rej) => setTimeout(() => rej(new Error('Cloud storage timeout')), 4000));
-        const uploadPromise = window.uploadMediaToCloudStorage(teamId, stageId, key, file, (pct) => {
-          if(progressBar) progressBar.style.width = Math.max(35, pct) + '%';
-          if(percentText) percentText.textContent = Math.max(35, pct) + '%';
-        });
-
-        const cloudResult = await Promise.race([uploadPromise, timeoutPromise]);
-        if(cloudResult && cloudResult.url){
-          root.__stagePendingImages[key] = cloudResult.url;
-          updateMediaPreviewUI(key, cloudResult.url, isVid, true);
-          if(typeof toast === 'function') toast('✓ Synced to Firebase Cloud Storage! Click "Save Stage Data" to apply.');
-        }
-      } catch(err){
-        console.warn("[Upload] Cloud Storage sync notice (local media preserved):", err);
-      } finally {
-        if(progressBox) progressBox.style.display = 'none';
-      }
     }
   };
   if(typeof window !== 'undefined') window.handleStageImageUpload = root.handleStageImageUpload;
@@ -198,7 +166,7 @@
             <label style="display:block; font-size:12.5px; font-weight:700; color:var(--ink); margin:0 0 2px;">
               ${esc(label)} (Image or Video)
             </label>
-            <span style="font-size:11.5px; color:var(--muted);">${esc(helpText)} · Firebase Cloud Storage Sync</span>
+            <span style="font-size:11.5px; color:var(--muted);">${esc(helpText)} · Cloud Firestore Sync (100% Free)</span>
           </div>
           <div style="display:flex; gap:8px; align-items:center;">
             <label class="btn secondary" style="cursor:pointer; padding:6px 14px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">

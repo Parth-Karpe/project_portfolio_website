@@ -1,18 +1,44 @@
 window.renderPortfolioMedia = function(src, altText, maxHeight = 420){
   if(!src) return '';
-  const url = (typeof src === 'object' && src.url) ? src.url : String(src);
-  const isVid = (typeof window.isMediaVideo === 'function' ? window.isMediaVideo(url) : (url.startsWith('data:video/') || /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)));
+  const url = (typeof src === 'object' && src.url) ? src.url : String(src).trim();
+  if(!url) return '';
 
+  // 1. YouTube Embed
+  const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+  if(ytMatch){
+    const vidId = ytMatch[1];
+    return `
+      <div style="width:100%; max-width:720px; aspect-ratio:16/9; margin:12px auto; border-radius:8px; overflow:hidden; box-shadow:var(--shadow-xs, 0 2px 8px rgba(0,0,0,0.08)); background:#000;">
+        <iframe src="https://www.youtube-nocookie.com/embed/${vidId}" style="width:100%; height:100%; border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    `;
+  }
+
+  // 2. Google Drive Embed
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([A-Za-z0-9_-]+)/);
+  if(driveMatch){
+    const fileId = driveMatch[1];
+    return `
+      <div style="width:100%; max-width:720px; aspect-ratio:16/9; margin:12px auto; border-radius:8px; overflow:hidden; box-shadow:var(--shadow-xs, 0 2px 8px rgba(0,0,0,0.08)); background:#000;">
+        <iframe src="https://drive.google.com/file/d/${fileId}/preview" style="width:100%; height:100%; border:0;" allow="autoplay"></iframe>
+      </div>
+    `;
+  }
+
+  // 3. Direct HTML5 Video
+  const isVid = (typeof window.isMediaVideo === 'function' ? window.isMediaVideo(url) : (url.startsWith('data:video/') || /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)));
   if(isVid){
     return `
-      <video controls style="max-width:100%; max-height:${maxHeight}px; border-radius:8px; display:block; margin:0 auto; background:#000; box-shadow:var(--shadow-xs);">
+      <video controls style="max-width:100%; max-height:${maxHeight}px; border-radius:8px; display:block; margin:12px auto; background:#000; box-shadow:var(--shadow-xs, 0 2px 8px rgba(0,0,0,0.08));">
         <source src="${esc(url)}" type="video/mp4">
         Your browser does not support the video tag.
       </video>
     `;
   }
+
+  // 4. Zoomable Diagram / Image
   return `
-    <img src="${esc(url)}" alt="${esc(altText || 'Project Diagram')}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:${maxHeight}px; object-fit:contain; cursor:zoom-in;" onclick="window.open(this.src,'_blank')" />
+    <img src="${esc(url)}" alt="${esc(altText || 'Project Diagram')}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:12px auto; max-height:${maxHeight}px; object-fit:contain; cursor:zoom-in; box-shadow:var(--shadow-xs, 0 2px 8px rgba(0,0,0,0.08));" onclick="window.open(this.src,'_blank')" />
   `;
 };
 
@@ -2324,7 +2350,7 @@ portfolio=function(){
           </div>
           ${hasData && st1.useCaseImage ? `
           <div class="diagram-frame" id="portfolio-diagram-usecase" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${esc(st1.useCaseImage)}" alt="${esc(st1.useCaseCaption || 'Fig : Use case diagram')}" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            ${window.renderPortfolioMedia(st1.useCaseImage, st1.useCaseCaption || "Fig : Use case diagram")}
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink)">${esc(st1.useCaseCaption || 'Fig : Use case diagram')}</p>
           </div>
           ` : ''}
@@ -2377,7 +2403,7 @@ portfolio=function(){
             ${(sys.architecturePoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.architectureImage || (isSmartCampus ? 'assets/team03_architecture_doc.png' : '')}" alt="Fig 1. Architecture Diagram" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            ${window.renderPortfolioMedia(sys.architectureImage || (isSmartCampus ? "assets/team03_architecture_doc.png" : ""), "Fig 1. Architecture Diagram")}
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink)">Fig 1. Architecture Diagram</p>
           </div>
         </article>
@@ -2388,7 +2414,7 @@ portfolio=function(){
             ${(sys.dataDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.dataDesignImage || (isSmartCampus ? 'assets/team03_datadesign_doc.jpeg' : '')}" alt="Fig 2. Data Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            ${window.renderPortfolioMedia(sys.dataDesignImage || (isSmartCampus ? "assets/team03_datadesign_doc.jpeg" : ""), "Fig 2. Data Design")}
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink)">Fig 2. Data Design</p>
           </div>
         </article>
@@ -2399,7 +2425,7 @@ portfolio=function(){
             ${(sys.algorithmDesignPoints || []).map(pt=>`<p style="margin:0;line-height:1.6">${esc(pt)}</p>`).join('')}
           </div>
           <div class="diagram-frame" style="margin-top:14px;background:#ffffff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
-            <img src="${sys.algorithmDesignImage || (isSmartCampus ? 'assets/team03_algorithmdesign_new.jpeg' : '')}" alt="Fig 3. Algorithm Design" style="max-width:100%;height:auto;border-radius:8px;display:block;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,0.06);cursor:zoom-in" onclick="window.open(this.src,'_blank')">
+            ${window.renderPortfolioMedia(sys.algorithmDesignImage || (isSmartCampus ? "assets/team03_algorithmdesign_new.jpeg" : ""), "Fig 3. Algorithm Design")}
             <p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:var(--ink)">Fig 3. Algorithm Design</p>
           </div>
         </article>

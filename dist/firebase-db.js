@@ -261,68 +261,10 @@ async function uploadAllTeamsToCloud() {
 
 
 // Upload media (Image: PNG/JPEG/WebP or Video: MP4/WebM) to Firebase Cloud Storage
+// Free-tier media helper (keeps app 100% free without requiring credit card / Blaze plan)
 async function uploadMediaToCloudStorage(teamId, stageId, sectionKey, file, onProgress) {
-  if (!storage) {
-    console.warn("[Firebase Storage] Storage SDK not initialized or offline. Operating in local mode.");
-    return null;
-  }
-  try {
-    const tid = String(teamId || (window.state && window.state.activeTeamId) || 'A-03');
-    const safeName = (file.name || 'media').replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = `teams/${tid}/stage_${stageId}/${sectionKey}_${Date.now()}_${safeName}`;
-    const storageRef = storage.ref().child(storagePath);
-    const isVideo = file.type ? file.type.startsWith('video/') : (file.name && /\.(mp4|webm|ogg|mov)$/i.test(file.name));
-    const metadata = {
-      contentType: file.type || (isVideo ? 'video/mp4' : 'image/png'),
-      customMetadata: {
-        teamId: tid,
-        stageId: String(stageId),
-        sectionKey: sectionKey,
-        originalName: file.name,
-        uploadedAt: new Date().toISOString()
-      }
-    };
-
-    const uploadTask = storageRef.put(file, metadata);
-    return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        try { uploadTask.cancel(); } catch(e){}
-        reject(new Error("Firebase Storage request timeout"));
-      }, 4000);
-
-      uploadTask.on('state_changed',
-        (snapshot) => {
-          const progress = Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 100);
-          if (typeof onProgress === 'function') onProgress(progress);
-        },
-        (error) => {
-          clearTimeout(timer);
-          console.warn("[Firebase Storage] Upload notice:", error.message || error);
-          reject(error);
-        },
-        async () => {
-          clearTimeout(timer);
-          try {
-            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-            console.log(`[Firebase Storage] Uploaded ${sectionKey} to ${storagePath} -> ${downloadURL}`);
-            resolve({
-              url: downloadURL,
-              storagePath: storagePath,
-              name: file.name,
-              type: isVideo ? 'video' : 'image',
-              contentType: metadata.contentType,
-              size: file.size
-            });
-          } catch(e) {
-            reject(e);
-          }
-        }
-      );
-    });
-  } catch(err) {
-    console.error("[Firebase Storage] Exception during upload:", err);
-    return null;
-  }
+  console.log(`[Media Storage] Operating in 100% Free Tier mode for ${sectionKey}.`);
+  return { ok: false, freeTier: true };
 }
 
 // Save stage-wise, section-wise custom data directly to Cloud Firestore
