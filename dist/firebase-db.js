@@ -285,16 +285,23 @@ async function uploadMediaToCloudStorage(teamId, stageId, sectionKey, file, onPr
 
     const uploadTask = storageRef.put(file, metadata);
     return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        try { uploadTask.cancel(); } catch(e){}
+        reject(new Error("Firebase Storage request timeout"));
+      }, 4000);
+
       uploadTask.on('state_changed',
         (snapshot) => {
           const progress = Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 100);
           if (typeof onProgress === 'function') onProgress(progress);
         },
         (error) => {
-          console.error("[Firebase Storage] Upload failed:", error);
+          clearTimeout(timer);
+          console.warn("[Firebase Storage] Upload notice:", error.message || error);
           reject(error);
         },
         async () => {
+          clearTimeout(timer);
           try {
             const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
             console.log(`[Firebase Storage] Uploaded ${sectionKey} to ${storagePath} -> ${downloadURL}`);

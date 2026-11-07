@@ -53,7 +53,7 @@
   };
   if(typeof window !== 'undefined') window.isMediaVideo = root.isMediaVideo;
 
-  function updateMediaPreviewUI(key, mediaUrl, isVideo){
+  function updateMediaPreviewUI(key, mediaUrl, isVideo, isCloudSynced){
     const previewBox = document.getElementById('preview-box-' + key);
     const mediaContainer = document.getElementById('preview-media-container-' + key);
     const titleEl = document.getElementById('preview-title-' + key);
@@ -67,13 +67,30 @@
       }
     }
     if(titleEl){
-      titleEl.innerHTML = isVideo ? '🎬 Video Attached (Cloud Storage / MP4)' : '🖼️ Image Attached (Cloud Storage / PNG / JPEG)';
+      if(isCloudSynced){
+        titleEl.innerHTML = isVideo ? '🎬 Video Attached (☁️ Firebase Cloud Storage)' : '🖼️ Image Attached (☁️ Firebase Cloud Storage)';
+      } else {
+        titleEl.innerHTML = isVideo ? '🎬 Video Attached (Project Storage)' : '🖼️ Image Attached (Project Storage)';
+      }
     }
     if(subEl){
-      subEl.textContent = 'Uploaded to Firebase Cloud Storage · Displayed in Project Portfolio';
+      subEl.textContent = isCloudSynced ? 
+        'Uploaded to Firebase Cloud Storage · Displayed in Project Portfolio' : 
+        'Attached to your project portfolio · Click "Save Stage Data" to apply';
     }
     if(previewBox) previewBox.style.display = 'flex';
   }
+
+  root.promptMediaUrl = function(key){
+    const val = prompt('Enter Image or Video URL (e.g. YouTube video, Google Drive view link, or direct image link):', '');
+    if(!val || !val.trim()) return;
+    const url = val.trim();
+    root.__stagePendingImages[key] = url;
+    const isVid = root.isMediaVideo(url);
+    updateMediaPreviewUI(key, url, isVid, false);
+    if(typeof toast === 'function') toast('✓ Media link attached! Click "Save Stage Data" to apply.');
+  };
+  if(typeof window !== 'undefined') window.promptMediaUrl = root.promptMediaUrl;
 
   root.handleStageImageUpload = async function(event, key){
     const file = event.target.files && event.target.files[0];
@@ -97,36 +114,7 @@
     const percentText = document.getElementById('upload-percent-' + key);
     const progressBar = document.getElementById('upload-bar-' + key);
 
-    if(progressBox){
-      progressBox.style.display = 'flex';
-      if(statusText) statusText.textContent = 'Uploading to Firebase Cloud Storage…';
-      if(progressBar) progressBar.style.width = '15%';
-      if(percentText) percentText.textContent = '15%';
-    }
-
-    // 1. Try Firebase Cloud Storage Upload
-    let cloudResult = null;
-    if(typeof window !== 'undefined' && typeof window.uploadMediaToCloudStorage === 'function'){
-      try {
-        cloudResult = await window.uploadMediaToCloudStorage(teamId, stageId, key, file, (pct) => {
-          if(progressBar) progressBar.style.width = pct + '%';
-          if(percentText) percentText.textContent = pct + '%';
-        });
-      } catch(err){
-        console.warn("[Upload] Cloud Storage upload notice:", err);
-      }
-    }
-
-    if(progressBox) progressBox.style.display = 'none';
-
-    if(cloudResult && cloudResult.url){
-      root.__stagePendingImages[key] = cloudResult.url;
-      updateMediaPreviewUI(key, cloudResult.url, isVid);
-      if(typeof toast === 'function') toast('✓ Uploaded to Firebase Cloud Storage! Click "Save Stage Data" to apply.');
-      return;
-    }
-
-    // 2. Offline / local fallback
+    // 1. INSTANT LOCAL ATTACHMENT (Never blocks user UI)
     if(isImg){
       const reader = new FileReader();
       reader.onload = function(e){
@@ -144,8 +132,8 @@
           ctx.drawImage(img, 0, 0, width, height);
           const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.88);
           root.__stagePendingImages[key] = dataUrl;
-          updateMediaPreviewUI(key, dataUrl, false);
-          if(typeof toast === 'function') toast('✓ Image attached locally. Click "Save Stage Data" to apply.');
+          updateMediaPreviewUI(key, dataUrl, false, false);
+          if(typeof toast === 'function') toast('✓ Image attached! Click "Save Stage Data" to apply.');
         };
         img.src = e.target.result;
       };
@@ -153,8 +141,37 @@
     } else {
       const vidUrl = URL.createObjectURL(file);
       root.__stagePendingImages[key] = vidUrl;
-      updateMediaPreviewUI(key, vidUrl, true);
+      updateMediaPreviewUI(key, vidUrl, true, false);
       if(typeof toast === 'function') toast('✓ Video attached! Click "Save Stage Data" to apply.');
+    }
+
+    // 2. BACKGROUND FIREBASE STORAGE UPLOAD (with 4-second timeout protection)
+    if(typeof window !== 'undefined' && typeof window.uploadMediaToCloudStorage === 'function'){
+      if(progressBox){
+        progressBox.style.display = 'flex';
+        if(statusText) statusText.textContent = 'Syncing to Firebase Cloud Storage…';
+        if(progressBar) progressBar.style.width = '35%';
+        if(percentText) percentText.textContent = '35%';
+      }
+
+      try {
+        const timeoutPromise = new Promise((_, rej) => setTimeout(() => rej(new Error('Cloud storage timeout')), 4000));
+        const uploadPromise = window.uploadMediaToCloudStorage(teamId, stageId, key, file, (pct) => {
+          if(progressBar) progressBar.style.width = Math.max(35, pct) + '%';
+          if(percentText) percentText.textContent = Math.max(35, pct) + '%';
+        });
+
+        const cloudResult = await Promise.race([uploadPromise, timeoutPromise]);
+        if(cloudResult && cloudResult.url){
+          root.__stagePendingImages[key] = cloudResult.url;
+          updateMediaPreviewUI(key, cloudResult.url, isVid, true);
+          if(typeof toast === 'function') toast('✓ Synced to Firebase Cloud Storage! Click "Save Stage Data" to apply.');
+        }
+      } catch(err){
+        console.warn("[Upload] Cloud Storage sync notice (local media preserved):", err);
+      } finally {
+        if(progressBox) progressBox.style.display = 'none';
+      }
     }
   };
   if(typeof window !== 'undefined') window.handleStageImageUpload = root.handleStageImageUpload;
@@ -183,10 +200,15 @@
             </label>
             <span style="font-size:11.5px; color:var(--muted);">${esc(helpText)} · Firebase Cloud Storage Sync</span>
           </div>
-          <label class="btn secondary" style="cursor:pointer; padding:6px 14px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-            <span>📁 Upload Image / Video</span>
-            <input type="file" id="input-file-${key}" accept="image/png, image/jpeg, image/jpg, image/webp, video/mp4, video/webm" style="display:none;" onchange="window.handleStageImageUpload(event, '${key}')">
-          </label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <label class="btn secondary" style="cursor:pointer; padding:6px 14px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+              <span>📁 Upload Image / Video</span>
+              <input type="file" id="input-file-${key}" accept="image/png, image/jpeg, image/jpg, image/webp, video/mp4, video/webm" style="display:none;" onchange="window.handleStageImageUpload(event, '${key}')">
+            </label>
+            <button type="button" class="btn secondary" style="padding:6px 12px; font-size:12px; font-weight:700;" onclick="window.promptMediaUrl('${key}')">
+              <span>🔗 Paste Link</span>
+            </button>
+          </div>
         </div>
 
         <!-- Real-time Cloud Upload Progress -->
