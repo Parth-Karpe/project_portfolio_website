@@ -1,3 +1,21 @@
+window.renderPortfolioMedia = function(src, altText, maxHeight = 420){
+  if(!src) return '';
+  const url = (typeof src === 'object' && src.url) ? src.url : String(src);
+  const isVid = (typeof window.isMediaVideo === 'function' ? window.isMediaVideo(url) : (url.startsWith('data:video/') || /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)));
+
+  if(isVid){
+    return `
+      <video controls style="max-width:100%; max-height:${maxHeight}px; border-radius:8px; display:block; margin:0 auto; background:#000; box-shadow:var(--shadow-xs);">
+        <source src="${esc(url)}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    `;
+  }
+  return `
+    <img src="${esc(url)}" alt="${esc(altText || 'Project Diagram')}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:${maxHeight}px; object-fit:contain; cursor:zoom-in;" onclick="window.open(this.src,'_blank')" />
+  `;
+};
+
 /* One CSE(AI) department; local roster import and isolated per-team workspaces. */
 const workspaceKeys=['members','guide','forms','repo','stage','unlocked','status0','status1','status2','status3','feedback','score','reviews','questions','answers','activities','messages','mentorMessages','media','questionStage','questionSnapshot','vivaSubmissions'];
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -2117,7 +2135,7 @@ portfolio=function(){
           <h3>4. Conceptual Workflow</h3>
           ${hasData && st0.conceptualFlowImage ? `
             <div class="portfolio-diagram-card" id="portfolio-diagram-asis" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
-              <img src="${esc(st0.conceptualFlowImage)}" alt="${esc(st0.conceptualFlowCaption || ('Conceptual Flow - ' + title))}" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain;" />
+              ${window.renderPortfolioMedia(st0.conceptualFlowImage, st0.conceptualFlowCaption || ('Conceptual Flow - ' + title))}
               ${st0.conceptualFlowCaption ? `<p style="margin:10px 0 0;font-size:12px;font-weight:600;color:var(--muted)">${esc(st0.conceptualFlowCaption)}</p>` : ''}
             </div>
           ` : ''}
@@ -2469,7 +2487,7 @@ portfolio=function(){
             <article class="portfolio-subblock" id="sec-impl-image">
               <h3>5. Implementation &amp; Component Evidence</h3>
               <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
-                <img src="${esc(st2.implImage)}" alt="Implementation &amp; Component Architecture" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain; cursor:zoom-in;" onclick="window.open(this.src,'_blank')" />
+                ${window.renderPortfolioMedia(st2.implImage, 'Implementation & Component Architecture')}
               </div>
             </article>
           ` : ''}
@@ -2559,7 +2577,7 @@ portfolio=function(){
             <article class="portfolio-subblock" id="sec-test-image">
               <h3>5. Test Execution Results &amp; Verification Evidence</h3>
               <div class="portfolio-diagram-card" style="margin-bottom:18px; text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 20px; box-shadow:var(--shadow-xs);">
-                <img src="${esc(st3.testingImage)}" alt="Test Execution &amp; Verification Evidence" style="max-width:100%; height:auto; border-radius:8px; display:block; margin:0 auto; max-height:420px; object-fit:contain; cursor:zoom-in;" onclick="window.open(this.src,'_blank')" />
+                ${window.renderPortfolioMedia(st3.testingImage, 'Test Execution & Verification Evidence')}
               </div>
             </article>
           ` : ''}

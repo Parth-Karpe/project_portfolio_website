@@ -36,91 +36,186 @@
       state.workspaces[teamId].customStageData = existing;
       if(typeof save === 'function') save();
     }
+
+    if(typeof window !== 'undefined' && typeof window.saveTeamCustomStageDataToCloud === 'function'){
+      window.saveTeamCustomStageDataToCloud(teamId, stageKey, existing[stageKey]);
+    }
   };
 
   root.__stagePendingImages = root.__stagePendingImages || {};
   if(typeof window !== 'undefined') window.__stagePendingImages = root.__stagePendingImages;
 
-  root.handleStageImageUpload = function(event, key){
+  root.isMediaVideo = function(url){
+    if(!url) return false;
+    if(typeof url === 'object') return url.type === 'video' || url.isVideo;
+    const str = String(url).toLowerCase();
+    return str.startsWith('data:video/') || /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(str) || str.includes('youtube.com') || str.includes('youtu.be') || str.includes('drive.google.com/file');
+  };
+  if(typeof window !== 'undefined') window.isMediaVideo = root.isMediaVideo;
+
+  function updateMediaPreviewUI(key, mediaUrl, isVideo){
+    const previewBox = document.getElementById('preview-box-' + key);
+    const mediaContainer = document.getElementById('preview-media-container-' + key);
+    const titleEl = document.getElementById('preview-title-' + key);
+    const subEl = document.getElementById('preview-sub-' + key);
+
+    if(mediaContainer){
+      if(isVideo){
+        mediaContainer.innerHTML = `<video id="preview-video-${key}" src="${mediaUrl}" controls style="max-height:80px; max-width:140px; border-radius:6px; background:#000;"></video>`;
+      } else {
+        mediaContainer.innerHTML = `<img id="preview-img-${key}" src="${mediaUrl}" alt="Preview" style="max-height:80px; max-width:140px; border-radius:6px; object-fit:contain; border:1px solid var(--line); background:#fff;">`;
+      }
+    }
+    if(titleEl){
+      titleEl.innerHTML = isVideo ? '🎬 Video Attached (Cloud Storage / MP4)' : '🖼️ Image Attached (Cloud Storage / PNG / JPEG)';
+    }
+    if(subEl){
+      subEl.textContent = 'Uploaded to Firebase Cloud Storage · Displayed in Project Portfolio';
+    }
+    if(previewBox) previewBox.style.display = 'flex';
+  }
+
+  root.handleStageImageUpload = async function(event, key){
     const file = event.target.files && event.target.files[0];
     if(!file) return;
-    if(!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)){
-      if(typeof toast === 'function') toast('Please select a PNG or JPEG image file.');
+
+    const isVid = file.type ? file.type.startsWith('video/') : /\.(mp4|webm|ogg|mov)$/i.test(file.name);
+    const isImg = file.type ? file.type.startsWith('image/') : /\.(png|jpe?g|webp|gif)$/i.test(file.name);
+
+    if(!isVid && !isImg){
+      if(typeof toast === 'function') toast('Please select an image (PNG, JPEG, WebP) or video (MP4, WebM) file.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = function(e){
-      const img = new Image();
-      img.onload = function(){
-        const maxDim = 1400;
-        let width = img.width;
-        let height = img.height;
-        if(width > maxDim || height > maxDim){
-          if(width > height){
-            height = Math.round(height * (maxDim / width));
-            width = maxDim;
-          } else {
-            width = Math.round(width * (maxDim / height));
-            height = maxDim;
+
+    const curTeam = (typeof activeTeam === 'function' ? activeTeam() : (typeof state !== 'undefined' ? state.teams?.[0] : null));
+    const teamId = curTeam?.id || '03';
+    const stageId = String(window.activePortfolioStage || '0');
+
+    // UI Progress Bar
+    const progressBox = document.getElementById('upload-progress-' + key);
+    const statusText = document.getElementById('upload-status-text-' + key);
+    const percentText = document.getElementById('upload-percent-' + key);
+    const progressBar = document.getElementById('upload-bar-' + key);
+
+    if(progressBox){
+      progressBox.style.display = 'flex';
+      if(statusText) statusText.textContent = 'Uploading to Firebase Cloud Storage…';
+      if(progressBar) progressBar.style.width = '15%';
+      if(percentText) percentText.textContent = '15%';
+    }
+
+    // 1. Try Firebase Cloud Storage Upload
+    let cloudResult = null;
+    if(typeof window !== 'undefined' && typeof window.uploadMediaToCloudStorage === 'function'){
+      try {
+        cloudResult = await window.uploadMediaToCloudStorage(teamId, stageId, key, file, (pct) => {
+          if(progressBar) progressBar.style.width = pct + '%';
+          if(percentText) percentText.textContent = pct + '%';
+        });
+      } catch(err){
+        console.warn("[Upload] Cloud Storage upload notice:", err);
+      }
+    }
+
+    if(progressBox) progressBox.style.display = 'none';
+
+    if(cloudResult && cloudResult.url){
+      root.__stagePendingImages[key] = cloudResult.url;
+      updateMediaPreviewUI(key, cloudResult.url, isVid);
+      if(typeof toast === 'function') toast('✓ Uploaded to Firebase Cloud Storage! Click "Save Stage Data" to apply.');
+      return;
+    }
+
+    // 2. Offline / local fallback
+    if(isImg){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const img = new Image();
+        img.onload = function(){
+          const maxDim = 1400;
+          let width = img.width, height = img.height;
+          if(width > maxDim || height > maxDim){
+            if(width > height){ height = Math.round(height * (maxDim / width)); width = maxDim; }
+            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
           }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-        const dataUrl = canvas.toDataURL(mime, 0.88);
-        root.__stagePendingImages[key] = dataUrl;
-        const previewBox = document.getElementById('preview-box-' + key);
-        const previewImg = document.getElementById('preview-img-' + key);
-        if(previewBox && previewImg){
-          previewImg.src = dataUrl;
-          previewBox.style.display = 'flex';
-        }
-        if(typeof toast === 'function') toast('✓ Image attached! Click "Save Stage Data" to apply.');
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.88);
+          root.__stagePendingImages[key] = dataUrl;
+          updateMediaPreviewUI(key, dataUrl, false);
+          if(typeof toast === 'function') toast('✓ Image attached locally. Click "Save Stage Data" to apply.');
+        };
+        img.src = e.target.result;
       };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    } else {
+      const vidUrl = URL.createObjectURL(file);
+      root.__stagePendingImages[key] = vidUrl;
+      updateMediaPreviewUI(key, vidUrl, true);
+      if(typeof toast === 'function') toast('✓ Video attached! Click "Save Stage Data" to apply.');
+    }
   };
   if(typeof window !== 'undefined') window.handleStageImageUpload = root.handleStageImageUpload;
 
   root.removeStageImage = function(key){
     root.__stagePendingImages[key] = '';
     const previewBox = document.getElementById('preview-box-' + key);
-    const previewImg = document.getElementById('preview-img-' + key);
-    if(previewBox && previewImg){
-      previewImg.src = '';
-      previewBox.style.display = 'none';
-    }
+    if(previewBox) previewBox.style.display = 'none';
     const fileInput = document.getElementById('input-file-' + key);
     if(fileInput) fileInput.value = '';
-    if(typeof toast === 'function') toast('Image removed. Click "Save Stage Data" to apply.');
+    if(typeof toast === 'function') toast('Media removed. Click "Save Stage Data" to apply.');
   };
   if(typeof window !== 'undefined') window.removeStageImage = root.removeStageImage;
 
   function renderImageUploadField(key, label, helpText, currentImageUrl){
-    const imgUrl = (root.__stagePendingImages[key] !== undefined) ? root.__stagePendingImages[key] : (currentImageUrl || '');
+    const rawVal = (root.__stagePendingImages[key] !== undefined) ? root.__stagePendingImages[key] : (currentImageUrl || '');
+    const mediaUrl = (typeof rawVal === 'object' && rawVal.url) ? rawVal.url : String(rawVal || '');
+    const isVid = root.isMediaVideo(mediaUrl);
+
     return `
       <div style="border:1.5px dashed var(--line); border-radius:10px; padding:14px 18px; background:var(--bg); display:flex; flex-direction:column; gap:10px; margin-top:6px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
           <div>
             <label style="display:block; font-size:12.5px; font-weight:700; color:var(--ink); margin:0 0 2px;">
-              ${esc(label)} (PNG or JPEG)
+              ${esc(label)} (Image or Video)
             </label>
-            <span style="font-size:11.5px; color:var(--muted);">${esc(helpText)}</span>
+            <span style="font-size:11.5px; color:var(--muted);">${esc(helpText)} · Firebase Cloud Storage Sync</span>
           </div>
           <label class="btn secondary" style="cursor:pointer; padding:6px 14px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-            <span>📁 Choose PNG / JPEG</span>
-            <input type="file" id="input-file-${key}" accept="image/png, image/jpeg, image/jpg" style="display:none;" onchange="window.handleStageImageUpload(event, '${key}')">
+            <span>📁 Upload Image / Video</span>
+            <input type="file" id="input-file-${key}" accept="image/png, image/jpeg, image/jpg, image/webp, video/mp4, video/webm" style="display:none;" onchange="window.handleStageImageUpload(event, '${key}')">
           </label>
         </div>
-        <div id="preview-box-${key}" style="display:${imgUrl ? 'flex' : 'none'}; align-items:center; gap:14px; background:var(--surface); padding:10px 14px; border-radius:8px; border:1px solid var(--line);">
-          <img id="preview-img-${key}" src="${imgUrl || ''}" alt="Preview" style="max-height:80px; max-width:140px; border-radius:6px; object-fit:contain; border:1px solid var(--line); background:#fff;">
+
+        <!-- Real-time Cloud Upload Progress -->
+        <div id="upload-progress-${key}" style="display:none; flex-direction:column; gap:5px; margin-top:4px;">
+          <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:700; color:var(--brand,#0284c7);">
+            <span id="upload-status-text-${key}">Uploading to Firebase Cloud Storage...</span>
+            <span id="upload-percent-${key}">0%</span>
+          </div>
+          <div style="width:100%; height:6px; background:var(--line); border-radius:3px; overflow:hidden;">
+            <div id="upload-bar-${key}" style="width:0%; height:100%; background:var(--brand,#0284c7); transition:width 0.2s;"></div>
+          </div>
+        </div>
+
+        <!-- Media Preview Box -->
+        <div id="preview-box-${key}" style="display:${mediaUrl ? 'flex' : 'none'}; align-items:center; gap:14px; background:var(--surface); padding:10px 14px; border-radius:8px; border:1px solid var(--line);">
+          <div id="preview-media-container-${key}" style="max-height:85px; max-width:140px; display:flex; align-items:center; justify-content:center;">
+            ${isVid ? `
+              <video id="preview-video-${key}" src="${mediaUrl}" controls style="max-height:80px; max-width:140px; border-radius:6px; background:#000;"></video>
+            ` : `
+              <img id="preview-img-${key}" src="${mediaUrl}" alt="Preview" style="max-height:80px; max-width:140px; border-radius:6px; object-fit:contain; border:1px solid var(--line); background:#fff;">
+            `}
+          </div>
           <div style="flex:1; font-size:12px; color:var(--ink);">
-            <strong style="display:block; color:var(--brand,#0284c7);">Image Attached (PNG / JPEG)</strong>
-            <span style="color:var(--muted); font-size:11px;">Will be displayed in your project portfolio</span>
+            <strong id="preview-title-${key}" style="display:block; color:var(--brand,#0284c7);">
+              ${isVid ? '🎬 Video Attached (Cloud Storage / MP4)' : '🖼️ Image Attached (Cloud Storage / PNG / JPEG)'}
+            </strong>
+            <span id="preview-sub-${key}" style="color:var(--muted); font-size:11px;">
+              Uploaded to Firebase Cloud Storage · Displayed in Project Portfolio
+            </span>
           </div>
           <button type="button" class="btn secondary" style="padding:4px 10px; font-size:11.5px; color:#dc2626;" onclick="window.removeStageImage('${key}')">Remove ✕</button>
         </div>

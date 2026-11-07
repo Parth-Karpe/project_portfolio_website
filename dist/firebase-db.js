@@ -10,6 +10,7 @@ const firebaseConfig = {
 };
 
 let db = null;
+let storage = null;
 let currentTeamUnsubscribe = null;
 
 try {
@@ -20,6 +21,12 @@ try {
     db = firebase.firestore();
     window.db = db;
     console.log("[Firebase] Firestore initialized successfully for project:", firebaseConfig.projectId);
+
+    if (typeof firebase.storage === 'function') {
+      storage = firebase.storage();
+      window.storage = storage;
+      console.log("[Firebase] Cloud Storage initialized successfully for bucket:", firebaseConfig.storageBucket);
+    }
   } else {
     console.warn("[Firebase] Firebase SDK not detected. Operating in local mode.");
   }
@@ -97,6 +104,17 @@ async function syncTeamFromCloud(teamId) {
         if (data.score !== undefined) window.state.score = data.score;
         if (data.feedback !== undefined) window.state.feedback = data.feedback;
         if (data.unlocked !== undefined) window.state.unlocked = data.unlocked;
+        if (data.customStageData) {
+          try {
+            const STORAGE_PREFIX = 'pg_team_stage_data_';
+            const existing = JSON.parse(localStorage.getItem(STORAGE_PREFIX + tid) || '{}');
+            const merged = Object.assign({}, existing, data.customStageData);
+            localStorage.setItem(STORAGE_PREFIX + tid, JSON.stringify(merged));
+            if (!window.state.workspaces) window.state.workspaces = {};
+            if (!window.state.workspaces[tid]) window.state.workspaces[tid] = {};
+            window.state.workspaces[tid].customStageData = merged;
+          } catch(e){}
+        }
         if (typeof render === 'function') render();
       }
       console.log(`[Firebase] Team ${tid} data loaded from Firestore.`);
@@ -154,6 +172,20 @@ function subscribeToTeamCloud(teamId) {
       if (data.unlocked !== undefined && window.state.unlocked !== data.unlocked) {
         window.state.unlocked = data.unlocked;
         changed = true;
+      }
+      if (data.customStageData) {
+        try {
+          const STORAGE_PREFIX = 'pg_team_stage_data_';
+          const existing = JSON.parse(localStorage.getItem(STORAGE_PREFIX + tid) || '{}');
+          if (JSON.stringify(existing) !== JSON.stringify(data.customStageData)) {
+            const merged = Object.assign({}, existing, data.customStageData);
+            localStorage.setItem(STORAGE_PREFIX + tid, JSON.stringify(merged));
+            if (!window.state.workspaces) window.state.workspaces = {};
+            if (!window.state.workspaces[tid]) window.state.workspaces[tid] = {};
+            window.state.workspaces[tid].customStageData = merged;
+            changed = true;
+          }
+        } catch(e){}
       }
       if (changed && typeof render === 'function') {
         console.log(`[Firebase] Real-time cloud sync applied for ${tid}.`);
@@ -226,6 +258,107 @@ async function uploadAllTeamsToCloud() {
 }
 
 // Expose globals
+
+
+// Upload media (Image: PNG/JPEG/WebP or Video: MP4/WebM) to Firebase Cloud Storage
+async function uploadMediaToCloudStorage(teamId, stageId, sectionKey, file, onProgress) {
+  if (!storage) {
+    console.warn("[Firebase Storage] Storage SDK not initialized or offline. Operating in local mode.");
+    return null;
+  }
+  try {
+    const tid = String(teamId || (window.state && window.state.activeTeamId) || 'A-03');
+    const safeName = (file.name || 'media').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `teams/${tid}/stage_${stageId}/${sectionKey}_${Date.now()}_${safeName}`;
+    const storageRef = storage.ref().child(storagePath);
+    const isVideo = file.type ? file.type.startsWith('video/') : (file.name && /\.(mp4|webm|ogg|mov)$/i.test(file.name));
+    const metadata = {
+      contentType: file.type || (isVideo ? 'video/mp4' : 'image/png'),
+      customMetadata: {
+        teamId: tid,
+        stageId: String(stageId),
+        sectionKey: sectionKey,
+        originalName: file.name,
+        uploadedAt: new Date().toISOString()
+      }
+    };
+
+    const uploadTask = storageRef.put(file, metadata);
+    return new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / (snapshot.totalBytes || 1)) * 100);
+          if (typeof onProgress === 'function') onProgress(progress);
+        },
+        (error) => {
+          console.error("[Firebase Storage] Upload failed:", error);
+          reject(error);
+        },
+        async () => {
+          try {
+            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+            console.log(`[Firebase Storage] Uploaded ${sectionKey} to ${storagePath} -> ${downloadURL}`);
+            resolve({
+              url: downloadURL,
+              storagePath: storagePath,
+              name: file.name,
+              type: isVideo ? 'video' : 'image',
+              contentType: metadata.contentType,
+              size: file.size
+            });
+          } catch(e) {
+            reject(e);
+          }
+        }
+      );
+    });
+  } catch(err) {
+    console.error("[Firebase Storage] Exception during upload:", err);
+    return null;
+  }
+}
+
+// Save stage-wise, section-wise custom data directly to Cloud Firestore
+async function saveTeamCustomStageDataToCloud(teamId, stageKey, data) {
+  if (!db) return false;
+  try {
+    const tid = String(teamId || (window.state && window.state.activeTeamId) || 'A-03');
+    const docRef = db.collection("teams").doc(tid);
+    await docRef.set({
+      [`customStageData.${stageKey}`]: data,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+      lastUpdatedBy: (window.state && window.state.role) || 'Unknown'
+    }, { merge: true });
+    console.log(`[Firebase] Team ${tid} Stage ${stageKey} section data synced to Firestore.`);
+    return true;
+  } catch (err) {
+    console.error("[Firebase] Error saving custom stage data to Firestore:", err);
+    return false;
+  }
+}
+
+// Load custom stage data from Cloud Firestore
+async function loadTeamCustomStageDataFromCloud(teamId) {
+  if (!db) return null;
+  try {
+    const tid = String(teamId || (window.state && window.state.activeTeamId) || 'A-03');
+    const doc = await db.collection("teams").doc(tid).get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data && data.customStageData) {
+        return data.customStageData;
+      }
+    }
+  } catch (err) {
+    console.warn(`[Firebase] Could not fetch custom stage data for team ${teamId}:`, err);
+  }
+  return null;
+}
+
+
+window.uploadMediaToCloudStorage = uploadMediaToCloudStorage;
+window.saveTeamCustomStageDataToCloud = saveTeamCustomStageDataToCloud;
+window.loadTeamCustomStageDataFromCloud = loadTeamCustomStageDataFromCloud;
 window.saveTeamStateToCloud = saveTeamStateToCloud;
 window.saveStageToCloud = saveStageToCloud;
 window.syncTeamFromCloud = syncTeamFromCloud;
