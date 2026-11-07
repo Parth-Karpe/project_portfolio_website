@@ -407,13 +407,13 @@
     if(authMode === 'login'){
       contentHtml = `
         <div class="auth-role-tabs" style="display:flex; gap:8px; margin-bottom:20px;">
-          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Student'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Student')">
+          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Student'?'background:#dce8ff !important; color:#0b2a5b !important; border:1.5px solid #93c5fd !important;':''}" onclick="window.switchAuthRoleTab('Student')">
             Student
           </button>
-          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Faculty'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Faculty')">
+          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Faculty'?'background:#dce8ff !important; color:#0b2a5b !important; border:1.5px solid #93c5fd !important;':''}" onclick="window.switchAuthRoleTab('Faculty')">
             Faculty
           </button>
-          <button type="button" class="btn ${authRoleTab==='HOD'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='HOD'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('HOD')">
+          <button type="button" class="btn ${authRoleTab==='HOD'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='HOD'?'background:#dce8ff !important; color:#0b2a5b !important; border:1.5px solid #93c5fd !important;':''}" onclick="window.switchAuthRoleTab('HOD')">
             HOD
           </button>
         </div>
@@ -433,7 +433,7 @@
             <input id="login-password" name="${authRoleTab.toLowerCase()}_user_secret" type="password" autocomplete="new-password" required placeholder="Enter password" style="width:100%; box-sizing:border-box; padding:11px 14px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px;">
           </div>
 
-          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:800; margin-top:6px; background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;">
+          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:800; margin-top:6px; background:#dce8ff !important; color:#0b2a5b !important; border:1.5px solid #93c5fd !important;">
             Sign In as ${authRoleTab}
           </button>
         </form>
@@ -449,10 +449,10 @@
       // Registration screen
       contentHtml = `
         <div class="auth-role-tabs" style="display:flex; gap:8px; margin-bottom:20px;">
-          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Student'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Student')">
+          <button type="button" class="btn ${authRoleTab==='Student'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Student'?'background:#dce8ff !important; color:#0b2a5b !important; border:1.5px solid #93c5fd !important;':''}" onclick="window.switchAuthRoleTab('Student')">
             Student Registration
           </button>
-          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Faculty'?'background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;':''}" onclick="window.switchAuthRoleTab('Faculty')">
+          <button type="button" class="btn ${authRoleTab==='Faculty'?'':'secondary'}" style="flex:1; justify-content:center; padding:10px 6px; font-size:13px; font-weight:700; ${authRoleTab==='Faculty'?'background:#dce8ff !important; color:#0b2a5b !important; border:1.5px solid #93c5fd !important;':''}" onclick="window.switchAuthRoleTab('Faculty')">
             Faculty Registration
           </button>
         </div>
@@ -494,7 +494,7 @@
             </div>
           </div>
 
-          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:800; margin-top:8px; background:#38bdf8 !important; color:#082f49 !important; border:1.5px solid #0284c7 !important;">
+          <button type="submit" class="btn" style="width:100%; justify-content:center; padding:12px; font-size:14px; font-weight:800; margin-top:8px; background:#dce8ff !important; color:#0b2a5b !important; border:1.5px solid #93c5fd !important;">
             Create ${authRoleTab} Account
           </button>
         </form>
@@ -529,8 +529,8 @@
               ${authMode === 'login' ? 'Sign In to Portal' : 'Create Account'}
             </h2>
             <div style="display:flex; gap:6px;">
-              <button type="button" class="btn ${authMode==='login'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='login'?'background:#38bdf8 !important; color:#082f49 !important; border:1px solid #0284c7 !important;':''}" onclick="window.switchAuthMode('login')">Sign In</button>
-              <button type="button" class="btn ${authMode==='register'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='register'?'background:#38bdf8 !important; color:#082f49 !important; border:1px solid #0284c7 !important;':''}" onclick="window.switchAuthMode('register')">Register</button>
+              <button type="button" class="btn ${authMode==='login'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='login'?'background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #93c5fd !important;':''}" onclick="window.switchAuthMode('login')">Sign In</button>
+              <button type="button" class="btn ${authMode==='register'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='register'?'background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #93c5fd !important;':''}" onclick="window.switchAuthMode('register')">Register</button>
             </div>
           </div>
 
