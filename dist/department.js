@@ -1325,13 +1325,17 @@ function facultyProjectsDashboard(){
   let customIds = [];
   try { customIds = JSON.parse(localStorage.getItem(customKey) || '[]'); } catch(e){}
 
-  const headHtml = heading(
-    `Faculty Mentoring Workspace · Assigned Projects`,
-    `Welcome, ${esc(facName)} · Guiding ${assigned.length} Project Team${assigned.length===1?'':'s'} in CSE(AI)`,
-    `<div style="display:flex; gap:8px; align-items:center;">
-      <button type="button" class="btn secondary" onclick="window.openAddTeamModal()">+ Link Another Team</button>
-    </div>`
-  );
+  const headHtml = `
+    <div class="heading" style="margin-bottom:18px;">
+      <div>
+        <h1 style="margin:0; font-size:22px; font-weight:800; color:var(--ink);">Welcome, ${esc(facName)}</h1>
+        <p style="margin:4px 0 0; color:var(--muted); font-size:13px;">Guiding ${assigned.length} Project Team${assigned.length===1?'':'s'} in CSE(AI)</p>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button type="button" class="btn secondary" onclick="window.openAddTeamModal()">+ Link Another Team</button>
+      </div>
+    </div>
+  `;
 
   const statsHtml = `
     <div class="stats" style="margin-bottom:24px;">
@@ -1352,8 +1356,7 @@ function facultyProjectsDashboard(){
     <section>
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
         <div>
-          <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0 0 4px;">Assigned Mini-Project Teams</h2>
-          <p class="mini" style="margin:0; color:var(--muted);">Select any assigned project to view full portfolio evidence, inspect stage milestones, or review submissions.</p>
+          <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">Assigned Mini-Project Teams</h2>
         </div>
         <span class="tag" style="background:#eff6ff; color:#1d4ed8; font-weight:700;">${assigned.length} Teams Assigned</span>
       </div>
