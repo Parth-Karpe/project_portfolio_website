@@ -1361,44 +1361,57 @@ function facultyProjectsDashboard(){
         <span class="tag" style="background:#eff6ff; color:#1d4ed8; font-weight:700;">${assigned.length} Teams Assigned</span>
       </div>
 
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:20px;">
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(390px, 1fr)); gap:24px;">
         ${assigned.map(team => {
           const themeName = team.theme_name || (team.topic ? team.topic.replace(/^Theme\s*\d+\s*:\s*/i, '') : 'Project Theme');
 
           return `
-            <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; border-radius:10px; border:1px solid var(--line); background:var(--surface); padding:16px; box-shadow:var(--shadow-xs); transition:all 0.15s ease;">
+            <div class="card faculty-project-card" style="display:flex !important; flex-direction:column !important; justify-content:space-between !important; border-radius:14px !important; border:1px solid #e2e8f0 !important; background:#ffffff !important; padding:22px 20px 18px !important; box-shadow:0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important; transition:all 0.2s ease !important; margin-bottom:0 !important;">
               <div>
-                <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; gap:8px;">
-                  <span style="display:inline-flex; align-items:center; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.4px; flex-shrink:0;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:8px;">
+                  <span style="display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:11.5px; font-weight:800; padding:4px 11px; border-radius:20px; letter-spacing:0.5px; flex-shrink:0;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#2563eb;"></span>
                     TEAM ${esc(team.id)}
                   </span>
-                  <span style="font-size:11px; font-weight:600; color:var(--muted); background:var(--bg); border:1px solid var(--line); padding:3px 8px; border-radius:6px; line-height:1.35; text-align:right;">
+                  <span style="font-size:11px; font-weight:600; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; padding:4px 11px; border-radius:20px; text-align:right; max-width:62%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(themeName)}">
                     ${esc(themeName)}
                   </span>
                 </div>
 
-                <h3 style="font-size:14px; font-weight:700; color:var(--ink); line-height:1.35; margin:0 0 10px;">
+                <h3 style="font-size:15.5px; font-weight:800; color:#0f172a; line-height:1.45; margin:0 0 16px; min-height:44px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${esc(team.title || 'Mini-Project')}">
                   ${esc(team.title || 'Mini-Project')}
                 </h3>
 
-                <div style="margin-bottom:12px;">
-                  <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:6px;">Team Members (USN):</div>
-                  <div style="display:flex; flex-direction:column; gap:4px;">
+                <div style="background:#f8fafc; border:1px solid #edf2f7; border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:9px; padding-bottom:6px; border-bottom:1px solid #e2e8f0;">
+                    <span style="font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.7px; color:#64748b; display:inline-flex; align-items:center; gap:5px;">
+                      👥 Team Members
+                    </span>
+                    <span style="font-size:10px; font-weight:700; color:#64748b; background:#ffffff; border:1px solid #e2e8f0; padding:1px 7px; border-radius:8px;">
+                      ${(team.members || []).length} Students
+                    </span>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
                     ${(team.members || []).map(m => `
-                      <div style="display:flex; align-items:center; justify-content:space-between; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:3.5px 8px; font-size:11px;">
-                        <span style="font-weight:600; color:var(--ink);">${esc(m.name)}</span>
-                        <span style="font-family:monospace; color:var(--muted); font-size:10.5px;">${esc(m.usn)}</span>
+                      <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; padding:2px 0;">
+                        <span style="font-weight:600; color:#1e293b; display:flex; align-items:center; gap:7px;">
+                          <span style="width:5px; height:5px; border-radius:50%; background:#94a3b8; flex-shrink:0;"></span>
+                          ${esc(m.name)}
+                        </span>
+                        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, monospace; color:#475569; font-size:11px; background:#ffffff; border:1px solid #e2e8f0; border-radius:5px; padding:2px 8px; letter-spacing:0.3px;">
+                          ${esc(m.usn)}
+                        </span>
                       </div>
                     `).join('')}
                   </div>
                 </div>
               </div>
 
-              <div style="display:flex; gap:8px; margin-top:10px; border-top:1px solid var(--line); padding-top:12px;">
-                <button type="button" class="btn" style="flex:1; justify-content:center; font-size:11.5px; font-weight:700; padding:7px 10px;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
+              <div style="display:flex; gap:10px; margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9;">
+                <button type="button" class="btn" style="flex:1; justify-content:center; font-size:12px; font-weight:700; padding:9px 12px; border-radius:8px; gap:6px; background:#2563eb; color:#ffffff; box-shadow:0 1px 3px rgba(37,99,235,0.25);" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
                   👁️ View Portfolio
                 </button>
-                <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:11.5px; font-weight:700; padding:7px 10px;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
+                <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:12px; font-weight:700; padding:9px 12px; border-radius:8px; gap:6px;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
                   ✏️ Edit Portfolio
                 </button>
               </div>
