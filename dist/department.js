@@ -1368,12 +1368,12 @@ function facultyProjectsDashboard(){
           return `
             <div class="card faculty-project-card" style="display:flex !important; flex-direction:column !important; justify-content:space-between !important; border-radius:14px !important; border:1px solid #e2e8f0 !important; background:#ffffff !important; padding:22px 20px 18px !important; box-shadow:0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.04) !important; transition:all 0.2s ease !important; margin-bottom:0 !important;">
               <div>
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:8px;">
+                <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; gap:10px;">
                   <span style="display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:11.5px; font-weight:800; padding:4px 11px; border-radius:20px; letter-spacing:0.5px; flex-shrink:0;">
                     <span style="width:6px; height:6px; border-radius:50%; background:#2563eb;"></span>
                     TEAM ${esc(team.id)}
                   </span>
-                  <span style="font-size:11px; font-weight:600; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; padding:4px 11px; border-radius:20px; text-align:right; max-width:62%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(themeName)}">
+                  <span style="font-size:11.5px; font-weight:600; color:#334155; background:#f8fafc; border:1px solid #cbd5e1; padding:4px 12px; border-radius:20px; text-align:right; line-height:1.35;">
                     ${esc(themeName)}
                   </span>
                 </div>
@@ -1408,11 +1408,11 @@ function facultyProjectsDashboard(){
               </div>
 
               <div style="display:flex; gap:10px; margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9;">
-                <button type="button" class="btn" style="flex:1; justify-content:center; font-size:12px; font-weight:700; padding:9px 12px; border-radius:8px; gap:6px; background:#2563eb; color:#ffffff; box-shadow:0 1px 3px rgba(37,99,235,0.25);" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
-                  👁️ View Portfolio
+                <button type="button" class="btn faculty-card-btn" style="flex:1; justify-content:center; font-size:12.5px; font-weight:700; padding:9px 12px; border-radius:8px; background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #1d4ed8 !important; box-shadow:none; cursor:pointer;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
+                  View Portfolio
                 </button>
-                <button type="button" class="btn secondary" style="flex:1; justify-content:center; font-size:12px; font-weight:700; padding:9px 12px; border-radius:8px; gap:6px;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
-                  ✏️ Edit Portfolio
+                <button type="button" class="btn secondary faculty-card-btn" style="flex:1; justify-content:center; font-size:12.5px; font-weight:700; padding:9px 12px; border-radius:8px; background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #1d4ed8 !important; box-shadow:none; cursor:pointer;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
+                  Edit Portfolio
                 </button>
               </div>
             </div>
