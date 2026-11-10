@@ -1408,10 +1408,10 @@ function facultyProjectsDashboard(){
               </div>
 
               <div style="display:flex; gap:10px; margin-top:auto; padding-top:14px; border-top:1px solid #f1f5f9;">
-                <button type="button" class="btn faculty-card-btn" style="flex:1; justify-content:center; font-size:12.5px; font-weight:700; padding:9px 12px; border-radius:8px; background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #1d4ed8 !important; box-shadow:none; cursor:pointer;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
+                <button type="button" class="faculty-card-btn" style="flex:1; justify-content:center; font-size:12.5px; font-weight:700; padding:9px 12px; border-radius:8px; background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #1d4ed8 !important; box-shadow:none; cursor:pointer;" onclick="window.facultyOpenTeamPortfolio('${esc(team.id)}')">
                   View Portfolio
                 </button>
-                <button type="button" class="btn secondary faculty-card-btn" style="flex:1; justify-content:center; font-size:12.5px; font-weight:700; padding:9px 12px; border-radius:8px; background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #1d4ed8 !important; box-shadow:none; cursor:pointer;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
+                <button type="button" class="faculty-card-btn" style="flex:1; justify-content:center; font-size:12.5px; font-weight:700; padding:9px 12px; border-radius:8px; background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #1d4ed8 !important; box-shadow:none; cursor:pointer;" onclick="window.facultyEditTeamPortfolio('${esc(team.id)}')">
                   Edit Portfolio
                 </button>
               </div>
