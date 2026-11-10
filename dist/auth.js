@@ -536,11 +536,6 @@
 
           ${contentHtml}
         </div>
-
-        <!-- Footer -->
-        <div style="margin-top:24px; text-align:center; font-size:12px; color:var(--muted);">
-          KLE Technological University &middot; Mini-Project Mentoring Cohort 2026&ndash;27
-        </div>
       </div>
     `;
   };
