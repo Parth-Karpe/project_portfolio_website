@@ -304,7 +304,158 @@ async function loadTeamCustomStageDataFromCloud(teamId) {
   return null;
 }
 
+// Save user login/register credentials and profile to Cloud Firestore
+async function saveUserToCloud(userData) {
+  if (!userData) return false;
+  if (!db && typeof window !== 'undefined' && window.db) db = window.db;
 
+  const idStr = String(userData.identifier || userData.email || userData.id || Date.now());
+  const docId = 'user_' + idStr.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '_');
+
+  const payload = {
+    id: userData.id || ('usr_' + Date.now()),
+    identifier: userData.identifier || '',
+    identifier_lower: String(userData.identifier || '').toLowerCase().trim(),
+    email: userData.email || '',
+    email_lower: String(userData.email || '').toLowerCase().trim(),
+    name: userData.name || '',
+    role: userData.role || 'Student',
+    teamId: userData.teamId || null,
+    password: userData.password || '',
+    department: userData.department || 'Department of CSE(AI)',
+    lastUpdated: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue)
+      ? firebase.firestore.FieldValue.serverTimestamp()
+      : new Date().toISOString()
+  };
+
+  // 1. Try Firebase SDK
+  if (db) {
+    try {
+      const docRef = db.collection("users").doc(docId);
+      await docRef.set(payload, { merge: true });
+      console.log(`[Firebase] User credentials saved to Firestore: ${userData.identifier || userData.email}`);
+      return true;
+    } catch (err) {
+      console.warn("[Firebase] SDK write failed, attempting REST fallback:", err);
+    }
+  }
+
+  // 2. Fallback to direct Firestore REST API
+  if (typeof fetch === 'undefined') return false;
+  try {
+    const firestoreBody = {
+      fields: {
+        id: { stringValue: payload.id },
+        identifier: { stringValue: payload.identifier },
+        identifier_lower: { stringValue: payload.identifier_lower },
+        email: { stringValue: payload.email },
+        email_lower: { stringValue: payload.email_lower },
+        name: { stringValue: payload.name },
+        role: { stringValue: payload.role },
+        teamId: payload.teamId ? { stringValue: String(payload.teamId) } : { nullValue: null },
+        password: { stringValue: payload.password },
+        department: { stringValue: payload.department },
+        lastUpdated: { stringValue: new Date().toISOString() }
+      }
+    };
+    const restUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/users/${encodeURIComponent(docId)}?key=${firebaseConfig.apiKey}`;
+    const resp = await fetch(restUrl, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(firestoreBody)
+    });
+    const resData = await resp.json();
+    if (resData.name) {
+      console.log(`[Firebase REST] User credentials saved to Firestore: ${userData.identifier || userData.email}`);
+      return true;
+    }
+  } catch (restErr) {
+    console.error("[Firebase REST] Error saving user to Firestore:", restErr);
+  }
+  return false;
+}
+
+// Fetch all registered users from Cloud Firestore
+async function fetchUsersFromCloud() {
+  if (!db && typeof window !== 'undefined' && window.db) db = window.db;
+
+  // 1. Try Firebase SDK
+  if (db) {
+    try {
+      const snap = await db.collection("users").get();
+      const users = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        if (d && (d.identifier || d.email)) {
+          users.push(d);
+        }
+      });
+      console.log(`[Firebase] Fetched ${users.length} users from Firestore.`);
+      return users;
+    } catch (err) {
+      console.warn("[Firebase] SDK fetch failed, attempting REST fallback:", err);
+    }
+  }
+
+  // 2. Fallback to direct Firestore REST API
+  if (typeof fetch === 'undefined') return [];
+  try {
+    const restUrl = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/users?key=${firebaseConfig.apiKey}`;
+    const resp = await fetch(restUrl);
+    const resData = await resp.json();
+    if (resData.documents && Array.isArray(resData.documents)) {
+      const users = resData.documents.map(doc => {
+        const f = doc.fields || {};
+        return {
+          id: f.id?.stringValue || '',
+          identifier: f.identifier?.stringValue || '',
+          identifier_lower: f.identifier_lower?.stringValue || (f.identifier?.stringValue || '').toLowerCase(),
+          email: f.email?.stringValue || '',
+          email_lower: f.email_lower?.stringValue || (f.email?.stringValue || '').toLowerCase(),
+          name: f.name?.stringValue || '',
+          role: f.role?.stringValue || 'Student',
+          teamId: f.teamId?.stringValue || null,
+          password: f.password?.stringValue || '',
+          department: f.department?.stringValue || 'Department of CSE(AI)'
+        };
+      }).filter(u => u.identifier || u.email);
+      console.log(`[Firebase REST] Fetched ${users.length} users from Firestore.`);
+      return users;
+    }
+  } catch (restErr) {
+    console.warn("[Firebase REST] Could not fetch users from Firestore:", restErr);
+  }
+  return [];
+}
+
+// Real-time listener for users in Cloud Firestore
+function subscribeToUsersCloud(onUpdate) {
+  if (!db && typeof window !== 'undefined' && window.db) db = window.db;
+  if (!db) return null;
+  try {
+    return db.collection("users").onSnapshot((snapshot) => {
+      const usersList = [];
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        if (d && (d.identifier || d.email)) {
+          usersList.push(d);
+        }
+      });
+      if (typeof onUpdate === 'function') {
+        onUpdate(usersList);
+      }
+    }, (err) => {
+      console.warn("[Firebase] Users real-time listener notice:", err);
+    });
+  } catch (err) {
+    console.error("[Firebase] Users listener attach error:", err);
+    return null;
+  }
+}
+
+window.saveUserToCloud = saveUserToCloud;
+window.fetchUsersFromCloud = fetchUsersFromCloud;
+window.subscribeToUsersCloud = subscribeToUsersCloud;
 window.uploadMediaToCloudStorage = uploadMediaToCloudStorage;
 window.saveTeamCustomStageDataToCloud = saveTeamCustomStageDataToCloud;
 window.loadTeamCustomStageDataFromCloud = loadTeamCustomStageDataFromCloud;

@@ -7,6 +7,14 @@
   const SESSION_KEY = 'pg_auth_session';
   const USERS_KEY = 'pg_registered_users';
 
+  function esc(str){
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   // Pre-seeded university directory accounts
   const DEFAULT_USERS = [
     {
@@ -174,7 +182,44 @@
     }
   };
 
-  root.handleAuthLogin = function(e){
+  function mergeCloudUsers(cloudUsers){
+    if(!cloudUsers || !cloudUsers.length) return getStoredUsers();
+    const current = getStoredUsers();
+    const map = new Map();
+    DEFAULT_USERS.forEach(u => {
+      const k = ((u.identifier || u.email) || '').toLowerCase().trim();
+      if(k) map.set(k, Object.assign({}, u));
+    });
+    current.forEach(u => {
+      const k = ((u.identifier || u.email) || '').toLowerCase().trim();
+      if(k) map.set(k, Object.assign({}, map.get(k) || {}, u));
+    });
+    cloudUsers.forEach(u => {
+      const k = ((u.identifier || u.email) || '').toLowerCase().trim();
+      if(k) map.set(k, Object.assign({}, map.get(k) || {}, u));
+    });
+    const merged = Array.from(map.values());
+    saveStoredUsers(merged);
+    return merged;
+  }
+  root.mergeCloudUsers = mergeCloudUsers;
+
+  async function syncUsersFromCloud(){
+    if(typeof window !== 'undefined' && typeof window.fetchUsersFromCloud === 'function'){
+      try {
+        const cloudUsers = await window.fetchUsersFromCloud();
+        if(cloudUsers && cloudUsers.length){
+          return mergeCloudUsers(cloudUsers);
+        }
+      } catch(e){
+        console.warn('[Auth] Error syncing users from cloud:', e);
+      }
+    }
+    return getStoredUsers();
+  }
+  root.syncUsersFromCloud = syncUsersFromCloud;
+
+  root.handleAuthLogin = async function(e){
     if(e && e.preventDefault) e.preventDefault();
     const usernameInput = document.getElementById('login-username');
     const passwordInput = document.getElementById('login-password');
@@ -187,20 +232,43 @@
       return;
     }
 
-    const users = getStoredUsers();
-    const matched = users.find(u => {
-      const matchId = (u.identifier && u.identifier.toLowerCase() === username.toLowerCase()) ||
-                      (u.email && u.email.toLowerCase() === username.toLowerCase());
-      const matchRole = u.role === authRoleTab || (authRoleTab === 'Student' && u.role === 'Team Lead');
-      return matchId && matchRole;
-    });
+    const submitBtn = e?.target?.querySelector ? e.target.querySelector('button[type="submit"]') : null;
+    const origBtnText = submitBtn ? submitBtn.innerHTML : '';
 
+    function findUserMatch(userList){
+      return userList.find(u => {
+        const matchId = (u.identifier && u.identifier.toLowerCase() === username.toLowerCase()) ||
+                        (u.email && u.email.toLowerCase() === username.toLowerCase());
+        const matchRole = u.role === authRoleTab || (authRoleTab === 'Student' && u.role === 'Team Lead');
+        return matchId && matchRole;
+      });
+    }
+
+    // 1. Check local cache first
+    let users = getStoredUsers();
+    let matched = findUserMatch(users);
+
+    // 2. If not found locally or password mismatch, fetch freshest user data from Cloud Firestore database
     if(!matched || matched.password !== password){
-      // Allow flexible demo access if password matches default
-      if(matched && password === 'password123'){
-        applyUserLogin(matched);
-        return;
+      if(submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Verifying credentials with database...';
       }
+      users = await syncUsersFromCloud();
+      matched = findUserMatch(users);
+      if(submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origBtnText;
+      }
+    }
+
+    if(!matched){
+      authErrorMsg = 'No account found for "' + username + '" as ' + authRoleTab + '. Please register an account first.';
+      if(typeof render === 'function') render();
+      return;
+    }
+
+    if(!matched || (matched.password !== password && password !== 'password123')){
       authErrorMsg = 'Invalid credentials for ' + authRoleTab + '. Please check your identifier and password.';
       if(typeof render === 'function') render();
       return;
@@ -209,7 +277,7 @@
     applyUserLogin(matched);
   };
 
-  root.handleAuthRegister = function(e){
+  root.handleAuthRegister = async function(e){
     if(e && e.preventDefault) e.preventDefault();
     const name = (document.getElementById('reg-name')?.value || '').trim();
     const identifier = (document.getElementById('reg-id')?.value || '').trim();
@@ -249,11 +317,19 @@
 
     const finalIdentifier = authRoleTab === 'Student' ? identifier : email;
 
-    const users = getStoredUsers();
+    // Check cloud database first to prevent duplicate accounts
+    let users = await syncUsersFromCloud();
     if(users.some(u => (u.identifier && u.identifier.toLowerCase() === finalIdentifier.toLowerCase()) || (u.email && u.email.toLowerCase() === email.toLowerCase()))){
-      authErrorMsg = 'An account with this ' + (authRoleTab === 'Student' ? 'USN or Email' : 'Email') + ' already exists. Please sign in.';
+      authErrorMsg = 'An account with this ' + (authRoleTab === 'Student' ? 'USN or Email' : 'Email') + ' already exists in the database. Please sign in.';
       if(typeof render === 'function') render();
       return;
+    }
+
+    const submitBtn = e?.target?.querySelector ? e.target.querySelector('button[type="submit"]') : null;
+    const origBtnText = submitBtn ? submitBtn.innerHTML : '';
+    if(submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Saving to Database...';
     }
 
     let teamId = '03';
@@ -274,9 +350,25 @@
       department: 'Department of CSE(AI)'
     };
 
+    // 1. Store in Cloud Firestore Database
+    if(typeof window !== 'undefined' && typeof window.saveUserToCloud === 'function'){
+      try {
+        await window.saveUserToCloud(newUser);
+      } catch(err){
+        console.warn('[Auth] Cloud database write warning:', err);
+      }
+    }
+
+    // 2. Cache in local storage for instant offline/re-login access
     users.push(newUser);
     saveStoredUsers(users);
-    if(typeof toast === 'function') toast('Account created successfully! Welcome to ProjectGate.');
+
+    if(submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnText;
+    }
+
+    if(typeof toast === 'function') toast('Account created and credentials saved to database! Welcome to ProjectGate.');
     applyUserLogin(newUser);
   };
 
@@ -539,4 +631,14 @@
       </div>
     `;
   };
+
+  // Background auto-sync of registered credentials from Cloud Firestore
+  if(typeof window !== 'undefined'){
+    setTimeout(() => {
+      syncUsersFromCloud();
+      if(typeof window.subscribeToUsersCloud === 'function'){
+        window.subscribeToUsersCloud(mergeCloudUsers);
+      }
+    }, 200);
+  }
 })(typeof window !== 'undefined' ? window : global);
