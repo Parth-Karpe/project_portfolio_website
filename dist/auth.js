@@ -532,9 +532,14 @@
 
 
 
-        <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--muted);">
-          Don't have an account? 
-          <a href="javascript:void(0)" onclick="window.switchAuthMode('register')" style="color:var(--brand); font-weight:700; text-decoration:none;">Create account here</a>
+        <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <div>
+            Don't have an account? 
+            <a href="javascript:void(0)" onclick="window.switchAuthMode('register')" style="color:var(--brand); font-weight:700; text-decoration:none;">Create account here</a>
+          </div>
+          <button type="button" class="btn secondary" style="display:inline-flex; align-items:center; justify-content:center; padding:4px 14px !important; font-size:12px !important; font-weight:700; border-radius:6px; cursor:pointer;" onclick="window.switchAuthMode('register')">
+            Register
+          </button>
         </div>
       `;
     } else {
@@ -593,9 +598,14 @@
 
 
 
-        <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--muted);">
-          Already have an account? 
-          <a href="javascript:void(0)" onclick="window.switchAuthMode('login')" style="color:var(--brand); font-weight:700; text-decoration:none;">Sign in here</a>
+        <div style="text-align:center; margin-top:20px; font-size:13px; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:8px;">
+          <div>
+            Already have an account? 
+            <a href="javascript:void(0)" onclick="window.switchAuthMode('login')" style="color:var(--brand); font-weight:700; text-decoration:none;">Sign in here</a>
+          </div>
+          <button type="button" class="btn secondary" style="display:inline-flex; align-items:center; justify-content:center; padding:4px 14px !important; font-size:12px !important; font-weight:700; border-radius:6px; cursor:pointer;" onclick="window.switchAuthMode('login')">
+            Sign In
+          </button>
         </div>
       `;
     }
@@ -616,14 +626,10 @@
 
         <!-- Auth Card -->
         <div style="width:100%; max-width:480px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:28px 26px; box-shadow:var(--shadow-lg); box-sizing:border-box;">
-          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:20px;">
+          <div style="border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:20px;">
             <h2 style="font-size:18px; font-weight:800; color:var(--ink); margin:0;">
               ${authMode === 'login' ? 'Sign In to Portal' : 'Create Account'}
             </h2>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn ${authMode==='login'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='login'?'background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #93c5fd !important;':''}" onclick="window.switchAuthMode('login')">Sign In</button>
-              <button type="button" class="btn ${authMode==='register'?'':'secondary'}" style="padding:5px 12px; font-size:12px; font-weight:700; ${authMode==='register'?'background:#dce8ff !important; color:#0b2a5b !important; border:1px solid #93c5fd !important;':''}" onclick="window.switchAuthMode('register')">Register</button>
-            </div>
           </div>
 
           ${contentHtml}
