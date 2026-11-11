@@ -7,6 +7,14 @@
 (function(root){
   'use strict';
 
+  function esc(str){
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
   const STORAGE_PREFIX = 'pg_team_stage_';
 
   root.getTeamCustomStageData = function(teamId){
@@ -213,6 +221,152 @@
     `;
   }
 
+
+  // Helper functions for dynamic table row insertion
+  root.addScopeRow = function(item, type, reason){
+    const tbody = document.querySelector('#table-edit-scope tbody');
+    if(!tbody) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="tbl-input col-scope-item" placeholder="e.g. Live multi-point packet capture" value="${esc(item || '')}"></td>
+      <td>
+        <select class="tbl-input col-scope-type">
+          <option value="in" ${type === 'in' || !type ? 'selected' : ''}>In-Scope</option>
+          <option value="out" ${type === 'out' ? 'selected' : ''}>Out-of-Scope</option>
+        </select>
+      </td>
+      <td><input type="text" class="tbl-input col-scope-reason" placeholder="e.g. Core MVP deliverable" value="${esc(reason || '')}"></td>
+      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  };
+
+  root.addCourseRow = function(course, concepts, role){
+    const tbody = document.querySelector('#table-edit-courses tbody');
+    if(!tbody) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="tbl-input col-course-name" placeholder="e.g. Computer Networks" value="${esc(course || '')}"></td>
+      <td><input type="text" class="tbl-input col-course-concepts" placeholder="e.g. Packet encapsulation, TCP/UDP headers, Transit delay" value="${esc(concepts || '')}"></td>
+      <td>
+        <select class="tbl-input col-course-role">
+          <option value="Dominant" ${role !== 'Supporting' ? 'selected' : ''}>Dominant</option>
+          <option value="Supporting" ${role === 'Supporting' ? 'selected' : ''}>Supporting</option>
+        </select>
+      </td>
+      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  };
+
+  root.addFrRow = function(id, desc, priority){
+    const tbody = document.querySelector('#table-edit-fr tbody');
+    if(!tbody) return;
+    const count = tbody.querySelectorAll('tr').length + 1;
+    const defaultId = id || ('FR-' + String(count).padStart(2, '0'));
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="tbl-input col-fr-id" placeholder="FR-01" value="${esc(defaultId)}"></td>
+      <td><input type="text" class="tbl-input col-fr-desc" placeholder="The system shall capture live packets at both probe interfaces..." value="${esc(desc || '')}"></td>
+      <td>
+        <select class="tbl-input col-fr-priority">
+          <option value="Mandatory" ${priority === 'Mandatory' || !priority ? 'selected' : ''}>Mandatory</option>
+          <option value="High" ${priority === 'High' ? 'selected' : ''}>High</option>
+          <option value="Medium" ${priority === 'Medium' ? 'selected' : ''}>Medium</option>
+          <option value="Low" ${priority === 'Low' ? 'selected' : ''}>Low</option>
+        </select>
+      </td>
+      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  };
+
+  root.addNfrRow = function(id, cat, desc, target){
+    const tbody = document.querySelector('#table-edit-nfr tbody');
+    if(!tbody) return;
+    const count = tbody.querySelectorAll('tr').length + 1;
+    const defaultId = id || ('NFR-' + String(count).padStart(2, '0'));
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="tbl-input col-nfr-id" placeholder="NFR-01" value="${esc(defaultId)}"></td>
+      <td>
+        <select class="tbl-input col-nfr-cat">
+          <option value="Performance" ${cat === 'Performance' || !cat ? 'selected' : ''}>Performance</option>
+          <option value="Reliability" ${cat === 'Reliability' ? 'selected' : ''}>Reliability</option>
+          <option value="Security" ${cat === 'Security' ? 'selected' : ''}>Security</option>
+          <option value="Scalability" ${cat === 'Scalability' ? 'selected' : ''}>Scalability</option>
+          <option value="Maintainability" ${cat === 'Maintainability' ? 'selected' : ''}>Maintainability</option>
+          <option value="Usability" ${cat === 'Usability' ? 'selected' : ''}>Usability</option>
+        </select>
+      </td>
+      <td><input type="text" class="tbl-input col-nfr-desc" placeholder="Low-latency live packet streaming without dropping socket frames..." value="${esc(desc || '')}"></td>
+      <td><input type="text" class="tbl-input col-nfr-target" placeholder="e.g. < 200 ms latency under 10k pkts/sec" value="${esc(target || '')}"></td>
+      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  };
+
+  root.addUcRow = function(id, actor, title, desc){
+    const tbody = document.querySelector('#table-edit-uc tbody');
+    if(!tbody) return;
+    const count = tbody.querySelectorAll('tr').length + 1;
+    const defaultId = id || ('UC-' + String(count).padStart(2, '0'));
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="tbl-input col-uc-id" placeholder="UC-01" value="${esc(defaultId)}"></td>
+      <td><input type="text" class="tbl-input col-uc-actor" placeholder="e.g. Administrator" value="${esc(actor || 'User')}"></td>
+      <td><input type="text" class="tbl-input col-uc-title" placeholder="e.g. Configure Packet Capture" value="${esc(title || '')}"></td>
+      <td><input type="text" class="tbl-input col-uc-desc" placeholder="e.g. Select interface → start capture → stream telemetry" value="${esc(desc || '')}"></td>
+      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  };
+
+  root.addModuleRow = function(name, desc){
+    const tbody = document.querySelector('#table-edit-modules tbody');
+    if(!tbody) return;
+    const count = tbody.querySelectorAll('tr').length + 1;
+    const defaultName = name || ('Module ' + count);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="tbl-input col-mod-name" placeholder="e.g. IngestionEngine" value="${esc(defaultName)}"></td>
+      <td><input type="text" class="tbl-input col-mod-desc" placeholder="e.g. Captures raw socket frames and parses IP/TCP headers" value="${esc(desc || '')}"></td>
+      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  };
+
+  root.addTestRow = function(id, feature, result, status){
+    const tbody = document.querySelector('#table-edit-tests tbody');
+    if(!tbody) return;
+    const count = tbody.querySelectorAll('tr').length + 1;
+    const defaultId = id || ('TC-' + String(count).padStart(2, '0'));
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="tbl-input col-test-id" placeholder="TC-01" value="${esc(defaultId)}"></td>
+      <td><input type="text" class="tbl-input col-test-feature" placeholder="e.g. Multi-probe packet capture verification" value="${esc(feature || '')}"></td>
+      <td><input type="text" class="tbl-input col-test-result" placeholder="e.g. 100% packets captured without drop" value="${esc(result || '')}"></td>
+      <td>
+        <select class="tbl-input col-test-status">
+          <option value="PASS" ${status !== 'FAIL' ? 'selected' : ''}>PASS</option>
+          <option value="FAIL" ${status === 'FAIL' ? 'selected' : ''}>FAIL</option>
+        </select>
+      </td>
+      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  };
+
+  if(typeof window !== 'undefined'){
+    window.addScopeRow = root.addScopeRow;
+    window.addCourseRow = root.addCourseRow;
+    window.addFrRow = root.addFrRow;
+    window.addNfrRow = root.addNfrRow;
+    window.addUcRow = root.addUcRow;
+    window.addModuleRow = root.addModuleRow;
+    window.addTestRow = root.addTestRow;
+  }
+
   root.openStageDataEditor = function(initialStage){
     const stageId = String(initialStage || window.activePortfolioStage || '0');
     const curTeam = (typeof activeTeam === 'function' ? activeTeam() : (typeof state !== 'undefined' ? state.teams?.[0] : null));
@@ -236,9 +390,33 @@
     if(stageId === '0'){
       const cur0 = Object.assign({}, staticTeam?.stage0 || {}, customData['0'] || {});
       const objectivesText = Array.isArray(cur0.objectives) ? cur0.objectives.join('\n') : (cur0.objectives || '');
-      const inScopeText = (cur0.scopeInTable || []).map(s => s.item || s).join('\n') || (cur0.inScope || '');
-      const outScopeText = (cur0.scopeOutTable || []).map(s => `${s.item || s} -- ${s.reason || 'Out of Scope'}`).join('\n') || (cur0.outScope || '');
-      const coursesText = (cur0.coursesTable || []).map(c => `${c.course || ''} : ${c.concepts || ''}`).join('\n') || '';
+
+      // Combine existing scope items into rows
+      const scopeRows = [];
+      (cur0.scopeInTable || []).forEach(s => scopeRows.push({ item: s.item || s, type: 'in', reason: s.reason || 'In-Scope deliverable' }));
+      (cur0.scopeOutTable || []).forEach(s => scopeRows.push({ item: s.item || s, type: 'out', reason: s.reason || 'Out of Scope boundary' }));
+      if(!scopeRows.length && cur0.inScope){
+        cur0.inScope.split('\n').map(s => s.trim()).filter(Boolean).forEach(s => scopeRows.push({ item: s, type: 'in', reason: 'In-Scope deliverable' }));
+      }
+      if(!scopeRows.length && cur0.outScope){
+        cur0.outScope.split('\n').map(s => s.trim()).filter(Boolean).forEach(s => {
+          const parts = s.split('--');
+          scopeRows.push({ item: (parts[0] || '').trim(), type: 'out', reason: (parts[1] || 'Out of Scope').trim() });
+        });
+      }
+      if(scopeRows.length === 0){
+        scopeRows.push({ item: '', type: 'in', reason: '' }, { item: '', type: 'out', reason: '' });
+      }
+
+      // Course mapping rows
+      const courseRows = (cur0.coursesTable || []).map(c => ({
+        course: c.course || '',
+        concepts: c.concepts || '',
+        role: c.role || 'Dominant'
+      }));
+      if(courseRows.length === 0){
+        courseRows.push({ course: '', concepts: '', role: 'Dominant' }, { course: '', concepts: '', role: 'Dominant' });
+      }
 
       contentHtml = `
         <div>
@@ -251,44 +429,244 @@
           <textarea id="edit-stg0-objectives" rows="4" placeholder="Objective 1\nObjective 2\nObjective 3" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(objectivesText)}</textarea>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div>
-            <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. In-Scope Deliverables (one per line)</label>
-            <textarea id="edit-stg0-inscope" rows="3" placeholder="In-scope item 1\nIn-scope item 2" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(inScopeText)}</textarea>
+        <div style="margin-top:4px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. Scope Boundaries &amp; Exclusions (Table 0.3) *</label>
+          <span style="display:block;font-size:11.5px;color:var(--muted);margin-bottom:8px;">Define in-scope core features and out-of-scope boundaries with engineering justifications.</span>
+          <div class="tbl-builder-wrap">
+            <table class="tbl-builder" id="table-edit-scope">
+              <thead>
+                <tr>
+                  <th style="width:38%;">Feature / Component / Subsystem</th>
+                  <th style="width:20%;">Scope Status</th>
+                  <th style="width:36%;">Engineering Justification / Details</th>
+                  <th style="width:6%;text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${scopeRows.map(s => `
+                  <tr>
+                    <td><input type="text" class="tbl-input col-scope-item" placeholder="e.g. Live multi-point packet capture" value="${esc(s.item || '')}"></td>
+                    <td>
+                      <select class="tbl-input col-scope-type">
+                        <option value="in" ${s.type === 'in' ? 'selected' : ''}>In-Scope</option>
+                        <option value="out" ${s.type === 'out' ? 'selected' : ''}>Out-of-Scope</option>
+                      </select>
+                    </td>
+                    <td><input type="text" class="tbl-input col-scope-reason" placeholder="e.g. Core MVP deliverable" value="${esc(s.reason || '')}"></td>
+                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
           </div>
-          <div>
-            <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">4. Out-of-Scope (Item -- Reason)</label>
-            <textarea id="edit-stg0-outscope" rows="3" placeholder="Feature -- Reason for omission" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(outScopeText)}</textarea>
-          </div>
+          <button type="button" class="btn-tbl-add" onclick="window.addScopeRow()">+ Add Scope Item</button>
         </div>
 
-        <div>
-          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">5. Foundation Course Integration (Course : Concepts Used)</label>
-          <textarea id="edit-stg0-courses" rows="3" placeholder="DAA : Constraint Satisfaction & Optimization\nOperating Systems : Multithreading & Concurrency\nSoftware Engineering : Architectural Modeling" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(coursesText)}</textarea>
+        <div style="margin-top:4px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">4. Foundation Course Integration (Table 0.4) *</label>
+          <span style="display:block;font-size:11.5px;color:var(--muted);margin-bottom:8px;">Map core computer science curriculum courses (DAA, OS, CN, DBMS) to theoretical concepts used.</span>
+          <div class="tbl-builder-wrap">
+            <table class="tbl-builder" id="table-edit-courses">
+              <thead>
+                <tr>
+                  <th style="width:30%;">Course Name</th>
+                  <th style="width:46%;">Theoretical Concepts &amp; Techniques Applied</th>
+                  <th style="width:18%;">Curriculum Role</th>
+                  <th style="width:6%;text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${courseRows.map(c => `
+                  <tr>
+                    <td><input type="text" class="tbl-input col-course-name" placeholder="e.g. Computer Networks" value="${esc(c.course || '')}"></td>
+                    <td><input type="text" class="tbl-input col-course-concepts" placeholder="e.g. Packet encapsulation, TCP/UDP headers, Transit delay" value="${esc(c.concepts || '')}"></td>
+                    <td>
+                      <select class="tbl-input col-course-role">
+                        <option value="Dominant" ${c.role !== 'Supporting' ? 'selected' : ''}>Dominant</option>
+                        <option value="Supporting" ${c.role === 'Supporting' ? 'selected' : ''}>Supporting</option>
+                      </select>
+                    </td>
+                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn-tbl-add" onclick="window.addCourseRow()">+ Add Course Row</button>
         </div>
 
-        ${renderImageUploadField('stg0-flow', '6. Conceptual Workflow / Problem Scope Diagram', 'Insert conceptual flow diagram or problem scope illustration.', cur0.conceptualFlowImage)}
+        ${renderImageUploadField('stg0-flow', '5. Conceptual Workflow / Problem Scope Diagram', 'Insert conceptual flow diagram or problem scope illustration.', cur0.conceptualFlowImage)}
       `;
     } else if(stageId === '1'){
       const cur1 = Object.assign({}, staticTeam?.stage1 || {}, customData['1'] || {});
-      const frText = (cur1.frTable || []).map(fr => `${fr.id || 'FR'} : ${fr.desc || ''}`).join('\n') || (cur1.fr || '');
-      const nfrText = (cur1.nfrTable || []).map(nfr => `${nfr.id || 'NFR'} [${nfr.cat || nfr.category || 'Quality'}] : ${nfr.desc || ''} (Target: ${nfr.target || ''})`).join('\n') || (cur1.nfr || '');
-      const ucText = (cur1.useCases || []).map(u => `${u.id || 'UC'} - ${u.title || u.actor || ''}: ${u.desc || u.flow || ''}`).join('\n') || (cur1.usecases || '');
+
+      // FR rows
+      let frRows = (cur1.frTable || []).map(f => ({
+        id: f.id || 'FR-01',
+        desc: f.desc || '',
+        priority: f.priority || 'Mandatory'
+      }));
+      if(!frRows.length && cur1.fr){
+        cur1.fr.split('\n').map(l => l.trim()).filter(Boolean).forEach((line, i) => {
+          const parts = line.split(':');
+          frRows.push({
+            id: (parts[0] || '').trim() || ('FR-' + String(i + 1).padStart(2, '0')),
+            desc: (parts[1] || parts[0] || '').trim(),
+            priority: 'Mandatory'
+          });
+        });
+      }
+      if(frRows.length === 0){
+        frRows.push({ id: 'FR-01', desc: '', priority: 'Mandatory' }, { id: 'FR-02', desc: '', priority: 'Mandatory' });
+      }
+
+      // NFR rows
+      let nfrRows = (cur1.nfrTable || []).map(n => ({
+        id: n.id || 'NFR-01',
+        cat: n.cat || n.category || 'Performance',
+        desc: n.desc || '',
+        target: n.target || ''
+      }));
+      if(!nfrRows.length && cur1.nfr){
+        cur1.nfr.split('\n').map(l => l.trim()).filter(Boolean).forEach((line, i) => {
+          const idMatch = line.match(/^([A-Za-z0-9_-]+)/);
+          nfrRows.push({
+            id: idMatch ? idMatch[1] : ('NFR-' + String(i + 1).padStart(2, '0')),
+            cat: 'Performance',
+            desc: line,
+            target: 'Measured in testing'
+          });
+        });
+      }
+      if(nfrRows.length === 0){
+        nfrRows.push({ id: 'NFR-01', cat: 'Performance', desc: '', target: '' }, { id: 'NFR-02', cat: 'Reliability', desc: '', target: '' });
+      }
+
+      // Use Case rows
+      let ucRows = (cur1.useCases || []).map(u => ({
+        id: u.id || 'UC-01',
+        actor: u.actor || 'User',
+        title: u.title || '',
+        desc: u.desc || u.mainFlow || ''
+      }));
+      if(!ucRows.length && cur1.usecases){
+        cur1.usecases.split('\n').map(l => l.trim()).filter(Boolean).forEach((line, i) => {
+          const parts = line.split(':');
+          ucRows.push({
+            id: 'UC-' + String(i + 1).padStart(2, '0'),
+            actor: 'User',
+            title: (parts[0] || '').trim(),
+            desc: (parts[1] || parts[0] || '').trim()
+          });
+        });
+      }
+      if(ucRows.length === 0){
+        ucRows.push({ id: 'UC-01', actor: 'Administrator', title: '', desc: '' }, { id: 'UC-02', actor: 'Client User', title: '', desc: '' });
+      }
 
       contentHtml = `
-        <div>
-          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">1. Functional Requirements (FR-ID : Description, one per line) *</label>
-          <textarea id="edit-stg1-fr" rows="5" placeholder="FR-01 : User authentication and RBAC\nFR-02 : Automated timetable generation\nFR-03 : Export schedule to CSV / PDF" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(frText)}</textarea>
+        <div style="margin-top:4px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">1. Functional Requirements (Table 1.1) *</label>
+          <span style="display:block;font-size:11.5px;color:var(--muted);margin-bottom:8px;">Define functional capabilities with unique identifiers and requirement descriptions.</span>
+          <div class="tbl-builder-wrap">
+            <table class="tbl-builder" id="table-edit-fr">
+              <thead>
+                <tr>
+                  <th style="width:15%;">FR ID</th>
+                  <th style="width:61%;">Requirement Description</th>
+                  <th style="width:18%;">Priority</th>
+                  <th style="width:6%;text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${frRows.map(f => `
+                  <tr>
+                    <td><input type="text" class="tbl-input col-fr-id" placeholder="FR-01" value="${esc(f.id || '')}"></td>
+                    <td><input type="text" class="tbl-input col-fr-desc" placeholder="The system shall capture live packet observations..." value="${esc(f.desc || '')}"></td>
+                    <td>
+                      <select class="tbl-input col-fr-priority">
+                        <option value="Mandatory" ${f.priority === 'Mandatory' || !f.priority ? 'selected' : ''}>Mandatory</option>
+                        <option value="High" ${f.priority === 'High' ? 'selected' : ''}>High</option>
+                        <option value="Medium" ${f.priority === 'Medium' ? 'selected' : ''}>Medium</option>
+                        <option value="Low" ${f.priority === 'Low' ? 'selected' : ''}>Low</option>
+                      </select>
+                    </td>
+                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn-tbl-add" onclick="window.addFrRow()">+ Add Functional Requirement</button>
         </div>
 
-        <div>
-          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">2. Non-Functional Requirements (NFR-ID [Category] : Description (Target: ...)) *</label>
-          <textarea id="edit-stg1-nfr" rows="4" placeholder="NFR-01 [Performance] : Generation latency < 5 seconds\nNFR-02 [Reliability] : 0 hard constraint conflicts" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(nfrText)}</textarea>
+        <div style="margin-top:14px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">2. Non-Functional Requirements (Table 1.2) *</label>
+          <span style="display:block;font-size:11.5px;color:var(--muted);margin-bottom:8px;">Specify quantitative quality criteria (Performance latency, Reliability, Security SLA).</span>
+          <div class="tbl-builder-wrap">
+            <table class="tbl-builder" id="table-edit-nfr">
+              <thead>
+                <tr>
+                  <th style="width:13%;">NFR ID</th>
+                  <th style="width:20%;">Category</th>
+                  <th style="width:41%;">Quality Requirement Statement</th>
+                  <th style="width:20%;">Target Metric / SLA</th>
+                  <th style="width:6%;text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${nfrRows.map(n => `
+                  <tr>
+                    <td><input type="text" class="tbl-input col-nfr-id" placeholder="NFR-01" value="${esc(n.id || '')}"></td>
+                    <td>
+                      <select class="tbl-input col-nfr-cat">
+                        <option value="Performance" ${n.cat === 'Performance' || !n.cat ? 'selected' : ''}>Performance</option>
+                        <option value="Reliability" ${n.cat === 'Reliability' ? 'selected' : ''}>Reliability</option>
+                        <option value="Security" ${n.cat === 'Security' ? 'selected' : ''}>Security</option>
+                        <option value="Scalability" ${n.cat === 'Scalability' ? 'selected' : ''}>Scalability</option>
+                        <option value="Maintainability" ${n.cat === 'Maintainability' ? 'selected' : ''}>Maintainability</option>
+                        <option value="Usability" ${n.cat === 'Usability' ? 'selected' : ''}>Usability</option>
+                      </select>
+                    </td>
+                    <td><input type="text" class="tbl-input col-nfr-desc" placeholder="Low-latency live packet streaming without dropping frames" value="${esc(n.desc || '')}"></td>
+                    <td><input type="text" class="tbl-input col-nfr-target" placeholder="e.g. < 200 ms latency" value="${esc(n.target || '')}"></td>
+                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn-tbl-add" onclick="window.addNfrRow()">+ Add Non-Functional Requirement</button>
         </div>
 
-        <div>
-          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. Use Cases / Core Scenarios</label>
-          <textarea id="edit-stg1-uc" rows="4" placeholder="UC-01 - Student: Enters team details and stage submissions\nUC-02 - Faculty: Reviews milestone and provides approval" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(ucText)}</textarea>
+        <div style="margin-top:14px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. Use Cases / Core Scenarios (Table 1.3) *</label>
+          <span style="display:block;font-size:11.5px;color:var(--muted);margin-bottom:8px;">Define core actor interactions, workflow scenarios, and system responsibilities.</span>
+          <div class="tbl-builder-wrap">
+            <table class="tbl-builder" id="table-edit-uc">
+              <thead>
+                <tr>
+                  <th style="width:13%;">UC ID</th>
+                  <th style="width:20%;">Primary Actor</th>
+                  <th style="width:26%;">Use Case Title / Goal</th>
+                  <th style="width:35%;">Main Workflow Steps</th>
+                  <th style="width:6%;text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ucRows.map(u => `
+                  <tr>
+                    <td><input type="text" class="tbl-input col-uc-id" placeholder="UC-01" value="${esc(u.id || '')}"></td>
+                    <td><input type="text" class="tbl-input col-uc-actor" placeholder="e.g. Administrator" value="${esc(u.actor || 'User')}"></td>
+                    <td><input type="text" class="tbl-input col-uc-title" placeholder="e.g. Live Traffic Capture" value="${esc(u.title || '')}"></td>
+                    <td><input type="text" class="tbl-input col-uc-desc" placeholder="e.g. Select interface → start capture" value="${esc(u.desc || '')}"></td>
+                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn-tbl-add" onclick="window.addUcRow()">+ Add Use Case</button>
         </div>
 
         ${renderImageUploadField('stg1-uc', '4. Use Case Diagram / User Interaction Flow', 'Insert use case diagram or user interaction flow model.', cur1.useCaseImage)}
@@ -301,8 +679,8 @@
 
       contentHtml = `
         <div>
-          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">1. System Architecture Overview *</label>
-          <textarea id="edit-stgsys-arch" rows="4" placeholder="Describe presentation layer, business logic engine, and database persistence layers…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(archText)}</textarea>
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">1. System Architecture Overview &amp; Component Points *</label>
+          <textarea id="edit-stgsys-arch" rows="4" placeholder="Detail high-level system layers, services, IPC / REST contracts…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(archText)}</textarea>
         </div>
 
         <div>
@@ -321,7 +699,18 @@
       `;
     } else if(stageId === '2'){
       const cur2 = Object.assign({}, staticTeam?.stage2 || {}, customData['2'] || {});
-      const modulesText = (cur2.modules || []).map(m => typeof m === 'object' ? `${m.name || m.module || ''} : ${m.desc || ''}` : String(m)).join('\n') || (cur2.modulesText || '');
+      
+      // Module rows
+      let modRows = (cur2.modules || []).map(m => typeof m === 'object' ? { name: m.name || m.module || '', desc: m.desc || m.description || '' } : { name: String(m), desc: '' });
+      if(!modRows.length && cur2.modulesText){
+        cur2.modulesText.split('\n').map(l => l.trim()).filter(Boolean).forEach(line => {
+          const parts = line.split(':');
+          modRows.push({ name: (parts[0] || '').trim(), desc: (parts[1] || '').trim() });
+        });
+      }
+      if(modRows.length === 0){
+        modRows.push({ name: 'Core Engine Module', desc: '' }, { name: 'Data Pipeline Service', desc: '' });
+      }
 
       contentHtml = `
         <div>
@@ -329,17 +718,38 @@
           <textarea id="edit-stg2-summary" rows="3" placeholder="Summary of languages, frameworks, libraries, and integration pipeline…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(cur2.summary || cur2.implementation || '')}</textarea>
         </div>
 
-        <div>
-          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">2. Core Modules (Module Name : Description, one per line) *</label>
-          <textarea id="edit-stg2-modules" rows="4" placeholder="Module 1 - IngestionEngine : Validates user constraint input\nModule 2 - SolverEngine : Executes CSP search algorithm" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(modulesText)}</textarea>
+        <div style="margin-top:4px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">2. Core Modules &amp; Component Responsibilities *</label>
+          <span style="display:block;font-size:11.5px;color:var(--muted);margin-bottom:8px;">Define core software modules, exported API boundaries, and system integration roles.</span>
+          <div class="tbl-builder-wrap">
+            <table class="tbl-builder" id="table-edit-modules">
+              <thead>
+                <tr>
+                  <th style="width:34%;">Module / Component Name</th>
+                  <th style="width:60%;">Description &amp; Integration Responsibility</th>
+                  <th style="width:6%;text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${modRows.map(m => `
+                  <tr>
+                    <td><input type="text" class="tbl-input col-mod-name" placeholder="e.g. IngestionEngine" value="${esc(m.name || '')}"></td>
+                    <td><input type="text" class="tbl-input col-mod-desc" placeholder="e.g. Captures raw socket frames and parses IP/TCP headers" value="${esc(m.desc || '')}"></td>
+                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn-tbl-add" onclick="window.addModuleRow()">+ Add Module</button>
         </div>
 
-        <div>
+        <div style="margin-top:14px;">
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. Project Repository URL (GitHub / GitLab)</label>
           <input id="edit-stg2-repo" type="url" value="${esc(cur2.repo || cur2.repoUrl || curTeam?.repo || 'https://github.com')}" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;">
         </div>
 
-        <div>
+        <div style="margin-top:14px;">
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">4. Technical Challenges &amp; Mitigations</label>
           <textarea id="edit-stg2-challenges" rows="3" placeholder="Key bottlenecks, bugs encountered, and how they were resolved…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(cur2.challenges || '')}</textarea>
         </div>
@@ -348,7 +758,24 @@
       `;
     } else if(stageId === '3'){
       const cur3 = Object.assign({}, staticTeam?.stage3 || {}, customData['3'] || {});
-      const testsText = (cur3.tests || []).map(t => typeof t === 'object' ? `${t.id || 'TC'} : ${t.feature || t.name || ''} -- ${t.result || 'PASS'}` : String(t)).join('\n') || (cur3.testsText || '');
+      
+      // Test rows
+      let testRows = (cur3.tests || []).map(t => typeof t === 'object' ? { id: t.id || 'TC-01', feature: t.feature || t.name || '', result: t.result || 'PASS', status: t.status || 'PASS' } : { id: 'TC-01', feature: String(t), result: 'PASS', status: 'PASS' });
+      if(!testRows.length && cur3.testsText){
+        cur3.testsText.split('\n').map(l => l.trim()).filter(Boolean).forEach((line, i) => {
+          const parts = line.split('--');
+          const left = (parts[0] || '').split(':');
+          testRows.push({
+            id: (left[0] || '').trim() || ('TC-' + String(i + 1).padStart(2, '0')),
+            feature: (left[1] || left[0] || '').trim(),
+            result: (parts[1] || 'PASS').trim(),
+            status: (parts[1] || '').toLowerCase().includes('fail') ? 'FAIL' : 'PASS'
+          });
+        });
+      }
+      if(testRows.length === 0){
+        testRows.push({ id: 'TC-01', feature: '', result: '100% tests passing', status: 'PASS' }, { id: 'TC-02', feature: '', result: 'Verified without conflict', status: 'PASS' });
+      }
 
       contentHtml = `
         <div>
@@ -356,17 +783,47 @@
           <textarea id="edit-stg3-strategy" rows="3" placeholder="Unit testing, integration testing, benchmark test harness…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(cur3.strategy || cur3.testing || '')}</textarea>
         </div>
 
-        <div>
-          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">2. Test Execution Matrix (TC-ID : Feature -- Result, one per line) *</label>
-          <textarea id="edit-stg3-tests" rows="4" placeholder="TC-01 : Faculty non-overlap -- Zero conflicts observed [PASS]\nTC-02 : Room capacity check -- All limits respected [PASS]\nTC-03 : Execution latency -- 4.2 seconds under 120 slot load [PASS]" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(testsText)}</textarea>
+        <div style="margin-top:4px;">
+          <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">2. Test Execution &amp; Verification Matrix *</label>
+          <span style="display:block;font-size:11.5px;color:var(--muted);margin-bottom:8px;">Document automated test cases, targeted functional features, and observed verification results.</span>
+          <div class="tbl-builder-wrap">
+            <table class="tbl-builder" id="table-edit-tests">
+              <thead>
+                <tr>
+                  <th style="width:13%;">Test ID</th>
+                  <th style="width:47%;">Target Feature / Requirement Verified</th>
+                  <th style="width:23%;">Expected Result &amp; Metric Output</th>
+                  <th style="width:11%;">Status</th>
+                  <th style="width:6%;text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${testRows.map(t => `
+                  <tr>
+                    <td><input type="text" class="tbl-input col-test-id" placeholder="TC-01" value="${esc(t.id || '')}"></td>
+                    <td><input type="text" class="tbl-input col-test-feature" placeholder="e.g. Live packet capture" value="${esc(t.feature || '')}"></td>
+                    <td><input type="text" class="tbl-input col-test-result" placeholder="e.g. 100% capture pass" value="${esc(t.result || '')}"></td>
+                    <td>
+                      <select class="tbl-input col-test-status">
+                        <option value="PASS" ${t.status !== 'FAIL' ? 'selected' : ''}>PASS</option>
+                        <option value="FAIL" ${t.status === 'FAIL' ? 'selected' : ''}>FAIL</option>
+                      </select>
+                    </td>
+                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn-tbl-add" onclick="window.addTestRow()">+ Add Test Case</button>
         </div>
 
-        <div>
+        <div style="margin-top:14px;">
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">3. Performance &amp; Accuracy Metrics</label>
           <textarea id="edit-stg3-metrics" rows="2" placeholder="e.g. Generation Latency: 4.2s · Conflict Rate: 0.0% · Memory: 84 MB" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(cur3.metrics || '')}</textarea>
         </div>
 
-        <div>
+        <div style="margin-top:14px;">
           <label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px;color:var(--ink);">4. Evaluation &amp; Lessons Learned</label>
           <textarea id="edit-stg3-evaluation" rows="3" placeholder="Key insights gained, known limitations, and future directions…" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px;line-height:1.5;">${esc(cur3.evaluation || '')}</textarea>
         </div>
@@ -381,6 +838,20 @@
 
       modal = `
         <div class="stage-editor-fullpage" role="dialog" aria-modal="true" style="position:fixed !important;top:0 !important;left:0 !important;right:0 !important;bottom:0 !important;inset:0 !important;width:100vw !important;height:100vh !important;max-width:100vw !important;max-height:100vh !important;margin:0 !important;padding:0 !important;background:var(--bg,#f8fafc) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;z-index:999999 !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;box-sizing:border-box !important;">
+          <style>
+            .tbl-builder-wrap { width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:8px; background:var(--surface); margin-top:6px; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+            .tbl-builder { width:100%; border-collapse:collapse; font-size:13px; min-width:640px; }
+            .tbl-builder th { background:#f1f5f9; color:var(--ink); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:10px 12px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); text-align:left; }
+            .tbl-builder td { padding:7px 8px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); vertical-align:middle; background:#fff; }
+            .tbl-builder tr:last-child td { border-bottom:none; }
+            .tbl-builder td:last-child, .tbl-builder th:last-child { border-right:none; text-align:center; }
+            .tbl-input { width:100%; box-sizing:border-box; padding:7px 10px; border-radius:6px; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:12.5px; outline:none; transition:border-color 0.15s, box-shadow 0.15s; }
+            .tbl-input:focus { border-color:#2563eb; box-shadow:0 0 0 2px rgba(37,99,235,0.12); }
+            .btn-tbl-del { background:transparent; border:none; color:#ef4444; font-size:15px; font-weight:bold; cursor:pointer; padding:5px 9px; border-radius:4px; transition:background 0.15s; }
+            .btn-tbl-del:hover { background:#fee2e2; }
+            .btn-tbl-add { display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:7px 16px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid var(--line); background:#f8fafc; color:var(--ink); cursor:pointer; transition:all 0.15s; }
+            .btn-tbl-add:hover { background:#e2e8f0; border-color:#cbd5e1; }
+          </style>
           <div style="background:var(--surface,#ffffff) !important;width:100% !important;height:100% !important;max-width:100% !important;max-height:100% !important;margin:0 !important;padding:0 !important;border:none !important;border-radius:0 !important;box-shadow:none !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;box-sizing:border-box !important;">
             
             <!-- Full Page Header Bar -->
@@ -439,46 +910,117 @@
     if(stageId === '0'){
       const problem = (document.getElementById('edit-stg0-problem')?.value || '').trim();
       const objectivesRaw = (document.getElementById('edit-stg0-objectives')?.value || '').trim();
-      const inscopeRaw = (document.getElementById('edit-stg0-inscope')?.value || '').trim();
-      const outscopeRaw = (document.getElementById('edit-stg0-outscope')?.value || '').trim();
-      const coursesRaw = (document.getElementById('edit-stg0-courses')?.value || '').trim();
-
       const objectives = objectivesRaw.split('\n').map(s => s.trim()).filter(Boolean);
-      const scopeInTable = inscopeRaw.split('\n').map((s, i) => ({ num: String(i+1).padStart(2,'0'), item: s.trim() })).filter(x => x.item);
-      const scopeOutTable = outscopeRaw.split('\n').map((s, i) => {
-        const parts = s.split('--');
-        return { num: String(i+1).padStart(2,'0'), item: (parts[0] || '').trim(), reason: (parts[1] || 'Out of Scope boundary').trim() };
-      }).filter(x => x.item);
 
-      const coursesTable = coursesRaw.split('\n').map((s, i) => {
-        const parts = s.split(':');
-        return { sl: String(i+1).padStart(2,'0'), course: (parts[0] || '').trim(), concepts: (parts[1] || '').trim(), role: 'Foundation' };
-      }).filter(x => x.course);
+      // Read Scope Table
+      const scopeRows = document.querySelectorAll('#table-edit-scope tbody tr');
+      const scopeInTable = [];
+      const scopeOutTable = [];
+      scopeRows.forEach(row => {
+        const item = (row.querySelector('.col-scope-item')?.value || '').trim();
+        const type = (row.querySelector('.col-scope-type')?.value || 'in').trim();
+        const reason = (row.querySelector('.col-scope-reason')?.value || '').trim();
+        if(item){
+          if(type === 'in'){
+            scopeInTable.push({
+              num: String(scopeInTable.length + 1).padStart(2, '0'),
+              item,
+              reason: reason || 'In-Scope deliverable'
+            });
+          } else {
+            scopeOutTable.push({
+              num: String(scopeOutTable.length + 1).padStart(2, '0'),
+              item,
+              reason: reason || 'Out of Scope boundary'
+            });
+          }
+        }
+      });
 
-      data = { problem, objectives, scopeInTable, scopeOutTable, coursesTable };
+      // Read Courses Table
+      const courseRows = document.querySelectorAll('#table-edit-courses tbody tr');
+      const coursesTable = [];
+      courseRows.forEach(row => {
+        const course = (row.querySelector('.col-course-name')?.value || '').trim();
+        const concepts = (row.querySelector('.col-course-concepts')?.value || '').trim();
+        const role = (row.querySelector('.col-course-role')?.value || 'Dominant').trim();
+        if(course){
+          coursesTable.push({
+            sl: String(coursesTable.length + 1).padStart(2, '0'),
+            course,
+            concepts: concepts || 'Theoretical foundation',
+            role
+          });
+        }
+      });
+
+      data = {
+        problem,
+        objectives,
+        scopeInTable,
+        scopeOutTable,
+        coursesTable,
+        inScope: scopeInTable.map(s => s.item).join('\n'),
+        outScope: scopeOutTable.map(s => `${s.item} -- ${s.reason}`).join('\n')
+      };
       if(root.__stagePendingImages && root.__stagePendingImages['stg0-flow'] !== undefined){
         data.conceptualFlowImage = root.__stagePendingImages['stg0-flow'];
       }
 
     } else if(stageId === '1'){
-      const frRaw = (document.getElementById('edit-stg1-fr')?.value || '').trim();
-      const nfrRaw = (document.getElementById('edit-stg1-nfr')?.value || '').trim();
-      const ucRaw = (document.getElementById('edit-stg1-uc')?.value || '').trim();
+      // Read FR Table
+      const frRows = document.querySelectorAll('#table-edit-fr tbody tr');
+      const frTable = [];
+      frRows.forEach((row, i) => {
+        const id = (row.querySelector('.col-fr-id')?.value || '').trim() || ('FR-' + String(i + 1).padStart(2, '0'));
+        const desc = (row.querySelector('.col-fr-desc')?.value || '').trim();
+        const priority = (row.querySelector('.col-fr-priority')?.value || 'Mandatory').trim();
+        if(desc){
+          frTable.push({ id, desc, priority, sourceNeed: 'Stakeholder Requirement' });
+        }
+      });
 
-      const frTable = frRaw.split('\n').map((line, i) => {
-        const parts = line.split(':');
-        const id = (parts[0] || '').trim() || ('FR-' + String(i+1).padStart(2, '0'));
-        const desc = (parts[1] || parts[0] || '').trim();
-        return { id, desc, priority: 'Mandatory', sourceNeed: 'Stakeholder Requirement' };
-      }).filter(x => x.desc);
+      // Read NFR Table
+      const nfrRows = document.querySelectorAll('#table-edit-nfr tbody tr');
+      const nfrTable = [];
+      nfrRows.forEach((row, i) => {
+        const id = (row.querySelector('.col-nfr-id')?.value || '').trim() || ('NFR-' + String(i + 1).padStart(2, '0'));
+        const cat = (row.querySelector('.col-nfr-cat')?.value || 'Performance').trim();
+        const desc = (row.querySelector('.col-nfr-desc')?.value || '').trim();
+        const target = (row.querySelector('.col-nfr-target')?.value || '').trim();
+        if(desc || target){
+          nfrTable.push({ id, cat, desc: desc || target, target: target || desc });
+        }
+      });
 
-      const nfrTable = nfrRaw.split('\n').map((line, i) => {
-        const idMatch = line.match(/^([A-Za-z0-9_-]+)/);
-        const id = idMatch ? idMatch[1] : ('NFR-' + String(i+1).padStart(2, '0'));
-        return { id, desc: line.trim(), cat: 'Quality', target: 'Verified in Test Suite' };
-      }).filter(x => x.desc);
+      // Read Use Cases Table
+      const ucRows = document.querySelectorAll('#table-edit-uc tbody tr');
+      const useCases = [];
+      ucRows.forEach((row, i) => {
+        const id = (row.querySelector('.col-uc-id')?.value || '').trim() || ('UC-' + String(i + 1).padStart(2, '0'));
+        const actor = (row.querySelector('.col-uc-actor')?.value || 'User').trim();
+        const title = (row.querySelector('.col-uc-title')?.value || '').trim();
+        const desc = (row.querySelector('.col-uc-desc')?.value || '').trim();
+        if(title || desc){
+          useCases.push({
+            id,
+            actor,
+            title: title || desc.slice(0, 40),
+            desc: desc || title,
+            mainFlow: desc || title,
+            exceptionFlow: 'Validation failure or service unavailable.'
+          });
+        }
+      });
 
-      data = { fr: frRaw, nfr: nfrRaw, frTable, nfrTable, usecases: ucRaw };
+      data = {
+        frTable,
+        nfrTable,
+        useCases,
+        fr: frTable.map(f => `${f.id} : ${f.desc}`).join('\n'),
+        nfr: nfrTable.map(n => `${n.id} [${n.cat}] : ${n.desc} (Target: ${n.target})`).join('\n'),
+        usecases: useCases.map(u => `${u.id} - ${u.actor}: ${u.title} - ${u.desc}`).join('\n')
+      };
       if(root.__stagePendingImages && root.__stagePendingImages['stg1-uc'] !== undefined){
         data.useCaseImage = root.__stagePendingImages['stg1-uc'];
       }
@@ -494,11 +1036,11 @@
 
       data = {
         architectureOverview: arch,
-        architecturePoints: architecturePoints.length ? architecturePoints : [arch],
+        architecturePoints: architecturePoints.length ? architecturePoints : (arch ? [arch] : []),
         dataDesign,
-        dataDesignPoints: dataDesignPoints.length ? dataDesignPoints : [dataDesign],
+        dataDesignPoints: dataDesignPoints.length ? dataDesignPoints : (dataDesign ? [dataDesign] : []),
         algorithmDesign: algo,
-        algorithmDesignPoints: algorithmDesignPoints.length ? algorithmDesignPoints : [algo]
+        algorithmDesignPoints: algorithmDesignPoints.length ? algorithmDesignPoints : (algo ? [algo] : [])
       };
       if(root.__stagePendingImages && root.__stagePendingImages['stgsys-arch'] !== undefined){
         data.architectureImage = root.__stagePendingImages['stgsys-arch'];
@@ -512,36 +1054,61 @@
 
     } else if(stageId === '2'){
       const summary = (document.getElementById('edit-stg2-summary')?.value || '').trim();
-      const modulesRaw = (document.getElementById('edit-stg2-modules')?.value || '').trim();
       const repo = (document.getElementById('edit-stg2-repo')?.value || '').trim();
       const challenges = (document.getElementById('edit-stg2-challenges')?.value || '').trim();
 
-      const modules = modulesRaw.split('\n').map(line => {
-        const parts = line.split(':');
-        return { name: (parts[0] || '').trim(), desc: (parts[1] || '').trim() };
-      }).filter(m => m.name);
+      // Read Modules Table
+      const modRows = document.querySelectorAll('#table-edit-modules tbody tr');
+      const modules = [];
+      modRows.forEach((row, i) => {
+        const name = (row.querySelector('.col-mod-name')?.value || '').trim();
+        const desc = (row.querySelector('.col-mod-desc')?.value || '').trim();
+        if(name){
+          modules.push({ name, desc: desc || ('Implementation module ' + (i + 1)) });
+        }
+      });
 
-      data = { summary, modules, repo, challenges, modulesText: modulesRaw };
+      data = {
+        summary,
+        modules,
+        repo,
+        challenges,
+        modulesText: modules.map(m => `${m.name} : ${m.desc}`).join('\n')
+      };
       if(root.__stagePendingImages && root.__stagePendingImages['stg2-impl'] !== undefined){
         data.implImage = root.__stagePendingImages['stg2-impl'];
       }
 
     } else if(stageId === '3'){
       const strategy = (document.getElementById('edit-stg3-strategy')?.value || '').trim();
-      const testsRaw = (document.getElementById('edit-stg3-tests')?.value || '').trim();
       const metrics = (document.getElementById('edit-stg3-metrics')?.value || '').trim();
       const evaluation = (document.getElementById('edit-stg3-evaluation')?.value || '').trim();
 
-      const tests = testsRaw.split('\n').map((line, i) => {
-        const parts = line.split('--');
-        const left = (parts[0] || '').split(':');
-        const id = (left[0] || '').trim() || ('TC-' + String(i+1).padStart(2,'0'));
-        const feature = (left[1] || left[0] || '').trim();
-        const result = (parts[1] || 'PASS').trim();
-        return { id, feature, result, status: result.toLowerCase().includes('fail') ? 'FAIL' : 'PASS' };
-      }).filter(t => t.feature);
+      // Read Tests Table
+      const testRows = document.querySelectorAll('#table-edit-tests tbody tr');
+      const tests = [];
+      testRows.forEach((row, i) => {
+        const id = (row.querySelector('.col-test-id')?.value || '').trim() || ('TC-' + String(i + 1).padStart(2, '0'));
+        const feature = (row.querySelector('.col-test-feature')?.value || '').trim();
+        const result = (row.querySelector('.col-test-result')?.value || 'PASS').trim();
+        const status = (row.querySelector('.col-test-status')?.value || 'PASS').trim();
+        if(feature){
+          tests.push({
+            id,
+            feature,
+            result: `${result} [${status}]`,
+            status
+          });
+        }
+      });
 
-      data = { strategy, tests, metrics, evaluation, testsText: testsRaw };
+      data = {
+        strategy,
+        tests,
+        metrics,
+        evaluation,
+        testsText: tests.map(t => `${t.id} : ${t.feature} -- ${t.result}`).join('\n')
+      };
       if(root.__stagePendingImages && root.__stagePendingImages['stg3-test'] !== undefined){
         data.testingImage = root.__stagePendingImages['stg3-test'];
       }
@@ -554,4 +1121,5 @@
     if(typeof page !== 'undefined' && page === 'Team Portfolio' && typeof switchPortfolioStage === 'function') switchPortfolioStage(stageId, true);
   };
 
-})(typeof window !== 'undefined' ? window : global);
+
+})(typeof window !== "undefined" ? window : global);
