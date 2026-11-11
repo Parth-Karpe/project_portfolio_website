@@ -2684,7 +2684,20 @@ function mentorDashboard(){
   const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2><span class="mentor-workspace-label">AI Mentor</span></div><div id="mentor-work-messages" class="mentor-work-messages"></div></section>`;
   const reviseStageLabel = window.mentorReviseStageLabel || (['0','1','system-design','2','3'].includes(String(window.mentorDashboardStage || '0')) ? ({ '0': 'Stage 0', '1': 'Stage 1', 'system-design': 'Stage 2', '2': 'Stage 3', '3': 'Stage 4' }[String(window.mentorDashboardStage || '0')] || 'Stage 0') : 'Stage 0');
   const reviseStatusLabel = { aligned: 'Improvement', partial: 'Improvement', missing: 'Missing Data', not_addressed: 'Action Needed', improvement: 'Improvement' };
-  const reviseSections = (window.mentorReviseSections || []).map(section => {
+  const isNoData = Boolean(
+    window.mentorReviseSections &&
+    window.mentorReviseSections.length === 1 &&
+    (window.mentorReviseSections[0].isNotInserted ||
+     (window.mentorReviseSections[0].key && window.mentorReviseSections[0].key.endsWith('-not-inserted')) ||
+     (window.mentorReviseSections[0].citation && window.mentorReviseSections[0].citation.includes('Not Inserted')) ||
+     (window.mentorReviseSections[0].summary && window.mentorReviseSections[0].summary.toLowerCase().includes('data not inserted')))
+  );
+  const reviseSections = isNoData ? `
+    <div class="empty-stage-notice" style="padding: 44px 24px; text-align: center; background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 16px;">
+      <p style="font-size: 16px; font-weight: 700; margin: 0 0 6px; color: var(--ink);">Data not inserted yet</p>
+      <p style="font-size: 13.5px; margin: 0; color: var(--muted);">Data has not been inserted yet for ${esc(reviseStageLabel)} in this portfolio.</p>
+    </div>
+  ` : (window.mentorReviseSections || []).map(section => {
     const status = section.status ? `<span class="mentor-revise-status mentor-revise-status-${esc(section.status)}">${esc(reviseStatusLabel[section.status] || section.status)}</span>` : '';
     const summary = section.summary ? `<p class="mentor-revise-summary">${esc(section.summary)}</p>` : '';
     const suggestions = (section.suggestions || []).slice(0, 1);
@@ -2701,7 +2714,9 @@ function mentorDashboard(){
     const jump = section.elementId ? `<button type="button" class="mentor-revise-jump" onclick="window.backToPortfolioFromMentor();window.scrollToPortfolioCitation('${esc(section.elementId)}')">View in portfolio</button>` : '';
     return `<article class="mentor-revise-section"><div class="mentor-revise-section-head"><h3 class="mentor-revise-section-title">${esc(section.label)}${section.citation ? `<span class="mentor-revise-section-tag">${esc(section.citation)}</span>` : ''}${status}${jump}</div>${summary}${suggestionList}${draftList}${preview}</article>`;
   }).join('');
-  const reviseIntro = `Up to four priority improvements for <strong>${esc(reviseStageLabel)}</strong>, grounded in this project’s documented sections.`;
+  const reviseIntro = isNoData
+    ? `Review for <strong>${esc(reviseStageLabel)}</strong>`
+    : `Up to four priority improvements for <strong>${esc(reviseStageLabel)}</strong>, grounded in this project’s documented sections.`;
   const reviseLoading = window.mentorReviseLoading ? `<div class="option-loader" role="status" aria-live="polite"><span class="option-loader-ring" aria-hidden="true"></span><strong>Preparing suggestions for this project.</strong></div>` : '';
   const reviseFallback = window.mentorReviseFallbackNote ? `<p class="mentor-revise-fallback">${esc(window.mentorReviseFallbackNote)}</p>` : '';
   const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>Review the work</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">${reviseIntro}</p>${reviseFallback}${reviseLoading}${reviseSections ? `<div class="mentor-revise-sections">${reviseSections}</div>` : ''}</section>`;

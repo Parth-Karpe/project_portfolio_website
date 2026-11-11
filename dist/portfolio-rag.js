@@ -6982,9 +6982,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         citation: `[Data Not Inserted]`,
         elementId: elemIdMap[normStage] || 'stage-0',
         status: 'missing',
-        summary: `No content has been inserted or documented for ${stageDisplay} yet.`,
+        isNotInserted: true,
+        summary: `Data not inserted yet.`,
         suggestions: [
-          `Students have not yet documented their work for this stage. Once the team inserts ${reqTopicsMap[normStage] || 'stage data'} into the portfolio, audit suggestions and improvements will appear here.`
+          `Data not inserted yet for this stage.`
         ],
         preview: '',
         items: []
