@@ -2475,19 +2475,19 @@ tbody tr:hover {
   align-items: center;
   gap: 8px;
   padding: 8px 14px 8px 16px;
-  background: var(--brand);
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 48%, #ec4899 100%);
   color: #fff;
   border: none;
   border-radius: 999px;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.45);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .portfolio-chat-fab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
-  background: var(--brand-hover, #4338ca);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 22px rgba(225, 29, 72, 0.6);
+  background: linear-gradient(135deg, #be123c 0%, #e11d48 50%, #db2777 100%);
 }
 
 .portfolio-chat-fab.active {
