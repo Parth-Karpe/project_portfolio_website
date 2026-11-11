@@ -2683,7 +2683,7 @@ function mentorDashboard(){
   const workTitle = mentorName || 'Quiz';
   const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2><span class="mentor-workspace-label">AI Mentor</span></div><div id="mentor-work-messages" class="mentor-work-messages"></div></section>`;
   const reviseStageLabel = window.mentorReviseStageLabel || (['0','1','system-design','2','3'].includes(String(window.mentorDashboardStage || '0')) ? ({ '0': 'Stage 0', '1': 'Stage 1', 'system-design': 'Stage 2', '2': 'Stage 3', '3': 'Stage 4' }[String(window.mentorDashboardStage || '0')] || 'Stage 0') : 'Stage 0');
-  const reviseStatusLabel = { aligned: 'Aligned', partial: 'Partial', missing: 'Missing', not_addressed: 'Not addressed' };
+  const reviseStatusLabel = { aligned: 'Improvement', partial: 'Improvement', missing: 'Missing Data', not_addressed: 'Action Needed', improvement: 'Improvement' };
   const reviseSections = (window.mentorReviseSections || []).map(section => {
     const status = section.status ? `<span class="mentor-revise-status mentor-revise-status-${esc(section.status)}">${esc(reviseStatusLabel[section.status] || section.status)}</span>` : '';
     const summary = section.summary ? `<p class="mentor-revise-summary">${esc(section.summary)}</p>` : '';

@@ -3651,10 +3651,10 @@ html body .mentor-dashboard .mentor-work-form textarea {
   border-radius: 999px;
   border: 1px solid var(--line);
 }
-.mentor-revise-status-aligned { color: #166534; background: #ecfdf3; }
-.mentor-revise-status-partial { color: #92400e; background: #fffbeb; }
+.mentor-revise-status-aligned,
+.mentor-revise-status-partial { color: #1e40af; background: #eff6ff; border-color: #bfdbfe; }
 .mentor-revise-status-missing,
-.mentor-revise-status-not_addressed { color: #9f1239; background: #fff1f2; }
+.mentor-revise-status-not_addressed { color: #9f1239; background: #fff1f2; border-color: #fecdd3; }
 .mentor-revise-summary { margin: 0 0 8px; color: var(--ink); }
 .mentor-revise-gaps,
 .mentor-revise-suggestions {

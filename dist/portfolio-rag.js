@@ -6916,6 +6916,81 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     const normStage = String(stage || '0').toLowerCase();
 
+    function isStageContentDocumented(normStage, st0, st1, sys, st2, st3){
+      if(normStage === '0'){
+        const hasProb = Boolean(st0.problem && st0.problem.trim().length > 30);
+        const hasObjs = Boolean(st0.objectives && (Array.isArray(st0.objectives) ? st0.objectives.length > 0 : st0.objectives.trim().length > 15));
+        return hasProb || hasObjs;
+      }
+      if(normStage === '1'){
+        const hasFr = Boolean(st1.frTable && st1.frTable.length > 0);
+        const hasNfr = Boolean(st1.nfrTable && st1.nfrTable.length > 0);
+        const hasUc = Boolean(st1.useCases && st1.useCases.length > 0);
+        return hasFr || hasNfr || hasUc;
+      }
+      if(normStage === 'system-design' || normStage === 'systemdesign'){
+        const hasArch = Boolean(sys.architecture && sys.architecture.length > 0);
+        const hasData = Boolean(sys.dataDesignPoints && sys.dataDesignPoints.length > 0);
+        const hasAlgo = Boolean(sys.algorithmDesignPoints && sys.algorithmDesignPoints.length > 0);
+        const hasImg = Boolean(sys.archImage);
+        return hasArch || hasData || hasAlgo || hasImg;
+      }
+      if(normStage === '2'){ // Stage 3: Implementation
+        const hasSummary = Boolean(st2.summary && st2.summary.trim().length > 15);
+        const hasMods = Boolean(st2.modules && st2.modules.length > 0);
+        const hasChallenges = Boolean(st2.challenges && st2.challenges.trim().length > 15);
+        const hasImg = Boolean(st2.implImage);
+        return hasSummary || hasMods || hasChallenges || hasImg;
+      }
+      if(normStage === '3'){ // Stage 4: Testing
+        const hasStrat = Boolean(st3.strategy && st3.strategy.trim().length > 15);
+        const hasTests = Boolean(st3.tests && st3.tests.length > 0);
+        const hasMetrics = Boolean(st3.metrics && st3.metrics.trim().length > 10);
+        const hasEval = Boolean(st3.evaluation && st3.evaluation.trim().length > 10);
+        const hasImg = Boolean(st3.testingImage);
+        return hasStrat || hasTests || hasMetrics || hasEval || hasImg;
+      }
+      return false;
+    }
+
+    if(!isStageContentDocumented(normStage, st0, st1, sys, st2, st3)){
+      const stageNameMap = {
+        '0': 'Stage 0 - Problem Definition and Scope',
+        '1': 'Stage 1 - Requirement Analysis',
+        'system-design': 'Stage 2 - System Design',
+        '2': 'Stage 3 - Implementation and Integration',
+        '3': 'Stage 4 - Testing and Validations'
+      };
+      const reqTopicsMap = {
+        '0': 'problem formulation, SMART objectives, and course mapping',
+        '1': 'functional requirements, non-functional requirements, and use cases',
+        'system-design': 'system component architecture, schema data design, and algorithm complexity',
+        '2': 'core code modules, active repository link, and technical challenges',
+        '3': 'testing strategy, test execution matrix, and quantitative benchmark metrics'
+      };
+      const stageDisplay = stageNameMap[normStage] || `Stage ${normStage}`;
+      const elemIdMap = {
+        '0': 'stage-0',
+        '1': 'stage-1',
+        'system-design': 'sec-system-design',
+        '2': 'stage-2',
+        '3': 'stage-3'
+      };
+      return [{
+        key: `stage-${normStage}-not-inserted`,
+        label: `${stageDisplay}`,
+        citation: `[Data Not Inserted]`,
+        elementId: elemIdMap[normStage] || 'stage-0',
+        status: 'missing',
+        summary: `No content has been inserted or documented for ${stageDisplay} yet.`,
+        suggestions: [
+          `Students have not yet documented their work for this stage. Once the team inserts ${reqTopicsMap[normStage] || 'stage data'} into the portfolio, audit suggestions and improvements will appear here.`
+        ],
+        preview: '',
+        items: []
+      }];
+    }
+
     if(normStage === '0'){
       // 1. Problem Formulation
       const prob = st0.problem || '';
@@ -6938,8 +7013,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           citation: '[Problem Formulation]',
           elementId: 'sec-problem',
           status: 'partial',
-          summary: `Problem statement describes operational context for ${title}, but lacks an empirical baseline.`,
-          suggestions: [`Quantify the existing operational bottleneck or manual delay (e.g. estimated hours lost/week, conflict rate) to establish a measurable baseline for ${title}.`],
+          summary: `Operational baseline and delay quantification in Problem Statement.`,
+          suggestions: [`Quantify the existing operational bottleneck or manual delay (e.g. estimated hours lost/week, conflict rate, or error frequency) to establish a measurable baseline for ${title}.`],
           preview: prob.slice(0, 180),
           items: []
         });
@@ -6949,9 +7024,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           label: '1. Problem Statement',
           citation: '[Problem Formulation]',
           elementId: 'sec-problem',
-          status: 'aligned',
-          summary: `Problem statement effectively captures the operational challenge and baseline scope for ${title}.`,
-          suggestions: [`Ensure the problem description explicitly identifies the primary institutional beneficiary or target user persona.`],
+          status: 'partial',
+          summary: `Beneficiary persona and operational friction in Problem Statement.`,
+          suggestions: [`Explicitly articulate the primary user persona or institutional beneficiary and highlight the operational friction encountered prior to ${title}.`],
           preview: prob.slice(0, 180),
           items: []
         });
@@ -6981,8 +7056,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             citation: '[Objectives]',
             elementId: 'sec-objectives',
             status: 'partial',
-            summary: `Objectives are defined, but some phrasing contains unquantified qualitative claims.`,
-            suggestions: [`In Objective ("${short}"), replace subjective wording with a verifiable target (e.g. specify throughput boundary, zero-conflict tolerance, or latency limit).`],
+            summary: `Bloom's taxonomy action verbs and verifiable targets in Project Objectives.`,
+            suggestions: [`In Objective ("${short}"), replace subjective or study verbs with measurable engineering outcomes (e.g. specify throughput boundary, zero-conflict tolerance, or latency limit).`],
             preview: objs.slice(0, 2).join(' | '),
             items: []
           });
@@ -6992,9 +7067,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             label: '2. Project Objectives',
             citation: '[Objectives]',
             elementId: 'sec-objectives',
-            status: 'aligned',
-            summary: `Objectives use active Bloom's verbs and delineate clear project milestones.`,
-            suggestions: [`Ensure each objective maps directly to an acceptance test case in the Stage 3 verification suite.`],
+            status: 'partial',
+            summary: `Acceptance criteria traceability for Project Objectives.`,
+            suggestions: [`Ensure each objective maps directly to an acceptance test case in the Stage 4 verification suite with measurable pass/fail thresholds.`],
             preview: objs.slice(0, 2).join(' | '),
             items: []
           });
@@ -7024,7 +7099,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             citation: '[Table 0.3]',
             elementId: 'sec-scope',
             status: 'partial',
-            summary: `Exclusions are listed, but some lack an explicit engineering or architectural rationale.`,
+            summary: `Technical justifications for out-of-scope system boundaries.`,
             suggestions: [`For Out-of-Scope item "${genericReason.item}", provide a concrete technical justification (e.g., single-node MVP topology, hardware dependency, or research prototype scope).`],
             preview: scopeOut.map(s => `${s.item} -- ${s.reason}`).slice(0, 2).join(' | '),
             items: []
@@ -7035,9 +7110,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             label: '3. Scope Boundaries & Exclusions',
             citation: '[Table 0.3]',
             elementId: 'sec-scope',
-            status: 'aligned',
-            summary: 'In-scope boundaries and out-of-scope justifications are clearly demarcated.',
-            suggestions: ['Verify that no internal subsystem components rely on excluded external services.'],
+            status: 'partial',
+            summary: `Dependency resilience and exclusion boundary fallback.`,
+            suggestions: [`Verify that no internal subsystem components rely on excluded external services (${scopeOut[0]?.item || 'hardware'}), and specify fallback handling if external feeds fail.`],
             preview: scopeOut.map(s => `${s.item} -- ${s.reason}`).slice(0, 2).join(' | '),
             items: []
           });
@@ -7067,7 +7142,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             citation: '[Table 0.4]',
             elementId: 'sec-courses',
             status: 'partial',
-            summary: `Foundational courses are listed, but concept descriptions need more theoretical depth.`,
+            summary: `Theoretical concept depth in Foundational Course Mapping.`,
             suggestions: [`In Table 0.4, link "${vagueCourse.course}" to specific theoretical concepts (e.g. ACID transactions, asymptotic complexity, or mutual exclusion) used in ${title}.`],
             preview: courses.map(c => `${c.course}: ${c.concepts}`).slice(0, 2).join(' | '),
             items: []
@@ -7078,9 +7153,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             label: '4. Foundational Course Mapping',
             citation: '[Table 0.4]',
             elementId: 'sec-courses',
-            status: 'aligned',
-            summary: 'Core CS courses are mapped to concrete theoretical foundations.',
-            suggestions: ['Incorporate these theoretical concepts directly into the Stage 2 architectural justifications.'],
+            status: 'partial',
+            summary: `Algorithmic and systems concept depth in Curriculum Mapping.`,
+            suggestions: [`Detail concrete data structure asymptotic invariants (e.g. hash table bucket sizing, priority queue balancing) and OS concurrency primitives rather than high-level subject titles.`],
             preview: courses.map(c => `${c.course}: ${c.concepts}`).slice(0, 2).join(' | '),
             items: []
           });
@@ -7094,10 +7169,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '5. Conceptual Workflow Diagram',
         citation: '[Conceptual Flow]',
         elementId: 'sec-conceptual-flow',
-        status: hasFlow ? 'aligned' : 'missing',
-        summary: hasFlow ? 'Conceptual workflow illustration is attached.' : 'Conceptual workflow diagram is missing.',
+        status: hasFlow ? 'partial' : 'missing',
+        summary: hasFlow ? 'Data flow directionality and boundary isolation in Conceptual Workflow.' : 'Conceptual workflow diagram is missing.',
         suggestions: hasFlow ?
-          [`Ensure all subsystem entities and queues shown in the workflow diagram match the terminology in Objectives and Scope.`] :
+          [`Ensure all subsystem entities and queues shown in the workflow diagram match the terminology in Objectives and Scope without ambiguous bi-directional flows.`] :
           [`Attach a conceptual flow diagram illustrating data ingestion, constraint evaluation, and user interaction boundaries.`],
         preview: hasFlow ? 'Workflow Diagram Attached' : 'No diagram',
         items: []
@@ -7119,15 +7194,14 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           items: []
         });
       } else {
-        const objs = Array.isArray(st0.objectives) ? st0.objectives : [];
         const sampleFr = frs[0] || { id: 'FR-01', desc: 'Core Processing' };
         sections.push({
           key: 'table-fr',
           label: '1. Functional Requirements',
           citation: '[Functional Requirements]',
           elementId: 'sec-fr',
-          status: frs.length >= 3 ? 'aligned' : 'partial',
-          summary: `Documented ${frs.length} functional requirements for ${title}.`,
+          status: 'partial',
+          summary: `Precondition states and deterministic error handling in FRs.`,
           suggestions: [`In ${sampleFr.id} ("${sampleFr.desc.slice(0, 45)}..."), ensure the requirement specifies input validation, processing trigger, and explicit postcondition state.`],
           preview: frs.map(f => `${f.id}: ${f.desc}`).slice(0, 2).join(' | '),
           items: []
@@ -7157,7 +7231,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             citation: '[Non-Functional Requirements]',
             elementId: 'sec-nfr',
             status: 'partial',
-            summary: 'Some NFR targets use qualitative claims without numerical thresholds.',
+            summary: 'Measurable quantitative thresholds in Non-Functional Requirements.',
             suggestions: [`In ${unquantifiedNfr.id} ("${unquantifiedNfr.desc.slice(0, 40)}..."), replace qualitative wording with a measurable SLA (e.g. latency in ms, throughput in req/s, or 99.9% uptime).`],
             preview: nfrs.map(n => `${n.id}: ${n.desc}`).slice(0, 2).join(' | '),
             items: []
@@ -7168,9 +7242,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
             label: '2. Non-Functional Requirements',
             citation: '[Non-Functional Requirements]',
             elementId: 'sec-nfr',
-            status: 'aligned',
-            summary: 'Quality requirements contain quantified performance and reliability thresholds.',
-            suggestions: ['Verify that these exact quantitative thresholds are benchmarked in Stage 3 test cases.'],
+            status: 'partial',
+            summary: 'Hardware constraint specifications for NFR performance thresholds.',
+            suggestions: ['Verify that these exact quantitative thresholds are benchmarked in Stage 4 test cases under concurrent peak load.'],
             preview: nfrs.map(n => `${n.id}: ${n.desc}`).slice(0, 2).join(' | '),
             items: []
           });
@@ -7198,8 +7272,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           label: '3. Use Cases & Workflows',
           citation: '[Use Cases]',
           elementId: 'sec-usecases',
-          status: 'aligned',
-          summary: 'Core user and system actor interactions are specified.',
+          status: 'partial',
+          summary: 'Alternate workflows and exception recovery paths in Use Cases.',
           suggestions: [`In ${sampleUc.id || 'UC-01'} ("${sampleUc.title || sampleUc.desc.slice(0, 40)}"), document the alternate exception flow when validation fails or resource contention occurs.`],
           preview: ucs.map(u => `${u.id || 'UC'}: ${u.title || u.desc}`).slice(0, 2).join(' | '),
           items: []
@@ -7213,8 +7287,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '4. UML Use Case Diagram',
         citation: '[Use Case Diagram]',
         elementId: 'portfolio-diagram-usecase',
-        status: hasUcImg ? 'aligned' : 'missing',
-        summary: hasUcImg ? 'UML Use case diagram is present in portfolio.' : 'UML Use case diagram is missing.',
+        status: hasUcImg ? 'partial' : 'missing',
+        summary: hasUcImg ? 'Actor isolation and subsystem boundary in UML Use Case Diagram.' : 'UML Use case diagram is missing.',
         suggestions: hasUcImg ?
           ['Ensure system boundary box strictly separates human actors from automated background batch jobs.'] :
           ['Upload a UML Use Case diagram with «include» and «extend» relationship annotations.'],
@@ -7230,9 +7304,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '1. System Architecture',
         citation: '[Architecture Diagram]',
         elementId: 'sec-arch',
-        status: archPts.length >= 3 ? 'aligned' : 'partial',
-        summary: archPts.length >= 3 ? 'Layered/subsystem architecture is documented.' : 'Architecture points need deeper layer boundary separation.',
-        suggestions: [`Detail the interface contract (REST, IPC, or RPC) between controller and core services to ensure loose coupling.`],
+        status: 'partial',
+        summary: 'Interface contracts and decoupling between subsystems.',
+        suggestions: [`Detail the interface contract (REST, IPC, or RPC payload definitions) and timeout handling between controller and core services to ensure loose coupling.`],
         preview: archPts.slice(0, 2).join(' | '),
         items: []
       });
@@ -7243,8 +7317,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '2. Data Design & Schema',
         citation: '[Data Design]',
         elementId: 'sec-data-design',
-        status: dataPts.length >= 2 ? 'aligned' : 'partial',
-        summary: 'Data schema and persistence mechanisms are detailed.',
+        status: 'partial',
+        summary: 'Indexing strategies and query access path optimization.',
         suggestions: [`Define indexing strategy on frequently filtered keys (e.g. ID, status, timestamps) to prevent O(N) table scans as data scales.`],
         preview: dataPts.slice(0, 2).join(' | '),
         items: []
@@ -7257,17 +7331,17 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '3. Algorithm Design & Complexity',
         citation: '[Algorithm Design]',
         elementId: 'sec-algo-design',
-        status: hasBigO ? 'aligned' : 'partial',
-        summary: hasBigO ? 'Asymptotic complexity is documented.' : 'Worst-case time complexity O(...) is not formally analyzed.',
+        status: 'partial',
+        summary: 'Asymptotic worst-case complexity and memory bounds.',
         suggestions: hasBigO ?
-          ['Empirically benchmark theoretical O(...) asymptotic bounds against wall-clock execution time in Stage 3.'] :
+          ['Empirically benchmark theoretical O(...) asymptotic bounds against wall-clock execution time in Stage 4.'] :
           ['Formally specify worst-case time complexity O(...) and auxiliary memory space complexity for the core algorithm loop.'],
         preview: algoPts.slice(0, 2).join(' | '),
         items: []
       });
 
     } else if(normStage === '2'){
-      // Stage 2: Implementation & Code
+      // Stage 2: Implementation & Code (Stage 3 in UI)
       const modules = st2.modules || [];
       const sampleMod = modules[0] || { name: 'Core Engine' };
       sections.push({
@@ -7275,9 +7349,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '1. Modular Architecture',
         citation: '[Implementation Modules]',
         elementId: 'sec-modules',
-        status: modules.length >= 2 ? 'aligned' : 'partial',
-        summary: `Documented ${modules.length} implementation modules for ${title}.`,
-        suggestions: [`In module "${sampleMod.name}", document exported API signatures, input contracts, and error returns.`],
+        status: 'partial',
+        summary: 'API signatures, input contracts, and error propagation.',
+        suggestions: [`In module "${sampleMod.name || 'Core Engine'}", document exported API signatures, input parameter contracts, and error return codes.`],
         preview: modules.map(m => m.name).join(', '),
         items: []
       });
@@ -7289,9 +7363,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '2. Code Repository Health',
         citation: '[Repository]',
         elementId: 'sec-repo',
-        status: hasGit ? 'aligned' : 'partial',
-        summary: hasGit ? 'Active Git code repository linked.' : 'Placeholder or generic repository URL detected.',
-        suggestions: [hasGit ? 'Ensure repository contains automated test suite and README execution setup.' : 'Link active Git repository with modular directory layout (src/, tests/, docs/).'],
+        status: 'partial',
+        summary: 'Repository organization, directory layout, and test harness.',
+        suggestions: [hasGit ? 'Ensure repository contains automated test suite, CI config, and README execution setup.' : 'Link active Git repository with modular directory layout (src/, tests/, docs/).'],
         preview: repo,
         items: []
       });
@@ -7301,15 +7375,15 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '3. Technical Challenges',
         citation: '[Technical Challenges]',
         elementId: 'sec-challenges',
-        status: st2.challenges ? 'aligned' : 'partial',
-        summary: 'Engineering trade-offs and bottleneck mitigations are outlined.',
-        suggestions: ['Quantify how concurrency locking, query optimization, or memory boundaries were verified in code.'],
+        status: 'partial',
+        summary: 'Mitigating concurrency, locking, and memory boundaries.',
+        suggestions: ['Quantify how concurrency locking, query optimization, or memory boundaries were verified in code with reproducible test scripts.'],
         preview: (st2.challenges || '').slice(0, 140),
         items: []
       });
 
     } else if(normStage === '3'){
-      // Stage 3: Testing & Verification
+      // Stage 3: Testing & Verification (Stage 4 in UI)
       const tests = st3.tests || [];
       const nfrs = st1.nfrTable || [];
       const perfNfr = nfrs.find(n => /latency|throughput|performance|speed|time/i.test(n.desc || n.target));
@@ -7322,8 +7396,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           citation: '[Test Execution Matrix]',
           elementId: 'sec-tests',
           status: 'partial',
-          summary: `Test matrix verifies functional passes, but lacks an empirical benchmark test for Stage 1 NFR (${perfNfr.id}).`,
-          suggestions: [`Stage 1 ${perfNfr.id} specifies "${perfNfr.target || 'performance'}", but test matrix lacks a benchmark test verifying this under load.`],
+          summary: `Cross-traceability between Stage 1 NFRs and benchmark tests.`,
+          suggestions: [`Stage 1 ${perfNfr.id} specifies "${perfNfr.target || 'performance'}", ensure test execution matrix includes an automated benchmark test verifying this under peak load.`],
           preview: tests.map(t => `${t.id}: ${t.feature}`).slice(0, 2).join(' | '),
           items: []
         });
@@ -7333,9 +7407,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           label: '1. Test Matrix Traceability',
           citation: '[Test Execution Matrix]',
           elementId: 'sec-tests',
-          status: 'aligned',
-          summary: 'Test matrix validates functional rules and requirement acceptance criteria.',
-          suggestions: ['Add at least two negative test cases (e.g. malformed payload, timeout) to demonstrate fault resilience.'],
+          status: 'partial',
+          summary: 'Fault injection and negative test case coverage.',
+          suggestions: ['Add at least two negative test cases (e.g. malformed payload, connection timeout, buffer overflow) to demonstrate fault resilience.'],
           preview: tests.map(t => `${t.id}: ${t.feature}`).slice(0, 2).join(' | '),
           items: []
         });
@@ -7348,11 +7422,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '2. Performance Metrics & Benchmarks',
         citation: '[Performance Metrics]',
         elementId: 'sec-metrics',
-        status: hasNumMetrics ? 'aligned' : 'partial',
-        summary: hasNumMetrics ? 'Numerical performance metrics are recorded.' : 'Metrics lack quantitative benchmark numbers.',
+        status: 'partial',
+        summary: 'Quantitative benchmark telemetry and performance curves.',
         suggestions: [hasNumMetrics ?
           'Attach execution terminal output or metric graph screenshots as verifiable evidence.' :
-          'Record empirical measurements (e.g. average latency: X ms, heap memory: Y MB) on representative test workloads.'],
+          'Record empirical measurements (e.g. average latency: X ms, heap memory: Y MB, throughput req/s) on representative test workloads.'],
         preview: metrics.slice(0, 160),
         items: []
       });
@@ -7363,8 +7437,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         label: '3. Verification Strategy',
         citation: '[Testing Strategy]',
         elementId: 'sec-testing-strategy',
-        status: strat.length >= 30 ? 'aligned' : 'partial',
-        summary: 'Testing methodology and validation harness are documented.',
+        status: 'partial',
+        summary: 'Automated test runner configuration and CI integration.',
         suggestions: ['Specify automated CI/CD test runner configuration and assertion framework used for regression verification.'],
         preview: strat.slice(0, 160),
         items: []
@@ -7386,7 +7460,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     if(!text){
       const audited = auditPortfolioStageContent(kb, stage);
-      if(audited && audited.length >= 2) return audited;
+      if(audited && audited.length >= 1) return audited;
 
       const catalog = buildReviseSectionCatalog(kb, stage);
       const count = reviseStageSuggestionCount(catalog.sections.length);
