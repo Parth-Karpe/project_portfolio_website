@@ -236,7 +236,6 @@
         </select>
       </td>
       <td><input type="text" class="tbl-input col-scope-reason" placeholder="e.g. Core MVP deliverable" value="${esc(reason || '')}"></td>
-      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
     `;
     tbody.appendChild(tr);
   };
@@ -254,7 +253,6 @@
           <option value="Supporting" ${role === 'Supporting' ? 'selected' : ''}>Supporting</option>
         </select>
       </td>
-      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
     `;
     tbody.appendChild(tr);
   };
@@ -276,7 +274,6 @@
           <option value="Low" ${priority === 'Low' ? 'selected' : ''}>Low</option>
         </select>
       </td>
-      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
     `;
     tbody.appendChild(tr);
   };
@@ -301,7 +298,6 @@
       </td>
       <td><input type="text" class="tbl-input col-nfr-desc" placeholder="Low-latency live packet streaming without dropping socket frames..." value="${esc(desc || '')}"></td>
       <td><input type="text" class="tbl-input col-nfr-target" placeholder="e.g. < 200 ms latency under 10k pkts/sec" value="${esc(target || '')}"></td>
-      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
     `;
     tbody.appendChild(tr);
   };
@@ -317,7 +313,6 @@
       <td><input type="text" class="tbl-input col-uc-actor" placeholder="e.g. Administrator" value="${esc(actor || 'User')}"></td>
       <td><input type="text" class="tbl-input col-uc-title" placeholder="e.g. Configure Packet Capture" value="${esc(title || '')}"></td>
       <td><input type="text" class="tbl-input col-uc-desc" placeholder="e.g. Select interface → start capture → stream telemetry" value="${esc(desc || '')}"></td>
-      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
     `;
     tbody.appendChild(tr);
   };
@@ -331,7 +326,6 @@
     tr.innerHTML = `
       <td><input type="text" class="tbl-input col-mod-name" placeholder="e.g. IngestionEngine" value="${esc(defaultName)}"></td>
       <td><input type="text" class="tbl-input col-mod-desc" placeholder="e.g. Captures raw socket frames and parses IP/TCP headers" value="${esc(desc || '')}"></td>
-      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
     `;
     tbody.appendChild(tr);
   };
@@ -352,7 +346,6 @@
           <option value="FAIL" ${status === 'FAIL' ? 'selected' : ''}>FAIL</option>
         </select>
       </td>
-      <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
     `;
     tbody.appendChild(tr);
   };
@@ -436,10 +429,9 @@
             <table class="tbl-builder" id="table-edit-scope">
               <thead>
                 <tr>
-                  <th style="width:38%;">Feature / Component / Subsystem</th>
+                  <th style="width:40%;">Feature / Component / Subsystem</th>
                   <th style="width:20%;">Scope Status</th>
-                  <th style="width:36%;">Engineering Justification / Details</th>
-                  <th style="width:6%;text-align:center;">Action</th>
+                  <th style="width:40%;">Engineering Justification / Details</th>
                 </tr>
               </thead>
               <tbody>
@@ -453,7 +445,6 @@
                       </select>
                     </td>
                     <td><input type="text" class="tbl-input col-scope-reason" placeholder="e.g. Core MVP deliverable" value="${esc(s.reason || '')}"></td>
-                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -470,9 +461,8 @@
               <thead>
                 <tr>
                   <th style="width:30%;">Course Name</th>
-                  <th style="width:46%;">Theoretical Concepts &amp; Techniques Applied</th>
-                  <th style="width:18%;">Curriculum Role</th>
-                  <th style="width:6%;text-align:center;">Action</th>
+                  <th style="width:50%;">Theoretical Concepts &amp; Techniques Applied</th>
+                  <th style="width:20%;">Curriculum Role</th>
                 </tr>
               </thead>
               <tbody>
@@ -486,7 +476,6 @@
                         <option value="Supporting" ${c.role === 'Supporting' ? 'selected' : ''}>Supporting</option>
                       </select>
                     </td>
-                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -572,10 +561,9 @@
             <table class="tbl-builder" id="table-edit-fr">
               <thead>
                 <tr>
-                  <th style="width:15%;">FR ID</th>
-                  <th style="width:61%;">Requirement Description</th>
-                  <th style="width:18%;">Priority</th>
-                  <th style="width:6%;text-align:center;">Action</th>
+                  <th style="width:16%;">FR ID</th>
+                  <th style="width:68%;">Requirement Description</th>
+                  <th style="width:16%;">Priority</th>
                 </tr>
               </thead>
               <tbody>
@@ -591,7 +579,6 @@
                         <option value="Low" ${f.priority === 'Low' ? 'selected' : ''}>Low</option>
                       </select>
                     </td>
-                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -607,11 +594,10 @@
             <table class="tbl-builder" id="table-edit-nfr">
               <thead>
                 <tr>
-                  <th style="width:13%;">NFR ID</th>
+                  <th style="width:14%;">NFR ID</th>
                   <th style="width:20%;">Category</th>
-                  <th style="width:41%;">Quality Requirement Statement</th>
-                  <th style="width:20%;">Target Metric / SLA</th>
-                  <th style="width:6%;text-align:center;">Action</th>
+                  <th style="width:44%;">Quality Requirement Statement</th>
+                  <th style="width:22%;">Target Metric / SLA</th>
                 </tr>
               </thead>
               <tbody>
@@ -630,7 +616,6 @@
                     </td>
                     <td><input type="text" class="tbl-input col-nfr-desc" placeholder="Low-latency live packet streaming without dropping frames" value="${esc(n.desc || '')}"></td>
                     <td><input type="text" class="tbl-input col-nfr-target" placeholder="e.g. < 200 ms latency" value="${esc(n.target || '')}"></td>
-                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -646,11 +631,10 @@
             <table class="tbl-builder" id="table-edit-uc">
               <thead>
                 <tr>
-                  <th style="width:13%;">UC ID</th>
+                  <th style="width:14%;">UC ID</th>
                   <th style="width:20%;">Primary Actor</th>
-                  <th style="width:26%;">Use Case Title / Goal</th>
-                  <th style="width:35%;">Main Workflow Steps</th>
-                  <th style="width:6%;text-align:center;">Action</th>
+                  <th style="width:28%;">Use Case Title / Goal</th>
+                  <th style="width:38%;">Main Workflow Steps</th>
                 </tr>
               </thead>
               <tbody>
@@ -660,7 +644,6 @@
                     <td><input type="text" class="tbl-input col-uc-actor" placeholder="e.g. Administrator" value="${esc(u.actor || 'User')}"></td>
                     <td><input type="text" class="tbl-input col-uc-title" placeholder="e.g. Live Traffic Capture" value="${esc(u.title || '')}"></td>
                     <td><input type="text" class="tbl-input col-uc-desc" placeholder="e.g. Select interface → start capture" value="${esc(u.desc || '')}"></td>
-                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -726,8 +709,7 @@
               <thead>
                 <tr>
                   <th style="width:34%;">Module / Component Name</th>
-                  <th style="width:60%;">Description &amp; Integration Responsibility</th>
-                  <th style="width:6%;text-align:center;">Action</th>
+                  <th style="width:66%;">Description &amp; Integration Responsibility</th>
                 </tr>
               </thead>
               <tbody>
@@ -735,7 +717,6 @@
                   <tr>
                     <td><input type="text" class="tbl-input col-mod-name" placeholder="e.g. IngestionEngine" value="${esc(m.name || '')}"></td>
                     <td><input type="text" class="tbl-input col-mod-desc" placeholder="e.g. Captures raw socket frames and parses IP/TCP headers" value="${esc(m.desc || '')}"></td>
-                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -790,11 +771,10 @@
             <table class="tbl-builder" id="table-edit-tests">
               <thead>
                 <tr>
-                  <th style="width:13%;">Test ID</th>
-                  <th style="width:47%;">Target Feature / Requirement Verified</th>
-                  <th style="width:23%;">Expected Result &amp; Metric Output</th>
-                  <th style="width:11%;">Status</th>
-                  <th style="width:6%;text-align:center;">Action</th>
+                  <th style="width:14%;">Test ID</th>
+                  <th style="width:48%;">Target Feature / Requirement Verified</th>
+                  <th style="width:26%;">Expected Result &amp; Metric Output</th>
+                  <th style="width:12%;">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -809,7 +789,6 @@
                         <option value="FAIL" ${t.status === 'FAIL' ? 'selected' : ''}>FAIL</option>
                       </select>
                     </td>
-                    <td style="text-align:center;"><button type="button" class="btn-tbl-del" onclick="this.closest('tr').remove()" title="Delete Row">✕</button></td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -844,11 +823,9 @@
             .tbl-builder th { background:#f1f5f9; color:var(--ink); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:10px 12px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); text-align:left; }
             .tbl-builder td { padding:7px 8px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); vertical-align:middle; background:#fff; }
             .tbl-builder tr:last-child td { border-bottom:none; }
-            .tbl-builder td:last-child, .tbl-builder th:last-child { border-right:none; text-align:center; }
+            .tbl-builder td:last-child, .tbl-builder th:last-child { border-right:none; }
             .tbl-input { width:100%; box-sizing:border-box; padding:7px 10px; border-radius:6px; border:1px solid var(--line); background:#fff; color:var(--ink); font-size:12.5px; outline:none; transition:border-color 0.15s, box-shadow 0.15s; }
             .tbl-input:focus { border-color:#2563eb; box-shadow:0 0 0 2px rgba(37,99,235,0.12); }
-            .btn-tbl-del { background:transparent; border:none; color:#ef4444; font-size:15px; font-weight:bold; cursor:pointer; padding:5px 9px; border-radius:4px; transition:background 0.15s; }
-            .btn-tbl-del:hover { background:#fee2e2; }
             .btn-tbl-add { display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:7px 16px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid var(--line); background:#f8fafc; color:var(--ink); cursor:pointer; transition:all 0.15s; }
             .btn-tbl-add:hover { background:#e2e8f0; border-color:#cbd5e1; }
           </style>
