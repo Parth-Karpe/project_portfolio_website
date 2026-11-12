@@ -2717,19 +2717,9 @@ function mentorDashboard(){
   const reviseIntro = isNoData
     ? `Review for <strong>${esc(reviseStageLabel)}</strong>`
     : `Up to four priority improvements for <strong>${esc(reviseStageLabel)}</strong>, grounded in this project’s documented sections.`;
-  const reviseLoading = window.mentorReviseLoading ? `<div class="option-loader" role="status" aria-live="polite"><span class="option-loader-ring" aria-hidden="true"></span><strong>Reviewing stage work with Google Gemini AI...</strong></div>` : '';
-  const reviseActions = !isNoData ? `
-    <div class="mentor-revise-action-bar" style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:10px">
-      <button type="button" class="btn secondary" style="font-size:13px;padding:6px 14px;display:inline-flex;align-items:center;gap:6px;cursor:pointer" onclick="window.reviseMentorDraft()">
-        <span style="color:var(--brand);font-size:14px">✨</span> Re-review Stage with Gemini
-      </button>
-      <span style="font-size:12px;color:var(--muted);font-weight:600">
-        ${window.mentorReviseFromModel ? '● Reviewed live by Google Gemini AI' : '● Grounded in IEEE / Department Deliverables'}
-      </span>
-    </div>
-  ` : '';
+  const reviseLoading = window.mentorReviseLoading ? `<div class="option-loader" role="status" aria-live="polite"><span class="option-loader-ring" aria-hidden="true"></span><strong>Preparing suggestions for this project.</strong></div>` : '';
   const reviseFallback = window.mentorReviseFallbackNote ? `<p class="mentor-revise-fallback">${esc(window.mentorReviseFallbackNote)}</p>` : '';
-  const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>Review the work</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">${reviseIntro}</p>${reviseFallback}${reviseLoading}${reviseSections ? `<div class="mentor-revise-sections">${reviseSections}</div>` : ''}${reviseActions}</section>`;
+  const revise = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>Review the work</h2><span class="mentor-workspace-label">AI Mentor</span></div><p class="mentor-panel-note">${reviseIntro}</p>${reviseFallback}${reviseLoading}${reviseSections ? `<div class="mentor-revise-sections">${reviseSections}</div>` : ''}</section>`;
   const main = panel === 'revise' ? revise : panel === 'work' ? work : persona;
   const projectTitle = team?.title || 'Project';
   return `<div class="mentor-dashboard"><header class="mentor-page-head"><h1>${esc(projectTitle)}</h1><button type="button" class="mentor-back" onclick="window.backToPortfolioFromMentor()">Back to portfolio</button></header><div class="mentor-layout"><aside class="mentor-navigation-column"><nav class="mentor-menu" aria-label="Mentor sections"><button type="button" class="mentor-menu-btn${panel==='persona'?' active':''}" onclick="window.mentorDashboardPanel='persona';render()">Mentor Persona</button><button type="button" class="mentor-menu-btn${panel==='revise'?' active':''}" onclick="window.openMentorRevise()">Review the work</button></nav><nav class="mentor-stage-navigation" aria-label="Project stages">${stageNavigation}</nav></aside>${main}</div></div>`;

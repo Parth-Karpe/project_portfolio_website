@@ -6861,7 +6861,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
           stage: stage,
           kind: 'descriptive',
           personaStage: true,
-          generatedBy: 'Google Gemini AI',
+          generatedBy: 'Portfolio documents',
           questions
         };
       }
@@ -6899,7 +6899,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     let descriptive = null;
 
     if(Boolean(settings.geminiKey) || (typeof checkApiChatAvailability === 'function' && await checkApiChatAvailability())){
-      chatMessages = [{ role: 'assistant', text: 'Preparing viva defense descriptive questions with Gemini...', html: mentorPrepareLoaderHtml() }];
+      chatMessages = [{ role: 'assistant', text: MENTOR_PREPARE_QUESTIONS, html: mentorPrepareLoaderHtml() }];
       if(mentorSurfaceOpen() && typeof render === 'function') render();
       updateChatMessagesThread();
       descriptive = await geminiDescriptiveQuestions(kb, persona, stage);
