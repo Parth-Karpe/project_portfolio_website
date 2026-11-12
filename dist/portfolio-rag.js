@@ -5873,8 +5873,58 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return `pg_assess_${teamId}_${slug}_${stage}_${kind}`;
   }
 
+  const DESCRIPTIVE_SWITCH_LIMIT = 3;
+
+  function descriptiveLogKey(quiz){
+    return assessmentKey(quiz.teamId, quiz.dimension, quiz.stage, 'attempt-log');
+  }
+
+  function readDescriptiveLog(quiz){
+    try {
+      const entries = JSON.parse(localStorage.getItem(descriptiveLogKey(quiz)) || '[]');
+      return Array.isArray(entries) ? entries : [];
+    } catch(_) { return []; }
+  }
+
+  function saveDescriptiveLog(quiz){
+    if(!quiz.sequentialMode) return;
+    quiz.startedAt ||= Date.now();
+    quiz.attemptId ||= globalThis.crypto?.randomUUID?.() || String(quiz.startedAt);
+    quiz.tabSwitches ||= [];
+    if(quiz.completed) quiz.endedAt ||= Date.now();
+    const entries = readDescriptiveLog(quiz);
+    const entry = {
+      id: quiz.attemptId,
+      startedAt: quiz.startedAt,
+      endedAt: quiz.endedAt || null,
+      elapsedSeconds: Math.max(0, Math.floor(((quiz.endedAt || Date.now()) - quiz.startedAt) / 1000)),
+      switches: quiz.tabSwitches,
+      passed: quiz.passedCount || 0,
+      status: quiz.locked ? 'Locked' : quiz.restarted ? 'Restarted' : quiz.endedEarly ? 'Ended early' : quiz.completed ? 'Completed' : quiz.paused ? 'Paused' : 'In progress'
+    };
+    const index = entries.findIndex(previous => previous.id === entry.id);
+    if(index < 0) entries.push(entry);
+    else entries[index] = entry;
+    try { localStorage.setItem(descriptiveLogKey(quiz), JSON.stringify(entries)); } catch(_) {}
+  }
+
+  function renderDescriptiveLog(quiz){
+    const entries = readDescriptiveLog(quiz);
+    if(!entries.length) return '';
+    return `<details class="mentor-panel-note"><summary>Test log (${entries.length})</summary><ol>
+      ${entries.map(entry => {
+        const switches = Array.isArray(entry.switches) ? entry.switches : [];
+        const integrity = switches.length ? 'Tab left during test' : 'No tab switches detected';
+        return `<li>${esc(new Date(entry.startedAt).toLocaleString())} · ${esc(entry.status)} · ${Number(entry.elapsedSeconds) || 0} sec elapsed · ${switches.length} tab switches · ${Number(entry.passed) || 0} passing answers · ${integrity}
+          ${switches.length ? `<ul>${switches.map(time => `<li>Tab hidden at ${esc(new Date(time).toLocaleTimeString())}</li>`).join('')}</ul>` : ''}</li>`;
+      }).join('')}
+    </ol></details>`;
+  }
+
   function persistAssessment(record){
-    if(!record || typeof sessionStorage === 'undefined') return;
+    if(!record) return;
+    saveDescriptiveLog(record);
+    if(typeof sessionStorage === 'undefined') return;
     try { sessionStorage.setItem(assessmentKey(record.teamId, record.dimension, record.stage, record.kind || 'mcq'), JSON.stringify(record)); } catch(_) {}
   }
 
@@ -6884,7 +6934,19 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const target = quiz.passTarget || DESCRIPTIVE_PASS_TARGET;
       const passed = quiz.passedCount || 0;
       if(quiz.completed){
-        return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Target reached: ${passed} / ${target} solid answers using your faculty question bank.</div></div><p class="mentor-panel-note"><strong>Practice complete.</strong> You earned at least ${target} passing answers for ${esc(mentorStageLabel(quiz.stage))}.</p><div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.startMentorDescriptive('${esc(quiz.dimension).replace(/'/g, "\\'")}', true)">Practice again</button></div></div>`;
+        if(quiz.locked || quiz.endedEarly){
+          const title = quiz.locked ? 'Test locked after 3 tab switches' : 'Test ended';
+          return `<div class="mentor-descriptive"><p class="mentor-panel-note"><strong>${title}.</strong> ${passed} / ${target} passing answers.</p>${renderDescriptiveLog(quiz)}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.restartDescriptiveQuiz()">Practice again</button></div></div>`;
+        }
+        return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Target reached: ${passed} / ${target} solid answers using your faculty question bank.</div></div><p class="mentor-panel-note"><strong>Practice complete.</strong> You earned at least ${target} passing answers for ${esc(mentorStageLabel(quiz.stage))}.</p>${renderDescriptiveLog(quiz)}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.startMentorDescriptive('${esc(quiz.dimension).replace(/'/g, "\\'")}', true)">Practice again</button></div></div>`;
+      }
+      if(quiz.paused){
+        return `<div class="mentor-descriptive">
+          <div class="quiz-header"><div class="quiz-title">Test paused</div></div>
+          <p class="mentor-panel-note" role="status">Tab switches: ${quiz.tabSwitches?.length || 0} / ${DESCRIPTIVE_SWITCH_LIMIT}. The third switch locks this attempt. Resume to continue with your saved answer.</p>
+          ${renderDescriptiveLog(quiz)}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.resumeDescriptiveQuiz()">Resume test</button>
+          <button type="button" class="btn secondary quiz-btn-sm" onclick="window.endDescriptiveQuiz()">End test</button></div>
+        </div>`;
       }
       ensureSequentialActiveQuestion(quiz);
       const question = quiz.activeQuestion || (quiz.questions && quiz.questions[0]);
@@ -6901,7 +6963,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const canResubmit = !question.supported && attemptsLeft > 0;
       const submitLabel = question.checked && canResubmit ? 'Resubmit answer' : 'Submit answer';
       const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Question</h3>${marksBadge}</div><p>${esc(question.prompt)}</p>${rubric}<p class="mini descriptive-attempts-line">Attempts on this question: <strong>${attemptsUsed}</strong> / ${DESCRIPTIVE_MAX_ATTEMPTS}${canResubmit ? ` · <strong>${attemptsLeft}</strong> left` : ''}</p><textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
-      const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">${submitLabel}</button><span class="mini" style="margin-left:10px">Passing answers: <strong>${passed}</strong> / ${target}</span></div>`;
+      const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">${submitLabel}</button><button type="button" class="btn secondary quiz-btn-sm" onclick="window.endDescriptiveQuiz()">End test</button><span class="mini" style="margin-left:10px">Passing answers: <strong>${passed}</strong> / ${target}</span></div>`;
       return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Up to ${DESCRIPTIVE_MAX_ATTEMPTS} attempts per question. Full feedback and revision prompts appear after each submit.</div></div>${body}${footer}</div>`;
     }
 
@@ -6995,6 +7057,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
       if(saved){
         if(saved.sequentialMode){
           ensureSequentialActiveQuestion(saved);
+          if(!saved.completed) persistAssessment(saved);
           chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
           window.mentorDashboardPanel = 'work';
           isChatOpen = false;
@@ -7034,11 +7097,70 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
 
 
 
+  window.restartDescriptiveQuiz = function(){
+    const quiz = chatMessages.find(item => item.type === 'descriptive')?.descriptive;
+    if(!quiz) return;
+    if(!quiz.completed){
+      quiz.completed = true;
+      quiz.restarted = true;
+      persistAssessment(quiz);
+    }
+    return window.startMentorDescriptive(quiz.dimension, true);
+  };
+
+  function activeDescriptiveTest(){
+    const quiz = chatMessages.find(item => item.type === 'descriptive')?.descriptive;
+    return quiz?.sequentialMode && !quiz.completed ? quiz : null;
+  }
+
+  window.resumeDescriptiveQuiz = function(){
+    const quiz = activeDescriptiveTest();
+    if(!quiz?.paused || document.hidden) return;
+    quiz.paused = false;
+    persistAssessment(quiz);
+    updateChatMessagesThread();
+    activeMentorThread()?.querySelector('[data-descriptive-answer]')?.focus();
+  };
+
+  window.endDescriptiveQuiz = function(){
+    const quiz = activeDescriptiveTest();
+    if(!quiz) return;
+    quiz.completed = true;
+    quiz.endedEarly = true;
+    quiz.paused = false;
+    persistAssessment(quiz);
+    updateChatMessagesThread();
+  };
+
+  document.addEventListener?.('visibilitychange', () => {
+    if(!document.hidden) return;
+    const quiz = activeDescriptiveTest();
+    const thread = activeMentorThread();
+    if(!quiz || !thread?.querySelector('.mentor-descriptive')) return;
+    const field = thread.querySelector('[data-descriptive-answer]');
+    if(field && quiz.activeQuestion) quiz.activeQuestion.draft = field.value;
+    quiz.tabSwitches ||= [];
+    quiz.tabSwitches.push(Date.now());
+    quiz.locked = quiz.tabSwitches.length >= DESCRIPTIVE_SWITCH_LIMIT;
+    quiz.completed = quiz.locked;
+    quiz.paused = !quiz.locked;
+    persistAssessment(quiz);
+    updateChatMessagesThread();
+  });
+
+  for(const eventType of ['copy', 'cut', 'paste', 'drop', 'beforeinput']){
+    document.addEventListener?.(eventType, event => {
+      if(!event.target?.matches?.('textarea[data-descriptive-answer]')) return;
+      if(event.type === 'beforeinput' && !['insertFromPaste', 'insertFromPasteAsQuotation', 'insertFromDrop'].includes(event.inputType)) return;
+      event.preventDefault();
+    });
+  }
+
   window.gradeDescriptiveQuiz = async function(){
 
     const message = chatMessages.find(item => item.type === 'descriptive');
 
-    if(!message || !message.descriptive) return;
+    if(!message || !message.descriptive || message.descriptive.completed || message.descriptive.paused || document.hidden) return;
     const quiz = message.descriptive;
 
     if(quiz.sequentialMode && !quiz.completed){
@@ -7079,6 +7201,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
         question.llmFeedback = { supported: false, unavailable: true, note: 'Network or API error during LLM review.', missing: [], suggestion: '' };
       }
       question.llmPending = false;
+      if(quiz.completed || !chatMessages.includes(message)) return;
       reconcileDescriptiveQuestionMarks(question);
       applyDescriptiveScore(quiz);
 
