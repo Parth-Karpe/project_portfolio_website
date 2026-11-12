@@ -186,6 +186,32 @@ async function handler(req, res) {
     }
   }
 
+  // One anonymous OVH call when Gemini and Ollama are unavailable. 2 requests/minute per IP.
+  try {
+    const ovhRes = await fetch('https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'Qwen3.6-27B',
+        messages: [
+          { role: 'system', content: String(systemInstruction || '').slice(0, 6000) },
+          { role: 'user', content: String(prompt).slice(0, 3500) }
+        ],
+        temperature: 0.2,
+        max_tokens: 3072
+      })
+    });
+    if (ovhRes.ok) {
+      const data = await ovhRes.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (text) {
+        return res.status(200).json({ text, provider: 'OVHcloud (Qwen3.6-27B)' });
+      }
+    }
+  } catch (err) {
+    console.warn('OVH fallback failed:', err.message);
+  }
+
   // Graceful fallback to client-side Smart Extractive RAG
   return res.status(200).json({
     useFallback: true,
