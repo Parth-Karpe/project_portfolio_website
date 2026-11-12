@@ -7033,13 +7033,20 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   function descriptiveFeedback(question){
     const answer = question.draft || '';
     if(question.expectedPoints && question.expectedPoints.length){
-      const met = question.expectedPoints.filter(point => answer && portfolioOverlap(answer, point) >= 0.4);
-      const missing = question.expectedPoints.filter(point => !met.includes(point));
+      const pointResults = question.expectedPoints.map(point => {
+        const overlap = answer ? portfolioOverlap(answer, point) : 0;
+        return { point, overlap, met: overlap >= 0.4 };
+      });
+      const met = pointResults.filter(row => row.met).map(row => row.point);
+      const missing = pointResults.filter(row => !row.met).map(row => row.point);
       const supported = met.length * 2 >= question.expectedPoints.length;
       return {
         supported,
         strength: met.length ? met.join(' ') : '',
         missing,
+        pointResults,
+        metCount: met.length,
+        total: question.expectedPoints.length,
         improvement: supported ? 'Keep the explanation tied to this project.' : 'Cover the missing points with a specific explanation.'
       };
     }
@@ -7096,11 +7103,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     const questions = (quiz.questions || []).map((question, index) => {
 
-      const grade = question.checked
-
-        ? `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p>${question.supported ? 'This matches the portfolio.' : 'This does not yet match the portfolio.'} ${esc(question.citation)}</p><p><strong>Strength:</strong> ${esc(question.feedback.strength || 'None yet.')}</p><p><strong>Missing concepts:</strong> ${esc(question.feedback.missing.length ? question.feedback.missing.join(', ') : 'None.')}</p><p><strong>Improvement:</strong> ${esc(question.feedback.improvement)}</p></div>`
-
-        : '';
+      const grade = question.checked ? renderDescriptiveGrade(question) : '';
 
       return `<article class="mentor-descriptive-q"><h3>Q${index + 1}</h3><p>${esc(question.prompt)}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
 
@@ -7109,7 +7112,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     const note = quiz.stageNote ? `<p class="mentor-panel-note">${esc(quiz.stageNote)}</p>` : '';
     const body = questions || note || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>';
     const footer = (quiz.questions || []).length ? '<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div>' : '';
-    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Answers are checked against the documented portfolio lines.</div></div>${body}${footer}</div>`;
+    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Checked in two steps: local word-overlap parser, then an LLM review. Both are shown.</div></div>${body}${footer}</div>`;
 
   }
 
@@ -7164,38 +7167,91 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-  window.gradeDescriptiveQuiz = function(){
+  function renderDescriptiveGrade(question){
+    const local = question.localParse || question.feedback || {};
+    const rows = (local.pointResults || []).map(row => `<li>${row.met ? 'Met' : 'Missing'} · ${Math.round((row.overlap || 0) * 100)}% overlap · ${esc(row.point)}</li>`).join('');
+    const localBlock = `<p><strong>1. Local parser:</strong> ${local.supported ? 'Pass' : 'Not yet'}${local.total ? ` · ${local.metCount}/${local.total} points (a point counts at 40% word overlap)` : ''}</p>${rows ? `<ul>${rows}</ul>` : `<p><strong>Missing:</strong> ${esc((local.missing || []).join(', ') || 'None.')}</p>`}`;
+    const llm = question.llmFeedback;
+    const llmBlock = !question.draft
+      ? ''
+      : question.llmPending
+      ? '<p><strong>2. LLM review:</strong> Checking the same answer…</p>'
+      : llm
+        ? `<p><strong>2. LLM review:</strong> ${llm.supported ? 'Pass' : 'Not yet'}${llm.note ? ` · ${esc(llm.note)}` : ''}</p>${(llm.missing || []).length ? `<p><strong>LLM still wants:</strong> ${esc(llm.missing.join(', '))}</p>` : ''}`
+        : '<p><strong>2. LLM review:</strong> Not available. The local parser result stands.</p>';
+    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p><strong>Result:</strong> ${question.supported ? 'Pass' : 'Not yet'}. ${esc(question.citation || '')}</p>${localBlock}${llmBlock}<p><strong>Improvement:</strong> ${esc(local.improvement || '')}</p></div>`;
+  }
+
+  function applyDescriptiveScore(quiz){
+    if(!quiz || !Array.isArray(quiz.questions) || quiz.questions.length !== 5) return;
+    quiz.score = {
+      correct: quiz.questions.filter(question => question.supported).length,
+      total: 5
+    };
+    persistAssessment(quiz);
+  }
+
+  async function reviewDescriptiveWithLlm(questions){
+    const blocks = questions.map((question, index) => {
+      const points = (question.expectedPoints || []).map((point, pointIndex) => `${pointIndex + 1}. ${point}`).join(' | ') || question.source || '';
+      return `Q${index}\nPROMPT: ${String(question.prompt || '').slice(0, 280)}\nPOINTS: ${points.slice(0, 500)}\nANSWER: ${String(question.draft || '').slice(0, 500)}`;
+    }).join('\n\n');
+    const raw = await callPersonaModel([
+      'Grade each viva answer against its expected points.',
+      'A point is covered when the answer states that idea, even in different words.',
+      'Do not require the answer to copy the point text.',
+      'Return only a JSON array: [{"id":0,"supported":true,"missing":["point text"],"note":"one sentence"}]',
+      'supported is true when at least half of the points are covered.'
+    ].join(' '), blocks, true);
+    const parsed = parseModelJsonArray(raw);
+    if(!Array.isArray(parsed)) return;
+    parsed.forEach(item => {
+      const question = questions[Number(item && item.id)];
+      if(!question) return;
+      const missing = Array.isArray(item.missing) ? item.missing.map(point => String(point)).slice(0, 4) : [];
+      question.llmFeedback = {
+        supported: item.supported === true || String(item.supported).toLowerCase() === 'true',
+        missing,
+        note: String(item.note || item.explanation || '').slice(0, 280)
+      };
+      question.supported = !!(question.localParse && question.localParse.supported) || question.llmFeedback.supported;
+    });
+  }
+
+  window.gradeDescriptiveQuiz = async function(){
 
     const message = chatMessages.find(item => item.type === 'descriptive');
 
-    if(!message) return;
+    if(!message || !message.descriptive) return;
 
+    const questions = message.descriptive.questions || [];
+    let anyAnswer = false;
     document.querySelectorAll('[data-descriptive-answer]').forEach(field => {
-
-      const question = message.descriptive.questions[Number(field.dataset.descriptiveAnswer)];
-
+      const question = questions[Number(field.dataset.descriptiveAnswer)];
       if(!question) return;
-
       question.draft = field.value.trim();
-
+      if(question.draft) anyAnswer = true;
       const feedback = descriptiveFeedback(question);
-
-      question.supported = feedback.supported;
-
+      question.localParse = feedback;
       question.feedback = feedback;
-
+      question.supported = feedback.supported;
       question.checked = true;
-
+      question.llmPending = !!question.draft;
+      question.llmFeedback = null;
     });
-
-    if(message.descriptive && message.descriptive.questions && message.descriptive.questions.length === 5){
-      message.descriptive.score = {
-        correct: message.descriptive.questions.filter(question => question.supported).length,
-        total: 5
-      };
-      persistAssessment(message.descriptive);
+    if(!anyAnswer){
+      if(typeof toast === 'function') toast('Write an answer before checking.');
+      return;
     }
+    applyDescriptiveScore(message.descriptive);
+    updateChatMessagesThread();
 
+    const answered = questions.filter(question => question.draft);
+    try {
+      await reviewDescriptiveWithLlm(answered);
+    } catch(_) {}
+    questions.forEach(question => { question.llmPending = false; });
+    applyDescriptiveScore(message.descriptive);
     updateChatMessagesThread();
 
   };
