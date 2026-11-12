@@ -1,0 +1,2088 @@
+<script>
+(function () {
+  "use strict";
+
+  const STAGE_NAMES = {
+    0: "Problem Identification",
+    1: "Requirement Engineering",
+    2: "System Design",
+    3: "Implementation",
+    4: "Testing & Validation"
+  };
+
+  const THEME_INFO = {
+    1: { id: 1, name: "Data Storage and Retrieval Systems", full: "Theme 1: Data Storage and Retrieval Systems", desc: "Specialized systems for indexing, caching, storage engines, and persistent query retrieval." },
+    2: { id: 2, name: "Data Processing and Analytics Systems", full: "Theme 2: Data Processing and Analytics Systems", desc: "Real-time telemetry, log processing, data profiling, streaming, and metric transformation pipelines." },
+    3: { id: 3, name: "System Software and Development Tools", full: "Theme 3: System Software and Development Tools", desc: "System utilities, runtime profilers, execution monitors, memory diagnostic tools, and compiler tooling." },
+    4: { id: 4, name: "Networked Systems and Tools", full: "Theme 4: Networked Systems and Tools", desc: "Network topologies, protocol routers, distributed coordination, remote procedure utilities, and communication." },
+    5: { id: 5, name: "Algorithmic and Optimization Systems", full: "Theme 5: Algorithmic and Optimization Systems", desc: "Constraint satisfaction engines, resource allocation algorithms, routing heuristics, and combinatorial solvers." },
+    6: { id: 6, name: "Concurrent and Transactional Systems", full: "Theme 6: Concurrent and Transactional Systems", desc: "Transaction atomicity, concurrent lock managers, mutual exclusion models, distributed ledgers, and consensus." }
+  };
+
+  const ROLE_PAGES = {
+    "Team Lead": ["portfolio", "edit", "overview", "mentor", "evidence", "discussion", "register"],
+    "Faculty": ["review", "portfolio", "overview", "mentor", "evidence", "discussion"],
+    "Faculty Admin": ["allocation", "department", "overview", "portfolio"],
+    "HOD": ["department", "portfolio", "overview"],
+    "Admin": ["admin", "department", "allocation", "overview", "portfolio"]
+  };
+
+  const NAV_META = {
+    overview: { label: "Overview", icon: "grid" },
+    department: { label: "Department & Themes", icon: "layers" },
+    portfolio: { label: "Portfolio Display", icon: "book" },
+    edit: { label: "Edit Portfolio (0–4)", icon: "compass" },
+    journey: { label: "Edit Portfolio (0–4)", icon: "compass" },
+    review: { label: "Faculty Review Queue", icon: "check" },
+    allocation: { label: "Guide Allocation", icon: "users" },
+    mentor: { label: "AI Mentor Studio", icon: "sparkles" },
+    evidence: { label: "Evidence Library", icon: "folder" },
+    discussion: { label: "Discussions", icon: "chat" },
+    register: { label: "Register Project", icon: "plus" },
+    admin: { label: "Admin & Roster", icon: "shield" }
+  };
+
+  const ICONS = {
+    grid: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+    layers: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+    book: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+    compass: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
+    check: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+    users: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    sparkles: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>',
+    folder: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+    chat: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    plus: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+    shield: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+  };
+
+  function loadSavedSession() {
+    try {
+      const raw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("pg_auth_session") : null;
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+  const _savedSess = loadSavedSession();
+
+  window.APP = {
+    authenticated: Boolean(_savedSess),
+    session: _savedSess,
+    loginRole: (_savedSess && _savedSess.role) || "Team Lead",
+    loginError: "",
+    role: (_savedSess && _savedSess.role) || "HOD",
+    page: (_savedSess && _savedSess.landingPage) || "department",
+    bootstrap: null,
+    overview: null,
+    selectedProjectId: "",
+    selectedStudentUsn: (_savedSess && _savedSess.usn) || "",
+    selectedFacultyId: (_savedSess && _savedSess.facultyId) || "",
+    activeThemeId: 0, // 0 = All themes
+    activePortfolioStage: 0,
+    activeJourneyStage: 0,
+    searchQuery: "",
+    stageFilter: "ALL",
+    evidenceFilter: "ALL",
+    mentorSplitOpen: false,
+    sidebarCollapsed: false,
+    themeMode: localStorage.getItem("pg_theme") || "light",
+    lightboxZoom: 1,
+    pendingRosterImport: []
+  };
+
+  function esc(val) {
+    return String(val === undefined || val === null ? "" : val)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  window.esc = esc;
+
+  function toast(msg, isErr) {
+    const el = document.getElementById("toast");
+    if (!el) return;
+    el.textContent = msg;
+    el.style.background = isErr ? "#9f1239" : "var(--navy, #0f172a)";
+    el.style.display = "block";
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => { el.style.display = "none"; }, 3800);
+  }
+  window.toast = toast;
+
+  function callServer(fnName) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    return new Promise((resolve, reject) => {
+      if (typeof google === "undefined" || !google.script || !google.script.run) {
+        return reject(new Error("Apps Script runtime unavailable."));
+      }
+      const runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(err => reject(new Error(err && err.message ? err.message : String(err))));
+      runner[fnName].apply(runner, args);
+    });
+  }
+  window.callServer = callServer;
+
+  function setBusy(busy, label) {
+    const el = document.getElementById("topbar-sync-status");
+    if (!el) return;
+    el.innerHTML = busy
+      ? '<span class="loading-overlay">⏳ ' + esc(label || "Syncing with Google Sheets...") + "</span>"
+      : '<span class="gas-badge-cloud">● Connected to Sheets & Drive</span>';
+  }
+
+  function applyTheme(mode) {
+    APP.themeMode = mode === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", APP.themeMode);
+    localStorage.setItem("pg_theme", APP.themeMode);
+    const btn = document.getElementById("theme-toggle-btn");
+    if (btn) btn.textContent = APP.themeMode === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode";
+  }
+
+  window.toggleTheme = function () {
+    applyTheme(APP.themeMode === "dark" ? "light" : "dark");
+  };
+
+  window.toggleSidebar = function () {
+    APP.sidebarCollapsed = !APP.sidebarCollapsed;
+    const shell = document.getElementById("app-shell");
+    if (shell) shell.classList.toggle("sidebar-collapsed", APP.sidebarCollapsed);
+  };
+
+  function getProjects() {
+    return (APP.overview && APP.overview.projects) ? APP.overview.projects : [];
+  }
+  window.getAllProjects = getProjects;
+
+  function getCurrentProject() {
+    const list = getProjects();
+    if (!list.length) return null;
+    if (APP.selectedProjectId) {
+      const hit = list.find(p => String(p.project_id) === String(APP.selectedProjectId) ||
+        (p.team && String(p.team.team_id) === String(APP.selectedProjectId)));
+      if (hit) return hit;
+    }
+    if (APP.role === "Team Lead" && APP.selectedStudentUsn) {
+      const hit = list.find(p => (p.members || []).some(m => String(m.usn).toUpperCase() === APP.selectedStudentUsn));
+      if (hit) return hit;
+    }
+    if (APP.role === "Faculty" && APP.selectedFacultyId) {
+      const hit = list.find(p => p.faculty && String(p.faculty.faculty_id) === String(APP.selectedFacultyId));
+      if (hit) return hit;
+    }
+    return list[0];
+  }
+  function getOwnedStudentProject() {
+    const list = getProjects();
+    if (!APP.selectedStudentUsn) return null;
+    const usnUpper = String(APP.selectedStudentUsn).trim().toUpperCase();
+    return list.find(p => (p.members || []).some(m => String(m.usn || "").trim().toUpperCase() === usnUpper)) || null;
+  }
+
+  function canEditProject(proj) {
+    if (!proj || APP.role !== "Team Lead") return false;
+    const usnUpper = String(APP.selectedStudentUsn || "").trim().toUpperCase();
+    if (!usnUpper) return false;
+    return (proj.members || []).some(m => String(m.usn || "").trim().toUpperCase() === usnUpper);
+  }
+
+  window.getCurrentProject = getCurrentProject;
+
+  function getProjectThemeId(proj) {
+    const topic = (proj.team && proj.team.topic) || proj.technologies || proj.abstract || "";
+    const m = String(topic).match(/Theme\s*(\d)/i);
+    if (m) return Number(m[1]);
+    const low = String(topic).toLowerCase();
+    if (/storage|retrieval|rdbms|key-value|search engine|metadata/.test(low)) return 1;
+    if (/processing|analytics|log|profiling|integration|event/.test(low)) return 2;
+    if (/kernel|compiler|build|system software/.test(low)) return 3;
+    if (/network|peer|router|socket|dns|telemetry|coordination/.test(low)) return 4;
+    if (/algorithm|optimization|solver|routing|scheduler|allocation/.test(low)) return 5;
+    if (/concurrent|transactional|lock|consensus|ledger|atomic/.test(low)) return 6;
+    return 1;
+  }
+
+  function getStageObj(proj, num) {
+    return (proj.stages || []).find(s => Number(s.stage_number) === Number(num)) ||
+      { stage_number: num, status: num === 0 ? "Draft" : "Locked", fields: {} };
+  }
+
+  function statusTagClass(status) {
+    const s = String(status || "").toLowerCase();
+    if (s.includes("approved") || s.includes("completed")) return "green";
+    if (s.includes("submitted")) return "amber";
+    if (s.includes("revision")) return "red";
+    if (s.includes("locked")) return "gray";
+    return "blue";
+  }
+
+  function resolveDiagramUrl(src, proj) {
+    if (!src) return "";
+    const s = String(src).trim();
+    if (/^(https?:|data:)/i.test(s)) return s;
+    const base = s.split("/").pop().toLowerCase();
+    if (proj && proj.documents) {
+      const doc = proj.documents.find(d => String(d.file_name || "").toLowerCase() === base && (d.thumbnail_url || d.drive_url));
+      if (doc) return doc.thumbnail_url || doc.drive_url;
+    }
+    const assetMapJson = APP.overview && APP.overview.settings && APP.overview.settings.asset_map_json;
+    if (assetMapJson) {
+      try {
+        const map = JSON.parse(assetMapJson);
+        if (map[s]) return map[s];
+        if (map[base]) return map[base];
+      } catch (e) {}
+    }
+    return "";
+  }
+
+  function renderDiagramBox(rawSrc, caption, proj) {
+    const url = resolveDiagramUrl(rawSrc, proj);
+    if (!url && !rawSrc) return "";
+    if (url) {
+      return `
+        <div class="diagram-frame" style="margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+          <img src="${esc(url)}" alt="${esc(caption || "Diagram")}"
+            style="max-width:100%;max-height:430px;height:auto;border-radius:8px;display:block;margin:0 auto;cursor:zoom-in"
+            onclick="openLightbox('${esc(url)}', '${esc(caption || "")}')">
+          ${caption ? `<p class="diagram-caption" style="margin-top:10px;font-size:12.5px;font-weight:700;color:#0f172a">${esc(caption)}</p>` : ""}
+        </div>`;
+    }
+    const fname = String(rawSrc).split("/").pop();
+    return `
+      <div class="diagram-frame" style="margin-top:14px;background:var(--surface-2,#f8fafc);border:1px dashed var(--line-strong,#cbd5e1);border-radius:12px;padding:18px;text-align:center">
+        <div style="font-size:1.4rem;margin-bottom:6px">🖼️</div>
+        <strong style="display:block;font-size:.95rem;color:var(--ink)">${esc(caption || "Architecture / Workflow Diagram")}</strong>
+        <p class="muted" style="margin:6px 0 0;font-size:.82rem">Asset reference: <code>${esc(fname)}</code> — Upload via <b>Evidence Library</b> or run <code>upload_drive_assets.py</code> to display live preview from Google Drive.</p>
+      </div>`;
+  }
+
+  // Lightbox
+  window.openLightbox = function (src, caption) {
+    APP.lightboxZoom = 1;
+    const lb = document.getElementById("diagram-lightbox");
+    const img = document.getElementById("lightbox-img");
+    const cap = document.getElementById("lightbox-caption");
+    if (!lb || !img) return;
+    img.src = src;
+    img.style.transform = "scale(1)";
+    if (cap) cap.textContent = caption || "";
+    lb.classList.add("open");
+  };
+  window.closeLightbox = function () {
+    const lb = document.getElementById("diagram-lightbox");
+    if (lb) lb.classList.remove("open");
+  };
+  window.zoomLightbox = function (delta) {
+    APP.lightboxZoom = delta === 0 ? 1 : Math.min(2.6, Math.max(0.6, APP.lightboxZoom + delta));
+    const img = document.getElementById("lightbox-img");
+    if (img) img.style.transform = "scale(" + APP.lightboxZoom + ")";
+  };
+
+  function applyInitialRoute() {
+    const r = window.INITIAL_ROUTE || {};
+    if (r.theme) {
+      APP.activeThemeId = Number(r.theme) || 0;
+    }
+    if (r.team || r.project) {
+      const target = String(r.team || r.project).toLowerCase();
+      const hit = getProjects().find(p =>
+        String(p.project_id).toLowerCase() === target ||
+        (p.team && String(p.team.team_id).toLowerCase() === target)
+      );
+      if (hit) APP.selectedProjectId = hit.project_id;
+    }
+    if (r.page) {
+      const pMap = {
+        department: "department", hod: "department",
+        student: "edit", journey: "edit", edit: "edit",
+        faculty: "review", review: "review",
+        portfolio: "portfolio", project: "portfolio",
+        mentor: "mentor",
+        admin: "admin", allocation: "allocation",
+        overview: "overview", evidence: "evidence", discussion: "discussion"
+      };
+      if (pMap[r.page]) {
+        const mapped = pMap[r.page];
+        const allowed = ROLE_PAGES[APP.role] || ["portfolio"];
+        APP.page = allowed.includes(mapped) ? mapped : allowed[0];
+      }
+    }
+  }
+
+  async function refreshAll(silent) {
+    setBusy(true, "Loading live Google Sheets data...");
+    try {
+      const [boot, ov] = await Promise.all([
+        callServer("getAppBootstrap"),
+        callServer("getDepartmentOverview").catch(() => null)
+      ]);
+      APP.bootstrap = boot;
+      APP.overview = ov;
+      if (!APP.selectedStudentUsn && boot && boot.studentsList && boot.studentsList.length) {
+        const t3 = boot.studentsList.find(s => String(s.usn).includes("01FE24BCI029"));
+        APP.selectedStudentUsn = t3 ? t3.usn : boot.studentsList[0].usn;
+      }
+      if (!APP.selectedFacultyId && boot && boot.facultyList && boot.facultyList.length) {
+        APP.selectedFacultyId = boot.facultyList[0].faculty_id;
+      }
+      if (!APP.selectedProjectId && ov && ov.projects && ov.projects.length) {
+        const a03 = ov.projects.find(p => p.team && p.team.team_id === "A-03");
+        APP.selectedProjectId = a03 ? a03.project_id : ov.projects[0].project_id;
+      }
+      if (!silent) applyInitialRoute();
+      renderApp();
+    } catch (e) {
+      toast(e.message, true);
+      renderSetupFallback(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  window.refreshAll = refreshAll;
+
+  function renderSetupFallback(errMsg) {
+    const loginEl = document.getElementById("login-screen");
+    const rootEl = document.getElementById("workspace-split-root");
+    const fallbackHtml = `
+      <div class="card" style="max-width:720px;margin:24px auto;padding:24px">
+        <h2 style="margin-bottom:8px">Database Setup Required</h2>
+        <p class="muted" style="margin-bottom:14px">${esc(errMsg || "Spreadsheet connection is not initialized yet.")}</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" onclick="runOneClickSetup()">Run setupProjectGate() &amp; Seed 31-Team Cohort</button>
+        </div>
+      </div>`;
+    if (!APP.authenticated && loginEl) {
+      loginEl.style.display = "flex";
+      if (rootEl) rootEl.style.display = "none";
+      loginEl.innerHTML = fallbackHtml;
+    } else {
+      const view = document.getElementById("main-view");
+      if (view) view.innerHTML = fallbackHtml;
+    }
+  }
+
+  function renderLoginScreen() {
+    const loginEl = document.getElementById("login-screen");
+    if (!loginEl) return;
+    const boot = APP.bootstrap || {};
+    const counts = boot.counts || { teams: 31, students: 119, faculty: 15 };
+    const role = APP.loginRole || "Team Lead";
+    const facultyList = boot.facultyList || [];
+    const studentsList = boot.studentsList || [];
+    const sampleStudents = studentsList.filter(s => ["01FE24BCI029", "01FE24BCI044", "01FE24BCI120"].includes(String(s.usn).toUpperCase()));
+    const quickStudents = sampleStudents.length ? sampleStudents : studentsList.slice(0, 3);
+
+    let roleFields = "";
+    if (role === "Team Lead") {
+      roleFields = `
+        <div class="field">
+          <label for="login-identifier">Username (Student USN)</label>
+          <input id="login-identifier" type="text" placeholder="e.g. 01FE24BCI029" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="login-passcode">Password (Student USN)</label>
+          <input id="login-passcode" type="password" placeholder="Enter your USN as password" autocomplete="current-password">
+          <small class="muted" style="font-size:.74rem">Sign in with your assigned USN as both Username and Password.</small>
+        </div>
+        ${quickStudents.length ? `
+          <div>
+            <span class="muted" style="font-size:.76rem">Quick-fill sample student USN:</span>
+            <div class="login-quick-chips">
+              ${quickStudents.map(s => `<button type="button" class="login-chip" onclick="quickFillLogin('Team Lead','${esc(s.usn)}','${esc(s.usn)}')">${esc(s.usn)} · ${esc(s.full_name)}</button>`).join("")}
+            </div>
+          </div>` : ""}`;
+    } else if (role === "Faculty") {
+      const firstFac = facultyList[0] ? facultyList[0].faculty_id : "FAC-09";
+      roleFields = `
+        <div class="field">
+          <label for="login-identifier">Username (Faculty ID or Email)</label>
+          <select id="login-identifier">
+            ${facultyList.length
+              ? facultyList.map(f => `<option value="${esc(f.faculty_id)}">${esc(f.full_name)} (${esc(f.faculty_id)})</option>`).join("")
+              : '<option value="FAC-09">Mr. Amit Kachavimath (FAC-09)</option>'}
+          </select>
+        </div>
+        <div class="field">
+          <label for="login-passcode">Password (Faculty ID)</label>
+          <input id="login-passcode" type="password" placeholder="e.g. ${esc(firstFac)}" autocomplete="current-password">
+          <small class="muted" style="font-size:.74rem">Default password is your Faculty ID (e.g. <code>${esc(firstFac)}</code>).</small>
+        </div>`;
+    } else {
+      const defHint = role === "HOD" ? "HOD2026" : (role === "Faculty Admin" ? "FADMIN2026" : "ADMIN2026");
+      roleFields = `
+        <div class="field">
+          <label for="login-identifier">Username / Department ID</label>
+          <input id="login-identifier" type="text" placeholder="e.g. ${esc(role)}" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="login-passcode">Password</label>
+          <input id="login-passcode" type="password" placeholder="Enter ${esc(role)} password" autocomplete="current-password">
+          <small class="muted" style="font-size:.74rem">Default passcode: <code>${defHint}</code> (customizable in Admin Settings).</small>
+        </div>`;
+    }
+
+    loginEl.innerHTML = `
+      <div class="login-shell">
+        <div class="login-hero-panel">
+          <div>
+            <span class="tag blue" style="background:rgba(255,255,255,.16);color:#fff;border:none">CS (AI) Mini-Project Portal</span>
+            <h1>ProjectGate AI</h1>
+            <p style="color:rgba(248,250,252,.85);font-size:.94rem;line-height:1.55;margin:0">
+              Sign in required. Access your team's design journey, portfolio showcase, Drive evidence vault, and grounded AI mentoring directly from Google Sheets.
+            </p>
+          </div>
+          <div class="login-metrics-mini">
+            <div class="login-metric-box"><strong>${counts.teams || 31}</strong><span>Teams (6 Themes)</span></div>
+            <div class="login-metric-box"><strong>${counts.students || 119}</strong><span>Students</span></div>
+            <div class="login-metric-box"><strong>${counts.faculty || 15}</strong><span>Faculty Guides</span></div>
+          </div>
+          <div style="font-size:.78rem;color:rgba(248,250,252,.72)">
+            ${boot.initialized ? "● Connected to Master Google Sheet" : "⚠ Master Google Sheet not yet initialized — click Seed below."}
+          </div>
+        </div>
+
+        <form class="login-form-panel" onsubmit="event.preventDefault();submitLoginForm()">
+          <div>
+            <h2 style="margin:0 0 4px">Sign In to ProjectGate AI</h2>
+            <p class="muted" style="margin:0;font-size:.86rem">Authentication is required before accessing portfolios or editing stages.</p>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;color:var(--ink-muted)">Account Role</label>
+            <div class="login-role-tabs">
+              ${["Team Lead", "Faculty", "HOD", "Faculty Admin", "Admin"].map(r => `
+                <button type="button" class="login-role-tab ${role === r ? "active" : ""}" onclick="setLoginRole('${r}')">${esc(r)}</button>
+              `).join("")}
+            </div>
+          </div>
+
+          ${APP.loginError ? `<div class="login-error-banner">${esc(APP.loginError)}</div>` : ""}
+          ${roleFields}
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+            <button type="submit" id="login-submit-btn" class="btn primary" style="width:100%;justify-content:center;padding:11px">Sign In as ${esc(role)} →</button>
+            ${!boot.initialized ? `<button type="button" class="btn secondary" style="width:100%;justify-content:center" onclick="runOneClickSetup()">Initialize &amp; Seed 31-Team Cohort First</button>` : ""}
+          </div>
+        </form>
+      </div>`;
+  }
+
+  window.setLoginRole = function (role) {
+    APP.loginRole = role;
+    APP.loginError = "";
+    renderLoginScreen();
+  };
+
+  window.quickFillLogin = function (role, identifier, passcode) {
+    APP.loginRole = role;
+    APP.loginError = "";
+    renderLoginScreen();
+    const idEl = document.getElementById("login-identifier");
+    const pwEl = document.getElementById("login-passcode");
+    if (idEl) idEl.value = identifier;
+    if (pwEl) pwEl.value = passcode || identifier;
+  };
+
+  function activateSession(sess) {
+    APP.authenticated = true;
+    APP.session = sess;
+    APP.loginError = "";
+    APP.role = sess.role || "HOD";
+    if (sess.usn) {
+      APP.selectedStudentUsn = sess.usn;
+      const ownProj = getProjects().find(p => (p.members || []).some(m => String(m.usn).toUpperCase() === String(sess.usn).toUpperCase()));
+      if (ownProj) APP.selectedProjectId = ownProj.project_id;
+    }
+    if (sess.facultyId) {
+      APP.selectedFacultyId = sess.facultyId;
+      const facProj = getProjects().find(p => p.faculty && String(p.faculty.faculty_id) === String(sess.facultyId));
+      if (facProj) APP.selectedProjectId = facProj.project_id;
+    }
+    APP.page = sess.landingPage || (ROLE_PAGES[APP.role] ? ROLE_PAGES[APP.role][0] : "overview");
+
+    // Preserve initial URL deep-link once on first login within user's allowed pages
+    const r = window.INITIAL_ROUTE || {};
+    if (!window._pgRouteApplied && (r.team || r.project || r.page)) {
+      applyInitialRoute();
+      window._pgRouteApplied = true;
+    }
+
+    try {
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.setItem("pg_auth_session", JSON.stringify(sess));
+      }
+    } catch (e) {}
+    renderApp();
+    if (typeof window.loadAiMentorSettingsFromSheets === "function") {
+      window.loadAiMentorSettingsFromSheets();
+    }
+  }
+
+  window.submitLoginForm = async function () {
+    const btn = document.getElementById("login-submit-btn");
+    const identifier = (document.getElementById("login-identifier")?.value || "").trim();
+    const passcode = (document.getElementById("login-passcode")?.value || "").trim();
+    APP.loginError = "";
+    if (btn) { btn.disabled = true; btn.textContent = "Verifying credentials..."; }
+    try {
+      const res = await callServer("authenticateUser", {
+        role: APP.loginRole,
+        identifier: identifier,
+        passcode: passcode
+      });
+      if (!res || !res.success || !res.session) {
+        throw new Error((res && res.message) || "Authentication failed.");
+      }
+      toast("Signed in as " + res.session.displayName + " (" + res.session.role + ")");
+      activateSession(res.session);
+    } catch (e) {
+      APP.loginError = e.message;
+      renderLoginScreen();
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = "Sign In as " + APP.loginRole + " →"; }
+    }
+  };
+
+  window.logoutUser = function () {
+    APP.authenticated = false;
+    APP.session = null;
+    APP.mentorSplitOpen = false;
+    APP.loginError = "";
+    try {
+      if (typeof sessionStorage !== "undefined") sessionStorage.removeItem("pg_auth_session");
+    } catch (e) {}
+    renderApp();
+    toast("Signed out.");
+  };
+
+  window.runOneClickSetup = async function () {
+    setBusy(true, "Initializing Google Sheets & Drive...");
+    try {
+      await callServer("setupProjectGate", "");
+      const res = await callServer("seedDemoData");
+      toast(res.message || "Setup & cohort seed complete!");
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  function renderSidebar() {
+    const nav = document.getElementById("sidebar-nav");
+    const sessName = document.getElementById("session-user-name");
+    const sessRole = document.getElementById("session-user-role");
+    const identityBox = document.getElementById("sidebar-identity");
+    if (!nav) return;
+
+    const sess = APP.session || {};
+    if (sessName) sessName.textContent = sess.displayName || APP.role;
+    if (sessRole) sessRole.textContent = APP.role + (sess.usn ? (" · " + sess.usn) : (sess.facultyId ? (" · " + sess.facultyId) : ""));
+
+    const allowed = ROLE_PAGES[APP.role] || ["portfolio", "overview"];
+    if (!allowed.includes(APP.page)) APP.page = allowed[0];
+
+    nav.innerHTML = allowed.map(pid => {
+      const m = NAV_META[pid] || { label: pid, icon: "grid" };
+      const active = (APP.page === pid || (APP.page === "journey" && pid === "edit")) ? "active" : "";
+      return `
+        <button class="navbtn ${active}" data-tip="${esc(m.label)}" onclick="switchPage('${pid}')">
+          ${ICONS[m.icon] || ""}
+          <span>${esc(m.label)}</span>
+        </button>`;
+    }).join("");
+
+    if (identityBox) {
+      const dept = (APP.overview && APP.overview.department) || "CS (AI)";
+      identityBox.innerHTML = `
+        <div style="font-size:.76rem;color:rgba(255,255,255,.78);line-height:1.4">
+          Department: <b>${esc(dept)}</b><br>
+          ${sess.usn ? `USN: <b>${esc(sess.usn)}</b>` : (sess.facultyId ? `Faculty ID: <b>${esc(sess.facultyId)}</b>` : `Session Active`)}
+        </div>`;
+    }
+  }
+
+  window.switchRole = function () {
+    toast("Sign out to log in with a different account.", true);
+  };
+
+  window.switchPage = function (page) {
+    if (!APP.authenticated) {
+      renderApp();
+      return;
+    }
+    const target = page === "journey" ? "edit" : page;
+    const allowed = ROLE_PAGES[APP.role] || ["portfolio"];
+    if (!allowed.includes(target)) {
+      toast("Your role (" + APP.role + ") does not have access to this page.", true);
+      return;
+    }
+    APP.page = target;
+    if (target === "edit" && APP.role === "Team Lead") {
+      const owned = getOwnedStudentProject();
+      if (owned) APP.selectedProjectId = owned.project_id;
+    }
+    if (target !== "portfolio") APP.mentorSplitOpen = false;
+    renderApp();
+  };
+
+  window.selectActiveStudent = function (usn) {
+    APP.selectedStudentUsn = usn;
+    const hit = getProjects().find(p => (p.members || []).some(m => String(m.usn).toUpperCase() === usn.toUpperCase()));
+    if (hit) APP.selectedProjectId = hit.project_id;
+    renderApp();
+  };
+
+  window.selectActiveFaculty = function (fid) {
+    APP.selectedFacultyId = fid;
+    const hit = getProjects().find(p => p.faculty && String(p.faculty.faculty_id) === String(fid));
+    if (hit) APP.selectedProjectId = hit.project_id;
+    renderApp();
+  };
+
+  window.openTeamPortfolio = function (projectIdOrTeamId) {
+    const hit = getProjects().find(p =>
+      String(p.project_id) === String(projectIdOrTeamId) ||
+      (p.team && String(p.team.team_id) === String(projectIdOrTeamId))
+    );
+    if (hit) APP.selectedProjectId = hit.project_id;
+    APP.page = "portfolio";
+    APP.activePortfolioStage = 0;
+    renderApp();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  function renderTopbar() {
+    const titleEl = document.getElementById("topbar-page-title");
+    const teamSelect = document.getElementById("topbar-team-select");
+    const proj = getCurrentProject();
+    if (titleEl) {
+      const m = NAV_META[APP.page] || { label: APP.page };
+      titleEl.textContent = m.label + (APP.page === "portfolio" && proj && proj.team ? (" — Team " + proj.team.team_id) : "");
+    }
+    if (teamSelect) {
+      const list = getProjects();
+      teamSelect.innerHTML = list.map(p => {
+        const tid = p.team ? p.team.team_id : p.project_id;
+        return `<option value="${esc(p.project_id)}" ${proj && p.project_id === proj.project_id ? "selected" : ""}>[${esc(tid)}] ${esc(p.project_title).slice(0, 48)}</option>`;
+      }).join("");
+    }
+  }
+
+  window.onTopbarProjectChange = function (pid) {
+    APP.selectedProjectId = pid;
+    if (typeof window.pgRagReset === "function") window.pgRagReset();
+    renderApp();
+  };
+
+  // ==================== VIEWS ====================
+
+  function renderOverviewPage() {
+    const ov = APP.overview;
+    if (!ov) return '<div class="card">No data loaded yet.</div>';
+    const st = ov.stats || {};
+    const proj = getCurrentProject();
+    const recent = (ov.activities || []).slice(0, 8);
+    return `
+      <div class="hero card" style="padding:22px 24px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+        <div>
+          <span class="tag blue">${esc(ov.department)} • ${esc(ov.academicYear || "2026-27")}</span>
+          <h1 style="margin:8px 0 4px">ProjectGate AI Workspace</h1>
+          <p class="muted" style="margin:0">Google Sites + Apps Script + Google Sheets + Drive • Live 31-Team Cohort Tracking</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          ${(ROLE_PAGES[APP.role] || []).includes("department") ? `<button class="btn primary" onclick="switchPage('department')">Browse 6 Themes (${st.projects || 0} Teams)</button>` : ""}
+          <button class="btn ${APP.role === "Team Lead" ? "primary" : "secondary"}" onclick="switchPage('portfolio')">Open Portfolio Display</button>
+          ${canEditProject(proj) ? `<button class="btn secondary" onclick="switchPage('edit')">Open Edit Portfolio (0–4)</button>` : ""}
+        </div>
+      </div>
+
+      <div class="grid four" style="margin-bottom:18px">
+        <div class="card stat"><div><div class="muted">Teams / Projects</div><div class="kpi">${st.projects || 0}</div></div></div>
+        <div class="card stat"><div><div class="muted">Students Enrolled</div><div class="kpi">${st.students || 0}</div></div></div>
+        <div class="card stat"><div><div class="muted">Faculty Mentors</div><div class="kpi">${st.faculty || 0}</div></div></div>
+        <div class="card stat"><div><div class="muted">Pending Reviews</div><div class="kpi" style="color:var(--amber,#d97706)">${st.pendingReviews || 0}</div></div></div>
+      </div>
+
+      <div class="grid two">
+        <div class="card">
+          <h3>Active Project Snapshot</h3>
+          ${proj ? `
+            <p style="font-weight:700;font-size:1.05rem;margin:6px 0">${esc(proj.project_title)}</p>
+            <p class="muted" style="margin:0 0 10px">Team <b>${esc(proj.team ? proj.team.team_id : proj.owner_id)}</b> • Mentor: <b>${esc(proj.faculty ? proj.faculty.full_name : "Unassigned")}</b></p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+              ${[0,1,2,3,4].map(n => {
+                const s = getStageObj(proj, n);
+                return `<span class="tag ${statusTagClass(s.status)}">S${n}: ${esc(s.status)}</span>`;
+              }).join("")}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn primary" onclick="openTeamPortfolio('${esc(proj.project_id)}')">View Portfolio</button>
+              <button class="btn secondary" onclick="openMentorSplit('${esc(proj.project_id)}')">Launch AI Mentor Split</button>
+            </div>
+          ` : '<p class="muted">Select a project from the top bar.</p>'}
+        </div>
+
+        <div class="card">
+          <h3>Recent Cohort Activity</h3>
+          ${recent.length ? `
+            <ul style="list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:8px">
+              ${recent.map(a => `<li style="font-size:.86rem;border-bottom:1px solid var(--line);padding-bottom:6px">
+                <b>${esc(a.actor)}</b> ${esc(a.action)}
+                <span class="muted" style="display:block;font-size:.76rem">${esc(String(a.created_at || "").slice(0, 16).replace("T", " "))}</span>
+              </li>`).join("")}
+            </ul>` : '<p class="muted">Actions saved to Google Sheets appear here.</p>'}
+        </div>
+      </div>`;
+  }
+
+  function renderDepartmentPage() {
+    const ov = APP.overview;
+    if (!ov) return "";
+    const projects = getProjects();
+    const st = ov.stats || {};
+
+    // Theme counts & progress
+    const themeStats = {};
+    [1,2,3,4,5,6].forEach(id => { themeStats[id] = { total: 0, s0App: 0, s1App: 0 }; });
+    projects.forEach(p => {
+      const tid = getProjectThemeId(p);
+      themeStats[tid].total++;
+      if (getStageObj(p, 0).status === "Approved") themeStats[tid].s0App++;
+      if (getStageObj(p, 1).status === "Approved") themeStats[tid].s1App++;
+    });
+
+    const filtered = projects.filter(p => {
+      const tid = getProjectThemeId(p);
+      if (APP.activeThemeId && tid !== APP.activeThemeId) return false;
+      if (APP.stageFilter !== "ALL") {
+        const has = (p.stages || []).some(s => String(s.status).toUpperCase().includes(APP.stageFilter));
+        if (!has && !String(p.status).toUpperCase().includes(APP.stageFilter)) return false;
+      }
+      if (APP.searchQuery) {
+        const hay = [
+          p.project_title,
+          p.team ? p.team.team_id : "",
+          p.faculty ? p.faculty.full_name : "",
+          (p.members || []).map(m => m.full_name + " " + m.usn).join(" ")
+        ].join(" ").toLowerCase();
+        if (!hay.includes(APP.searchQuery.toLowerCase())) return false;
+      }
+      return true;
+    });
+
+    return `
+      <div class="card" style="padding:20px 22px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <h2 style="margin:0">Department Cohort Dashboard — ${esc(ov.department)}</h2>
+            <p class="muted" style="margin:4px 0 0">HOD Oversight across 6 Engineering Themes • ${projects.length} Registered Mini-Projects</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn secondary" onclick="exportDepartmentCsv()">Export Cohort CSV</button>
+            ${ov.spreadsheetUrl || (APP.bootstrap && APP.bootstrap.spreadsheetUrl) ? `<a class="btn secondary" target="_blank" href="${esc(APP.bootstrap.spreadsheetUrl)}">Open Google Sheet ↗</a>` : ""}
+          </div>
+        </div>
+        <div class="grid four" style="margin-top:14px">
+          <div class="card stat"><div><div class="muted">Total Teams</div><div class="kpi">${projects.length}</div></div></div>
+          <div class="card stat"><div><div class="muted">Students</div><div class="kpi">${st.students || 0}</div></div></div>
+          <div class="card stat"><div><div class="muted">Pending Review</div><div class="kpi" style="color:var(--amber,#d97706)">${st.pendingReviews || 0}</div></div></div>
+          <div class="card stat"><div><div class="muted">Completed</div><div class="kpi" style="color:var(--green,#15803d)">${st.completed || 0}</div></div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">Themes (1 – 6)</h3>
+        <button class="btn ${APP.activeThemeId === 0 ? "primary" : "secondary"}" onclick="selectThemeFilter(0)">Show All Themes (${projects.length})</button>
+      </div>
+
+      <div class="grid three" style="margin-bottom:18px">
+        ${Object.values(THEME_INFO).map(t => {
+          const ts = themeStats[t.id] || { total: 0, s0App: 0, s1App: 0 };
+          const active = APP.activeThemeId === t.id;
+          return `
+            <div class="card theme-card ${active ? "selected" : ""}" style="cursor:pointer;border:2px solid ${active ? "var(--brand)" : "var(--line)"}" onclick="selectThemeFilter(${t.id})">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span class="tag blue">Theme ${t.id}</span>
+                <span class="tag gray">${ts.total} Teams</span>
+              </div>
+              <h4 style="margin:4px 0 6px">${esc(t.name)}</h4>
+              <p class="muted" style="font-size:.82rem;margin:0 0 8px">${esc(t.desc)}</p>
+              <div style="font-size:.78rem;color:var(--ink-muted)">Stage 0 Approved: <b>${ts.s0App}/${ts.total}</b> • Stage 1 Approved: <b>${ts.s1App}/${ts.total}</b></div>
+            </div>`;
+        }).join("")}
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+          <h3 style="margin:0">${APP.activeThemeId ? esc(THEME_INFO[APP.activeThemeId].full) : "All Cohort Teams"} (${filtered.length})</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input type="text" placeholder="Search team, student, USN, mentor..." value="${esc(APP.searchQuery)}"
+              oninput="APP.searchQuery=this.value;renderApp()" style="padding:7px 11px;border:1px solid var(--line);border-radius:8px;min-width:240px">
+            <select onchange="APP.stageFilter=this.value;renderApp()" style="padding:7px 10px;border:1px solid var(--line);border-radius:8px">
+              <option value="ALL" ${APP.stageFilter === "ALL" ? "selected" : ""}>All Statuses</option>
+              <option value="SUBMITTED" ${APP.stageFilter === "SUBMITTED" ? "selected" : ""}>Submitted / Pending</option>
+              <option value="REVISION" ${APP.stageFilter === "REVISION" ? "selected" : ""}>Revision Requested</option>
+              <option value="APPROVED" ${APP.stageFilter === "APPROVED" ? "selected" : ""}>Approved</option>
+              <option value="COMPLETED" ${APP.stageFilter === "COMPLETED" ? "selected" : ""}>Completed</option>
+            </select>
+          </div>
+        </div>
+        <div class="tablewrap">
+          <table class="test-suite-table">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Project Title &amp; Theme</th>
+                <th>Members</th>
+                <th>Faculty Mentor</th>
+                <th>Stage 0–4 Progress</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filtered.map(p => {
+                const tid = p.team ? p.team.team_id : p.owner_id;
+                const themeId = getProjectThemeId(p);
+                return `
+                  <tr>
+                    <td><b>${esc(tid)}</b></td>
+                    <td>
+                      <div style="font-weight:700;color:var(--ink)">${esc(p.project_title)}</div>
+                      <div class="muted" style="font-size:.78rem">Theme ${themeId}: ${esc(THEME_INFO[themeId].name)}</div>
+                    </td>
+                    <td style="font-size:.82rem">
+                      ${(p.members || []).map(m => `<div>${esc(m.full_name)} <span class="muted">(${esc(m.usn)})</span></div>`).join("")}
+                    </td>
+                    <td>${esc(p.faculty ? p.faculty.full_name : "Unassigned")}</td>
+                    <td>
+                      <div style="display:flex;gap:4px;flex-wrap:wrap">
+                        ${[0,1,2,3,4].map(n => {
+                          const s = getStageObj(p, n);
+                          return `<span class="tag ${statusTagClass(s.status)}" style="font-size:.72rem" title="Stage ${n}: ${esc(s.status)}">S${n}: ${esc(s.status.replace(" requested",""))}</span>`;
+                        }).join("")}
+                      </div>
+                    </td>
+                    <td>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <button class="btn primary" style="padding:6px 10px;font-size:.8rem" onclick="openTeamPortfolio('${esc(p.project_id)}')">Portfolio</button>
+                        <button class="btn secondary" style="padding:6px 10px;font-size:.8rem" onclick="openMentorSplit('${esc(p.project_id)}')">AI Mentor</button>
+                      </div>
+                    </td>
+                  </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  window.selectThemeFilter = function (id) {
+    APP.activeThemeId = Number(id || 0);
+    renderApp();
+  };
+
+  window.exportDepartmentCsv = function () {
+    const projects = getProjects();
+    const rows = [["Team ID", "Theme", "Project Title", "Faculty Mentor", "Members", "USNs", "Project Status"]];
+    projects.forEach(p => {
+      rows.push([
+        p.team ? p.team.team_id : p.owner_id,
+        "Theme " + getProjectThemeId(p),
+        p.project_title,
+        p.faculty ? p.faculty.full_name : "",
+        (p.members || []).map(m => m.full_name).join("; "),
+        (p.members || []).map(m => m.usn).join("; "),
+        p.status
+      ]);
+    });
+    const csv = rows.map(r => r.map(c => '"' + String(c || "").replace(/"/g, '""') + '"').join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "projectgate_cohort_export.csv";
+    a.click();
+    toast("Exported projectgate_cohort_export.csv");
+  };
+
+  // ==================== FULL ONE-PAGE TEAM PORTFOLIO ====================
+
+  function renderPortfolioPage() {
+    const proj = getCurrentProject();
+    if (!proj) return '<div class="card">No project found.</div>';
+
+    const st0 = getStageObj(proj, 0).fields || {};
+    const st1 = getStageObj(proj, 1).fields || {};
+    const st2 = getStageObj(proj, 2).fields || {};
+    const st3 = getStageObj(proj, 3).fields || {};
+    const st4 = getStageObj(proj, 4).fields || {};
+
+    const s0Status = getStageObj(proj, 0).status;
+    const s1Status = getStageObj(proj, 1).status;
+    const s2Status = getStageObj(proj, 2).status;
+    const s3Status = getStageObj(proj, 3).status;
+    const s4Status = getStageObj(proj, 4).status;
+
+    const themeId = getProjectThemeId(proj);
+    const themeName = THEME_INFO[themeId] ? THEME_INFO[themeId].full : "Engineering System";
+    const tid = proj.team ? proj.team.team_id : proj.owner_id;
+    const guide = proj.faculty ? proj.faculty.full_name : "Unassigned";
+
+    const objectivesList = Array.isArray(st0.objectives)
+      ? st0.objectives
+      : String(st0.objectives || proj.objectives || "").split(/\r?\n/).filter(Boolean);
+
+    const problemText = st0.problem || proj.problem_statement || "";
+    const activeTab = Number(APP.activePortfolioStage || 0);
+
+    const canEdit = canEditProject(proj);
+    const backTarget = (ROLE_PAGES[APP.role] || []).includes("department") ? "department" : "overview";
+    const backLabel = backTarget === "department" ? "← Back to Department" : "← Back to Overview";
+
+    return `
+      <div class="portfolio-container">
+        <div class="portfolio-sticky-bar" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span class="tag blue">Portfolio Display (Read-Only)</span>
+            <button class="btn secondary" onclick="switchPage('${backTarget}')">${backLabel}</button>
+            ${canEdit ? `<button class="btn primary" onclick="switchPage('edit')">Open Edit Portfolio Page →</button>` : ""}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn primary" onclick="openMentorSplit('${esc(proj.project_id)}')">🧠 AI Mentor Split-Screen</button>
+            <button class="btn secondary" onclick="downloadPortfolioJson('${esc(proj.project_id)}')">Download JSON</button>
+          </div>
+        </div>
+
+        <header class="portfolio-hero-banner">
+          <div>
+            <span class="portfolio-theme-pill">${esc(themeName)}</span>
+            <h1 class="portfolio-hero-title">${esc(st0.abstractTitle || proj.project_title)}</h1>
+            <div class="portfolio-hero-meta">
+              <span>Team: <strong>${esc(tid)}</strong></span>
+              <span>Faculty Mentor: <strong>${esc(guide)}</strong></span>
+              <span>Academic Year: <strong>2026–27</strong></span>
+              <span>Status: <span class="tag ${statusTagClass(proj.status)}">${esc(proj.status)}</span></span>
+            </div>
+          </div>
+          <div class="portfolio-members-grid">
+            ${(proj.members || []).map(m => `
+              <article class="portfolio-member-card" style="padding:12px 14px">
+                <strong style="display:block;font-size:14px;color:var(--ink)">${esc(m.full_name)}</strong>
+                <div style="margin-top:4px;font-size:12.5px;color:var(--muted)">
+                  <b>USN:</b> ${esc(m.usn)} • ${esc(m.role || "Member")}
+                </div>
+              </article>`).join("")}
+          </div>
+        </header>
+
+        <div class="portfolio-layout">
+          <main class="portfolio-content">
+            <div class="portfolio-stage-tabs" id="portfolio-stage-tabs">
+              ${[0,1,2,3,4].map(n => `
+                <button type="button" class="portfolio-stage-tab ${activeTab === n ? "active" : ""}"
+                  onclick="switchPortfolioStage(${n})">
+                  Stage ${n} – ${esc(STAGE_NAMES[n])}
+                  <span class="tab-badge">${esc([s0Status,s1Status,s2Status,s3Status,s4Status][n])}</span>
+                </button>`).join("")}
+            </div>
+
+            <!-- STAGE 0 -->
+            <section class="portfolio-section" id="stage-0" style="${activeTab === 0 ? "" : "display:none"}">
+              <div class="portfolio-section-title">
+                <h2>Stage 0 – Problem Identification &amp; Scope</h2>
+                <span class="portfolio-stage-badge">${esc(s0Status)}</span>
+              </div>
+              <article class="portfolio-subblock" id="sec-problem">
+                <h3>1. Problem Statement</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(problemText || "No problem statement documented yet.")}</p>
+              </article>
+              <article class="portfolio-subblock" id="sec-objectives">
+                <h3>2. Project Objectives</h3>
+                ${objectivesList.length ? `<ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px">${objectivesList.map(o => `<li>${esc(o)}</li>`).join("")}</ul>` : '<p class="muted">No objectives listed yet.</p>'}
+              </article>
+              <article class="portfolio-subblock" id="sec-courses">
+                <h3>3. Foundation Course Integration</h3>
+                ${(st0.coursesTable || []).length ? `
+                  <div class="tablewrap"><table class="test-suite-table" id="table-courses">
+                    <thead><tr><th>Sl</th><th>Course</th><th>Concepts Used</th><th>Role</th></tr></thead>
+                    <tbody>${st0.coursesTable.map(c => `<tr><td>${esc(c.sl)}</td><td><b>${esc(c.course)}</b></td><td>${esc(c.concepts)}</td><td>${esc(c.role)}</td></tr>`).join("")}</tbody>
+                  </table></div>` : `<p class="portfolio-prose">${esc(proj.technologies || "Not yet structured into courses table.")}</p>`}
+              </article>
+              <article class="portfolio-subblock" id="sec-workflow-concept">
+                <h3>4. Conceptual Workflow &amp; Engines</h3>
+                ${renderDiagramBox(st0.workflowDiagram || st0.conceptualFlowImage, st0.workflowCaption || st0.conceptualFlowCaption, proj)}
+                ${(st0.pipelineTable || []).length ? `
+                  <div class="tablewrap" style="margin-top:12px"><table class="test-suite-table">
+                    <thead><tr><th>Step / Stage</th><th>Phase &amp; Core Activity</th><th>Key Output</th></tr></thead>
+                    <tbody>${st0.pipelineTable.map(r => `<tr><td><b>${esc(r.step || r.phase)}</b></td><td>${esc(r.activity || r.desc)}</td><td>${esc(r.output || "")}</td></tr>`).join("")}</tbody>
+                  </table></div>` : ""}
+                ${(st0.enginesTable || []).length ? `
+                  <div class="tablewrap" style="margin-top:12px"><table class="test-suite-table" id="table-engines">
+                    <thead><tr><th style="width:32%">Engine</th><th>Conceptual Responsibility</th></tr></thead>
+                    <tbody>${st0.enginesTable.map(e => `<tr id="portfolio-engine-${esc(e.id)}"><td><span class="req-tag">${esc(e.id)}</span> <b>${esc(e.name || e.engine)}</b></td><td>${esc(e.desc)}</td></tr>`).join("")}</tbody>
+                  </table></div>` : ""}
+              </article>
+              <article class="portfolio-subblock" id="sec-scope">
+                <h3>5. Scope</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(st0.scope || st0.solutionConcept || proj.abstract || "See Stage 1 scope tables.")}</p>
+              </article>
+            </section>
+
+            <!-- STAGE 1 -->
+            <section class="portfolio-section" id="stage-1" style="${activeTab === 1 ? "" : "display:none"}">
+              <div class="portfolio-section-title">
+                <h2>Stage 1 – Requirement Engineering</h2>
+                <span class="portfolio-stage-badge">${esc(s1Status)}</span>
+              </div>
+              <article class="portfolio-subblock" id="sec-scope-in">
+                <h3>1. Scope (In-Scope &amp; Out-of-Scope)</h3>
+                ${(st1.scopeInTable || st0.scopeInTable || []).length ? `
+                  <div class="tablewrap" style="margin-bottom:12px"><table class="test-suite-table">
+                    <thead><tr><th style="width:55px">#</th><th>In Scope</th></tr></thead>
+                    <tbody>${(st1.scopeInTable || st0.scopeInTable).map(s => `<tr><td><b>${esc(s.num)}</b></td><td>${esc(s.item)}</td></tr>`).join("")}</tbody>
+                  </table></div>` : ""}
+                ${(st1.scopeOutTable || st0.scopeOutTable || []).length ? `
+                  <div class="tablewrap"><table class="test-suite-table">
+                    <thead><tr><th style="width:55px">#</th><th>Out-of-Scope</th><th>Reason</th></tr></thead>
+                    <tbody>${(st1.scopeOutTable || st0.scopeOutTable).map(s => `<tr><td>${esc(s.num)}</td><td>${esc(s.item)}</td><td>${esc(s.reason)}</td></tr>`).join("")}</tbody>
+                  </table></div>` : ""}
+              </article>
+              <article class="portfolio-subblock" id="sec-feasibility">
+                <h3>2. Feasibility &amp; Constraints</h3>
+                ${(st1.feasibilityTable || st0.feasibilityTable || []).length ? `
+                  <div class="tablewrap"><table class="test-suite-table">
+                    <thead><tr><th style="width:200px">Aspect</th><th>Assessment</th></tr></thead>
+                    <tbody>${(st1.feasibilityTable || st0.feasibilityTable).map(f => `<tr><td><b>${esc(f.aspect)}</b></td><td>${esc(f.assessment)}</td></tr>`).join("")}</tbody>
+                  </table></div>` : '<p class="muted">No feasibility rows documented yet.</p>'}
+              </article>
+              <article class="portfolio-subblock" id="sec-fr">
+                <h3>3. Functional Requirements</h3>
+                ${(st1.frTable || []).length ? `
+                  <div class="tablewrap"><table class="test-suite-table fr-table" id="table-fr">
+                    <thead><tr><th>FR ID</th><th>Description</th><th>Priority</th><th>Source Need</th></tr></thead>
+                    <tbody>${st1.frTable.map(fr => `<tr id="portfolio-fr-${esc(fr.id)}"><td><span class="req-tag">${esc(fr.id)}</span></td><td>${esc(fr.desc)}</td><td>${esc(fr.priority || "Mandatory")}</td><td>${esc(fr.sourceNeed || "")}</td></tr>`).join("")}</tbody>
+                  </table></div>` : `<p class="portfolio-prose">${esc(st1.functional || "Not yet documented.")}</p>`}
+              </article>
+              <article class="portfolio-subblock" id="sec-nfr">
+                <h3>4. Non-Functional Requirements</h3>
+                ${(st1.nfrTable || []).length ? `
+                  <div class="tablewrap"><table class="test-suite-table nfr-table" id="table-nfr">
+                    <thead><tr><th>NFR ID</th><th>Description</th><th>Category</th><th>Measurable Target</th></tr></thead>
+                    <tbody>${st1.nfrTable.map(n => `<tr id="portfolio-nfr-${esc(n.id)}"><td><span class="req-tag">${esc(n.id)}</span></td><td>${esc(n.desc)}</td><td>${esc(n.cat || n.category || "")}</td><td><b>${esc(n.target || "")}</b></td></tr>`).join("")}</tbody>
+                  </table></div>` : `<p class="portfolio-prose">${esc(st1.nonfunctional || "Not yet documented.")}</p>`}
+              </article>
+              <article class="portfolio-subblock" id="sec-usecase">
+                <h3>5. Use Cases / User Stories</h3>
+                ${(st1.userStoryTable || []).length ? `
+                  <div class="tablewrap"><table class="test-suite-table">
+                    <thead><tr><th>ID</th><th>Actor</th><th>Description</th><th>Main Flow</th><th>Exception Flow</th></tr></thead>
+                    <tbody>${st1.userStoryTable.map(u => `<tr><td><span class="req-tag">${esc(u.id)}</span></td><td><span class="tag gray">${esc(u.actor)}</span></td><td><b>${esc(u.desc)}</b></td><td>${esc(u.mainFlow)}</td><td>${esc(u.exceptionFlow)}</td></tr>`).join("")}</tbody>
+                  </table></div>` : '<p class="muted">No user stories documented yet.</p>'}
+                ${renderDiagramBox(st1.useCaseImage, st1.useCaseCaption, proj)}
+              </article>
+              <article class="portfolio-subblock" id="sec-acceptance">
+                <h3>6. Acceptance Criteria</h3>
+                ${(st1.acceptanceTable || []).length ? `
+                  <div class="tablewrap"><table class="test-suite-table" id="table-testsuite">
+                    <thead><tr><th>Req ID</th><th>Acceptance Criteria</th><th>Verification Method</th></tr></thead>
+                    <tbody>${st1.acceptanceTable.map(a => `<tr><td><span class="req-tag">${esc(a.req)}</span></td><td>${esc(a.criteria)}</td><td>${esc(a.method)}</td></tr>`).join("")}</tbody>
+                  </table></div>` : '<p class="muted">No acceptance criteria documented yet.</p>'}
+              </article>
+            </section>
+
+            <!-- STAGE 2 -->
+            <section class="portfolio-section" id="sec-system-design" style="${activeTab === 2 ? "" : "display:none"}">
+              <div class="portfolio-section-title">
+                <h2>Stage 2 – System Design</h2>
+                <span class="portfolio-stage-badge">${esc(s2Status)}</span>
+              </div>
+              <article class="portfolio-subblock" id="sec-arch">
+                <h3>1. Architecture</h3>
+                ${(st2.architecturePoints || []).map(p => `<p class="portfolio-prose">${esc(p)}</p>`).join("") || `<p class="portfolio-prose">${esc(st2.architecture || "Architecture notes pending.")}</p>`}
+                ${renderDiagramBox(st2.architectureImage, st2.architectureCaption || "Fig 1. Architecture Diagram", proj)}
+              </article>
+              <article class="portfolio-subblock" id="sec-data-design">
+                <h3>2. Data Design</h3>
+                ${(st2.dataDesignPoints || []).map(p => `<p class="portfolio-prose">${esc(p)}</p>`).join("")}
+                ${renderDiagramBox(st2.dataDesignImage, st2.dataDesignCaption || "Fig 2. Data Design Diagram", proj)}
+              </article>
+              <article class="portfolio-subblock" id="sec-algo-design">
+                <h3>3. Algorithm Design</h3>
+                ${(st2.algorithmDesignPoints || []).map(p => `<p class="portfolio-prose">${esc(p)}</p>`).join("")}
+                ${renderDiagramBox(st2.algorithmDesignImage, st2.algorithmDesignCaption || "Fig 3. Algorithm Design Diagram", proj)}
+              </article>
+              <article class="portfolio-subblock" id="sec-sec-design">
+                <h3>4. Security &amp; Reliability Design</h3>
+                ${(st2.securityDesignPoints || []).map(p => `<p class="portfolio-prose">${esc(p)}</p>`).join("") || '<p class="muted">Add security & error-handling constraints in Design Journey.</p>'}
+              </article>
+            </section>
+
+            <!-- STAGE 3 -->
+            <section class="portfolio-section" id="stage-3" style="${activeTab === 3 ? "" : "display:none"}">
+              <div class="portfolio-section-title">
+                <h2>Stage 3 – Implementation</h2>
+                <span class="portfolio-stage-badge">${esc(s3Status)}</span>
+              </div>
+              <article class="portfolio-subblock" id="sec-impl">
+                <h3>Technology Stack &amp; Implementation</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(st3.implementation || proj.technologies || "Pending implementation details.")}</p>
+              </article>
+              <article class="portfolio-subblock" id="sec-modules">
+                <h3>Implemented Modules &amp; Repository</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(st3.modules || "Pending module breakdown.")}</p>
+                ${(st3.repo || proj.github_url) ? `<p style="margin-top:8px"><a class="btn secondary" target="_blank" href="${esc(st3.repo || proj.github_url)}">GitHub / Source Repo ↗</a></p>` : ""}
+              </article>
+              <article class="portfolio-subblock">
+                <h3>Engineering Challenges Solved</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(st3.challenges || "—")}</p>
+              </article>
+            </section>
+
+            <!-- STAGE 4 -->
+            <section class="portfolio-section" id="stage-4" style="${activeTab === 4 ? "" : "display:none"}">
+              <div class="portfolio-section-title">
+                <h2>Stage 4 – Testing &amp; Validation</h2>
+                <span class="portfolio-stage-badge">${esc(s4Status)}</span>
+              </div>
+              <article class="portfolio-subblock" id="sec-testing">
+                <h3>Test Strategy &amp; Executed Suites</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(st4.testing || "Pending test strategy.")}</p>
+              </article>
+              <article class="portfolio-subblock" id="sec-results">
+                <h3>Results &amp; Performance Metrics</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(st4.test_results || st4.metrics || "Pending benchmark results.")}</p>
+              </article>
+              <article class="portfolio-subblock">
+                <h3>Faculty Evaluation &amp; Reflection</h3>
+                <p class="portfolio-prose" style="white-space:pre-line">${esc(st4.evaluation || "Pending final validation reflection.")}</p>
+              </article>
+            </section>
+
+            ${renderStageFeedbackCard(proj, activeTab)}
+          </main>
+
+          <aside class="portfolio-nav-rail">
+            <div class="portfolio-nav-rail-head">
+              <h3>Section Navigator</h3>
+            </div>
+            <div class="portfolio-nav-list">
+              ${getNavItemsForStage(activeTab).map(it => `
+                <button type="button" class="portfolio-nav-item" onclick="jumpToSection('${it.id}')">${esc(it.label)}</button>
+              `).join("")}
+            </div>
+          </aside>
+        </div>
+      </div>`;
+  }
+
+  function renderStageFeedbackCard(proj, stageNum) {
+    const st = getStageObj(proj, stageNum);
+    if (!st.faculty_feedback && st.score === null) return "";
+    return `
+      <div class="card" style="margin-top:16px;border-left:4px solid var(--brand)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b>Faculty Review — Stage ${stageNum}</b>
+          ${st.score !== null ? `<span class="tag blue">Score: ${esc(st.score)} / 10</span>` : ""}
+        </div>
+        <p style="margin:8px 0 4px">${esc(st.faculty_feedback)}</p>
+        <span class="muted" style="font-size:.8rem">Reviewed by ${esc(st.reviewed_by || "Faculty Guide")}</span>
+      </div>`;
+  }
+
+  function getNavItemsForStage(stageNum) {
+    if (stageNum === 0) return [
+      { id: "sec-problem", label: "1. Problem Statement" },
+      { id: "sec-objectives", label: "2. Objectives" },
+      { id: "sec-courses", label: "3. Course Integration" },
+      { id: "sec-workflow-concept", label: "4. Workflow & Engines" },
+      { id: "sec-scope", label: "5. Scope" }
+    ];
+    if (stageNum === 1) return [
+      { id: "sec-scope-in", label: "1. Scope In / Out" },
+      { id: "sec-feasibility", label: "2. Feasibility" },
+      { id: "sec-fr", label: "3. Functional Req" },
+      { id: "sec-nfr", label: "4. Non-Functional Req" },
+      { id: "sec-usecase", label: "5. Use Cases" },
+      { id: "sec-acceptance", label: "6. Acceptance Criteria" }
+    ];
+    if (stageNum === 2) return [
+      { id: "sec-arch", label: "1. Architecture" },
+      { id: "sec-data-design", label: "2. Data Design" },
+      { id: "sec-algo-design", label: "3. Algorithm Design" },
+      { id: "sec-sec-design", label: "4. Security Design" }
+    ];
+    if (stageNum === 3) return [
+      { id: "sec-impl", label: "1. Implementation" },
+      { id: "sec-modules", label: "2. Modules & Repo" }
+    ];
+    return [
+      { id: "sec-testing", label: "1. Test Strategy" },
+      { id: "sec-results", label: "2. Metrics & Evaluation" }
+    ];
+  }
+
+  window.switchPortfolioStage = function (n) {
+    APP.activePortfolioStage = Number(n);
+    renderApp();
+  };
+
+  window.jumpToSection = function (elId, stageOverride) {
+    if (stageOverride !== undefined && Number(stageOverride) !== APP.activePortfolioStage) {
+      APP.activePortfolioStage = Number(stageOverride);
+      renderApp();
+    }
+    setTimeout(() => {
+      const el = document.getElementById(elId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("rag-target-pulse");
+        setTimeout(() => el.classList.remove("rag-target-pulse"), 2200);
+      }
+    }, 60);
+  };
+
+  window.downloadPortfolioJson = async function (pid) {
+    setBusy(true, "Preparing portfolio export...");
+    try {
+      const payload = await callServer("getProjectPortfolioExport", pid);
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "portfolio_" + pid + ".json";
+      a.click();
+      toast("Downloaded portfolio JSON.");
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ==================== DESIGN JOURNEY 5-STAGE EDITOR ====================
+
+  function renderJourneyPage() {
+    const proj = APP.role === "Team Lead" ? (getOwnedStudentProject() || getCurrentProject()) : null;
+    if (!proj) return '<div class="card">No team project assigned to this USN. Register one in "Register Project".</div>';
+    if (!canEditProject(proj)) {
+      return `
+        <div class="card" style="border-left:4px solid #ef4444">
+          <h3 style="margin-top:0">Edit Access Restricted</h3>
+          <p class="muted">Only the signed-in team member (${esc(APP.selectedStudentUsn || "Student")}) can edit this project's portfolio stages. Use the Portfolio Display page to view showcases.</p>
+          <button class="btn primary" onclick="openTeamPortfolio('${esc(proj.project_id)}')">Go to Portfolio Display</button>
+        </div>
+      `;
+    }
+
+    const n = Number(APP.activeJourneyStage || 0);
+    const stObj = getStageObj(proj, n);
+    const prevObj = n > 0 ? getStageObj(proj, n - 1) : null;
+    const locked = n > 0 && ((prevObj && prevObj.status !== "Approved") || stObj.status === "Locked");
+    const readOnly = locked || ["Submitted", "Approved"].includes(stObj.status);
+    const f = stObj.fields || {};
+
+    return `
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <span class="tag amber" style="margin-bottom:6px;display:inline-block">Edit Portfolio Page · Stages 0–4</span>
+            <h2 style="margin:0">${esc(proj.project_title)} — Portfolio Editor</h2>
+            <p class="muted" style="margin:4px 0 0">Team <b>${esc(proj.team ? proj.team.team_id : proj.owner_id)}</b> • Signed-in Student USN: <b>${esc(APP.selectedStudentUsn)}</b></p>
+          </div>
+          <button class="btn secondary" onclick="openTeamPortfolio('${esc(proj.project_id)}')">View Portfolio Display Page ↗</button>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+          ${[0,1,2,3,4].map(i => {
+            const s = getStageObj(proj, i);
+            return `<button class="btn ${i === n ? "primary" : "secondary"}" onclick="APP.activeJourneyStage=${i};renderApp()">
+              Stage ${i}: ${esc(STAGE_NAMES[i])} <span class="tag ${statusTagClass(s.status)}" style="margin-left:6px">${esc(s.status)}</span>
+            </button>`;
+          }).join("")}
+        </div>
+      </div>
+
+      ${locked ? `<div class="card" style="border-left:4px solid #f59e0b;margin-bottom:14px"><b>Stage ${n} is Locked</b> — Faculty must approve Stage ${n - 1} before your team can edit Stage ${n}.</div>` : ""}
+      ${stObj.faculty_feedback ? `<div class="card" style="border-left:4px solid var(--brand);margin-bottom:14px"><b>Faculty Feedback (${esc(stObj.status)}):</b> ${esc(stObj.faculty_feedback)} ${stObj.score !== null ? `<b>(${stObj.score}/10)</b>` : ""}</div>` : ""}
+
+      <div class="card">
+        <form id="journey-stage-form" onsubmit="event.preventDefault();saveJourneyStage(${n}, false)">
+          ${renderJourneyStageFields(n, f, readOnly, proj.project_id)}
+          ${!readOnly ? `
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+              <button type="submit" class="btn secondary">Save Stage ${n} Draft to Sheets</button>
+              <button type="button" class="btn primary" onclick="saveJourneyStage(${n}, true)">Submit Stage ${n} for Review</button>
+            </div>` : ""}
+        </form>
+      </div>`;
+  }
+
+  function renderTableBuilder(key, title, cols, rows, readOnly) {
+    const arr = Array.isArray(rows) ? rows : [];
+    const safeJson = esc(JSON.stringify(arr));
+    return `
+      <div class="stage-table-editor" data-table-key="${esc(key)}" data-cols="${esc(JSON.stringify(cols))}">
+        <div class="stage-table-editor-head">
+          <strong>${esc(title)} (${arr.length})</strong>
+          ${!readOnly ? `<button type="button" class="btn secondary" style="padding:4px 10px;font-size:.8rem" onclick="addBuilderRow(this)">+ Add Row</button>` : ""}
+        </div>
+        <div class="table-builder-rows">
+          ${arr.map(r => renderBuilderRowHtml(cols, r, readOnly)).join("")}
+        </div>
+        <input type="hidden" name="json_${esc(key)}" value="${safeJson}">
+      </div>`;
+  }
+
+  function renderBuilderRowHtml(cols, rowObj, readOnly) {
+    const grid = cols.map(() => "1fr").join(" ") + (readOnly ? "" : " 40px");
+    return `
+      <div class="stage-table-row" style="grid-template-columns:${grid}">
+        ${cols.map(c => `<input type="text" data-col="${esc(c.k)}" placeholder="${esc(c.label)}" value="${esc((rowObj && rowObj[c.k]) || "")}" ${readOnly ? "disabled" : ""}>`).join("")}
+        ${!readOnly ? `<button type="button" class="btn secondary" style="padding:6px 8px" onclick="this.parentElement.remove()">✕</button>` : ""}
+      </div>`;
+  }
+
+  window.addBuilderRow = function (btn) {
+    const box = btn.closest(".stage-table-editor");
+    const cols = JSON.parse(box.getAttribute("data-cols") || "[]");
+    const holder = box.querySelector(".table-builder-rows");
+    const tmp = document.createElement("div");
+    tmp.innerHTML = renderBuilderRowHtml(cols, {}, false);
+    holder.appendChild(tmp.firstElementChild);
+  };
+
+  function collectBuilderData(form) {
+    const out = {};
+    form.querySelectorAll(".stage-table-editor").forEach(box => {
+      const key = box.getAttribute("data-table-key");
+      const rows = [];
+      box.querySelectorAll(".stage-table-row").forEach(rowEl => {
+        const obj = {};
+        let hasAny = false;
+        rowEl.querySelectorAll("input[data-col]").forEach(inp => {
+          const val = inp.value.trim();
+          obj[inp.getAttribute("data-col")] = val;
+          if (val) hasAny = true;
+        });
+        if (hasAny) rows.push(obj);
+      });
+      out[key] = rows;
+    });
+    return out;
+  }
+
+  function renderJourneyStageFields(stageNum, f, readOnly, projectId) {
+    const dis = readOnly ? "disabled" : "";
+    if (stageNum === 0) {
+      return `
+        <div class="field"><label>Project Title</label><input name="abstractTitle" value="${esc(f.abstractTitle || "")}" ${dis}></div>
+        <div class="field"><label>Problem Statement</label><textarea name="problem" rows="4" ${dis}>${esc(f.problem || "")}</textarea></div>
+        <div class="field"><label>Project Objectives (one per line)</label><textarea name="objectives" rows="4" ${dis}>${esc(Array.isArray(f.objectives) ? f.objectives.join("\n") : (f.objectives || ""))}</textarea></div>
+        <div class="field"><label>Proposed Solution Concept &amp; Scope</label><textarea name="solutionConcept" rows="3" ${dis}>${esc(f.solutionConcept || f.scope || "")}</textarea></div>
+        ${renderTableBuilder("coursesTable", "Foundation Course Integration", [
+          { k: "sl", label: "#" }, { k: "course", label: "Course" }, { k: "concepts", label: "Concepts Used" }, { k: "role", label: "Core/Support" }
+        ], f.coursesTable, readOnly)}
+        ${renderTableBuilder("enginesTable", "Logical Engines / Components", [
+          { k: "id", label: "E1.." }, { k: "name", label: "Engine Name" }, { k: "desc", label: "Responsibility" }
+        ], f.enginesTable, readOnly)}
+        ${renderTableBuilder("pipelineTable", "Pipeline Phases", [
+          { k: "step", label: "Step" }, { k: "activity", label: "Activity" }, { k: "output", label: "Output" }
+        ], f.pipelineTable, readOnly)}
+        <div class="field">
+          <label>Conceptual Workflow Diagram URL or Upload to Drive</label>
+          <input name="workflowDiagram" value="${esc(f.workflowDiagram || f.conceptualFlowImage || "")}" ${dis}>
+          ${!readOnly ? `<input type="file" accept="image/*" style="margin-top:6px" onchange="uploadStageImage(this, '${esc(projectId)}', 0, 'workflowDiagram')">` : ""}
+        </div>`;
+    }
+    if (stageNum === 1) {
+      return `
+        ${renderTableBuilder("scopeInTable", "In-Scope Items", [{ k: "num", label: "#" }, { k: "item", label: "In-Scope Feature" }], f.scopeInTable, readOnly)}
+        ${renderTableBuilder("scopeOutTable", "Out-of-Scope Items", [{ k: "num", label: "#" }, { k: "item", label: "Excluded" }, { k: "reason", label: "Reason" }], f.scopeOutTable, readOnly)}
+        ${renderTableBuilder("feasibilityTable", "Feasibility & Constraints", [{ k: "aspect", label: "Aspect" }, { k: "assessment", label: "Assessment" }], f.feasibilityTable, readOnly)}
+        ${renderTableBuilder("frTable", "Functional Requirements", [{ k: "id", label: "FR-01" }, { k: "desc", label: "Requirement" }, { k: "priority", label: "Priority" }, { k: "sourceNeed", label: "Source Need" }], f.frTable, readOnly)}
+        ${renderTableBuilder("nfrTable", "Non-Functional Requirements", [{ k: "id", label: "NFR-01" }, { k: "desc", label: "Description" }, { k: "cat", label: "Category" }, { k: "target", label: "Target Metric" }], f.nfrTable, readOnly)}
+        ${renderTableBuilder("userStoryTable", "Use Cases / User Stories", [{ k: "id", label: "UC-01" }, { k: "actor", label: "Actor" }, { k: "desc", label: "Goal" }, { k: "mainFlow", label: "Main Flow" }, { k: "exceptionFlow", label: "Exception" }], f.userStoryTable, readOnly)}
+        ${renderTableBuilder("acceptanceTable", "Acceptance Criteria", [{ k: "req", label: "FR/NFR ID" }, { k: "criteria", label: "Criteria" }, { k: "method", label: "Verification Method" }], f.acceptanceTable, readOnly)}`;
+    }
+    if (stageNum === 2) {
+      return `
+        <div class="field"><label>Architecture Key Decisions (one per line)</label><textarea name="architecturePoints" rows="4" ${dis}>${esc((f.architecturePoints || []).join("\n"))}</textarea></div>
+        <div class="field"><label>Architecture Diagram URL / Drive Upload</label>
+          <input name="architectureImage" value="${esc(f.architectureImage || "")}" ${dis}>
+          ${!readOnly ? `<input type="file" accept="image/*" style="margin-top:6px" onchange="uploadStageImage(this, '${esc(projectId)}', 2, 'architectureImage')">` : ""}
+        </div>
+        <div class="field"><label>Data Design Decisions (one per line)</label><textarea name="dataDesignPoints" rows="3" ${dis}>${esc((f.dataDesignPoints || []).join("\n"))}</textarea></div>
+        <div class="field"><label>Data Design Diagram URL / Drive Upload</label>
+          <input name="dataDesignImage" value="${esc(f.dataDesignImage || "")}" ${dis}>
+          ${!readOnly ? `<input type="file" accept="image/*" style="margin-top:6px" onchange="uploadStageImage(this, '${esc(projectId)}', 2, 'dataDesignImage')">` : ""}
+        </div>
+        <div class="field"><label>Algorithm Design Decisions (one per line)</label><textarea name="algorithmDesignPoints" rows="3" ${dis}>${esc((f.algorithmDesignPoints || []).join("\n"))}</textarea></div>
+        <div class="field"><label>Algorithm Diagram URL / Drive Upload</label>
+          <input name="algorithmDesignImage" value="${esc(f.algorithmDesignImage || "")}" ${dis}>
+          ${!readOnly ? `<input type="file" accept="image/*" style="margin-top:6px" onchange="uploadStageImage(this, '${esc(projectId)}', 2, 'algorithmDesignImage')">` : ""}
+        </div>
+        <div class="field"><label>Security &amp; Concurrency Controls (one per line)</label><textarea name="securityDesignPoints" rows="3" ${dis}>${esc((f.securityDesignPoints || []).join("\n"))}</textarea></div>`;
+    }
+    if (stageNum === 3) {
+      return `
+        <div class="field"><label>Technology Stack &amp; Runtime Environment</label><textarea name="implementation" rows="3" ${dis}>${esc(f.implementation || "")}</textarea></div>
+        <div class="field"><label>Implemented Modules &amp; Interfaces</label><textarea name="modules" rows="4" ${dis}>${esc(f.modules || "")}</textarea></div>
+        <div class="field"><label>GitHub / Repository URL</label><input name="repo" value="${esc(f.repo || "")}" ${dis}></div>
+        <div class="field"><label>Implementation Challenges &amp; Resolutions</label><textarea name="challenges" rows="3" ${dis}>${esc(f.challenges || "")}</textarea></div>`;
+    }
+    return `
+      <div class="field"><label>Test Strategy &amp; Test Cases Executed</label><textarea name="testing" rows="4" ${dis}>${esc(f.testing || "")}</textarea></div>
+      <div class="field"><label>Benchmark Results &amp; Latency/Throughput Metrics</label><textarea name="test_results" rows="4" ${dis}>${esc(f.test_results || f.metrics || "")}</textarea></div>
+      <div class="field"><label>Validation Summary &amp; Final Reflection</label><textarea name="evaluation" rows="3" ${dis}>${esc(f.evaluation || "")}</textarea></div>`;
+  }
+
+  window.uploadStageImage = function (inputEl, projectId, stageNum, targetInputName) {
+    const file = inputEl.files && inputEl.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function () {
+      const base64 = String(reader.result || "").split(",")[1];
+      setBusy(true, "Uploading diagram to Google Drive...");
+      try {
+        const res = await callServer("uploadDocument", {
+          usn: APP.selectedStudentUsn,
+          project_id: projectId,
+          file_name: file.name,
+          mime_type: file.type,
+          base64: base64,
+          document_type: "IMAGE",
+          stage: stageNum,
+          caption: targetInputName
+        });
+        const form = document.getElementById("journey-stage-form");
+        const target = form && form.querySelector('[name="' + targetInputName + '"]');
+        if (target) target.value = res.thumbnail_url || res.drive_url;
+        toast("Diagram uploaded to Drive! Click Save Draft to persist link.");
+      } catch (e) {
+        toast(e.message, true);
+      } finally {
+        setBusy(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.saveJourneyStage = async function (stageNum, submit) {
+    const proj = getOwnedStudentProject() || getCurrentProject();
+    const form = document.getElementById("journey-stage-form");
+    if (!proj || !form || !canEditProject(proj)) return;
+
+    const fields = collectBuilderData(form);
+    form.querySelectorAll("input[name], textarea[name]").forEach(el => {
+      const name = el.getAttribute("name");
+      if (name.startsWith("json_")) return;
+      if (["objectives", "architecturePoints", "dataDesignPoints", "algorithmDesignPoints", "securityDesignPoints"].includes(name)) {
+        fields[name] = el.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      } else {
+        fields[name] = el.value.trim();
+      }
+    });
+
+    setBusy(true, submit ? "Submitting Stage " + stageNum + "..." : "Saving Stage " + stageNum + " draft...");
+    try {
+      const res = await callServer("saveStageSubmission", {
+        usn: APP.selectedStudentUsn,
+        project_id: proj.project_id,
+        stage_number: stageNum,
+        submit: submit,
+        fields: fields
+      });
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ==================== FACULTY REVIEW PORTAL ====================
+
+  function renderFacultyPage() {
+    const projects = getProjects().filter(p => p.faculty && String(p.faculty.faculty_id) === String(APP.selectedFacultyId));
+    const fac = (APP.bootstrap && APP.bootstrap.facultyList || []).find(f => String(f.faculty_id) === String(APP.selectedFacultyId));
+    return `
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+          <div>
+            <h2 style="margin:0">Faculty Review Queue — ${esc(fac ? fac.full_name : "Select Faculty")}</h2>
+            <p class="muted" style="margin:4px 0 0">Strict Faculty Isolation Active • Assigned Teams: <b>${projects.length}</b></p>
+          </div>
+          <span class="tag blue">${projects.filter(p => (p.stages || []).some(s => s.status === "Submitted")).length} Pending Submission(s)</span>
+        </div>
+      </div>
+
+      ${projects.length === 0 ? '<div class="card">No teams assigned to this faculty guide yet.</div>' : projects.map(p => {
+        const subStage = (p.stages || []).find(s => s.status === "Submitted") || getStageObj(p, 0);
+        return `
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+              <div>
+                <h3 style="margin:0">[${esc(p.team ? p.team.team_id : p.owner_id)}] ${esc(p.project_title)}</h3>
+                <div class="muted" style="font-size:.84rem">Members: ${(p.members || []).map(m => esc(m.full_name)).join(", ")}</div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                ${[0,1,2,3,4].map(n => `<span class="tag ${statusTagClass(getStageObj(p,n).status)}">S${n}: ${esc(getStageObj(p,n).status)}</span>`).join("")}
+                <button class="btn secondary" style="padding:5px 10px" onclick="openTeamPortfolio('${esc(p.project_id)}')">Portfolio</button>
+              </div>
+            </div>
+
+            ${subStage.status === "Submitted" ? `
+              <div style="border-top:1px solid var(--line);padding-top:12px">
+                <p style="font-weight:700;margin:0 0 8px">Ready for Evaluation: Stage ${subStage.stage_number} (${esc(STAGE_NAMES[subStage.stage_number])})</p>
+                <div class="grid two">
+                  <div class="field"><label>Score (0–10)</label><input id="rev-score-${esc(p.project_id)}" type="number" min="0" max="10" step="0.5" value="8.5"></div>
+                  <div class="field"><label>Review Decision Feedback</label><textarea id="rev-fb-${esc(p.project_id)}" rows="2" placeholder="Provide rubric feedback & corrections if requesting revision..."></textarea></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:8px">
+                  <button class="btn primary" onclick="submitReview('${esc(p.project_id)}', ${subStage.stage_number}, true)">Approve &amp; Unlock Next Stage</button>
+                  <button class="btn secondary" onclick="submitReview('${esc(p.project_id)}', ${subStage.stage_number}, false)">Request Revision</button>
+                </div>
+              </div>` : `<p class="muted" style="margin:6px 0 0">No stage currently in Submitted queue for this team.</p>`}
+          </div>`;
+      }).join("")}`;
+  }
+
+  window.submitReview = async function (pid, stageNum, approve) {
+    const score = Number(document.getElementById("rev-score-" + pid)?.value || 0);
+    const fb = document.getElementById("rev-fb-" + pid)?.value.trim() || "";
+    if (!fb) return toast("Feedback is required before recording decision.", true);
+    setBusy(true, approve ? "Approving Stage..." : "Requesting Revision...");
+    try {
+      const res = await callServer("submitFacultyReview", {
+        faculty_id: APP.selectedFacultyId,
+        project_id: pid,
+        stage_number: stageNum,
+        approve: approve,
+        score: score,
+        feedback: fb
+      });
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ==================== FACULTY ALLOCATION ====================
+
+  function renderAllocationPage() {
+    const projects = getProjects();
+    const facultyList = (APP.bootstrap && APP.bootstrap.facultyList) || [];
+    return `
+      <div class="card">
+        <h2>Faculty Guide Allocation (31 Teams across ${facultyList.length} Guides)</h2>
+        <p class="muted" style="margin-bottom:12px">Changes save directly to the <code>Teams.faculty_id</code> column in Google Sheets.</p>
+        <div class="tablewrap">
+          <table class="test-suite-table">
+            <thead><tr><th>Team</th><th>Project Title</th><th>Theme</th><th>Assigned Guide</th><th>Action</th></tr></thead>
+            <tbody>
+              ${projects.map(p => {
+                const tid = p.team ? p.team.team_id : "";
+                const curFac = p.faculty ? p.faculty.faculty_id : "";
+                return `
+                  <tr>
+                    <td><b>${esc(tid)}</b></td>
+                    <td>${esc(p.project_title)}</td>
+                    <td>Theme ${getProjectThemeId(p)}</td>
+                    <td>
+                      <select id="alloc-sel-${esc(tid)}" style="padding:6px;border-radius:6px;border:1px solid var(--line)">
+                        ${facultyList.map(f => `<option value="${esc(f.faculty_id)}" ${f.faculty_id === curFac ? "selected" : ""}>${esc(f.full_name)}</option>`).join("")}
+                      </select>
+                    </td>
+                    <td><button class="btn primary" style="padding:6px 10px;font-size:.8rem" onclick="assignTeamGuide('${esc(tid)}')">Assign Guide</button></td>
+                  </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  window.assignTeamGuide = async function (teamId) {
+    const fid = document.getElementById("alloc-sel-" + teamId)?.value;
+    if (!fid) return;
+    setBusy(true, "Updating guide allocation...");
+    try {
+      const res = await callServer("adminAssignFaculty", { team_id: teamId, faculty_id: fid });
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ==================== EVIDENCE LIBRARY ====================
+
+  function renderEvidencePage() {
+    const proj = getCurrentProject();
+    if (!proj) return '<div class="card">Select a project first.</div>';
+    const docs = proj.documents || [];
+    return `
+      <div class="card" style="margin-bottom:16px">
+        <h2>Evidence Library — ${esc(proj.project_title)}</h2>
+        <div class="grid two" style="margin-top:12px">
+          <div class="card" style="margin:0">
+            <h4>Upload File / Diagram / Video to Drive (Max 10 MB)</h4>
+            <div class="field"><label>Evidence Type</label>
+              <select id="ev-type"><option value="IMAGE">Architecture / Screenshot (Image)</option><option value="VIDEO">Demo Recording (MP4/WebM)</option><option value="PDF">Report / Slides (PDF/PPTX/DOCX)</option></select>
+            </div>
+            <div class="field"><label>Caption / Stage Note</label><input id="ev-caption" placeholder="e.g. Fig 1 Architecture Diagram"></div>
+            <div class="field"><label>Choose File</label><input id="ev-file" type="file" accept=".pdf,.docx,.pptx,image/*,video/mp4,video/webm"></div>
+            <button class="btn primary" onclick="handleEvidenceUpload('${esc(proj.project_id)}')">Upload to Google Drive</button>
+          </div>
+          <div class="card" style="margin:0">
+            <h4>Attach External Link (GitHub / YouTube / Live Demo)</h4>
+            <div class="field"><label>Link Title</label><input id="ev-link-title" placeholder="e.g. Demo Walkthrough Video"></div>
+            <div class="field"><label>URL</label><input id="ev-link-url" placeholder="https://..."></div>
+            <button class="btn secondary" onclick="handleAddLink('${esc(proj.project_id)}')">Save Evidence Link</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Stored Project Evidence (${docs.length})</h3>
+        ${docs.length === 0 ? '<p class="muted">No uploaded artifacts yet.</p>' : `
+          <div class="evidence-grid">
+            ${docs.map(d => `
+              <div class="evidence-card">
+                ${d.thumbnail_url ? `<img src="${esc(d.thumbnail_url)}" alt="${esc(d.file_name)}" onclick="openLightbox('${esc(d.thumbnail_url)}','${esc(d.caption || d.file_name)}')">` : ""}
+                <div>
+                  <span class="tag blue">${esc(d.document_type)}</span>
+                  <strong style="display:block;margin-top:6px;font-size:.92rem">${esc(d.file_name)}</strong>
+                  ${d.caption ? `<p class="muted" style="font-size:.8rem;margin:4px 0 0">${esc(d.caption)}</p>` : ""}
+                </div>
+                <div style="display:flex;gap:8px;margin-top:auto">
+                  <a class="btn secondary" style="padding:5px 10px;font-size:.8rem" target="_blank" href="${esc(d.embed_url || d.drive_url)}">Open ↗</a>
+                  ${APP.role === "Team Lead" || APP.role === "Admin" ? `<button class="btn secondary" style="padding:5px 10px;font-size:.8rem;color:#9f1239" onclick="removeEvidence('${esc(proj.project_id)}','${esc(d.document_id)}')">Delete</button>` : ""}
+                </div>
+              </div>`).join("")}
+          </div>`}
+      </div>`;
+  }
+
+  window.handleEvidenceUpload = function (pid) {
+    const fileInput = document.getElementById("ev-file");
+    const file = fileInput && fileInput.files && fileInput.files[0];
+    if (!file) return toast("Select a file first.", true);
+    const reader = new FileReader();
+    reader.onload = async function () {
+      const base64 = String(reader.result || "").split(",")[1];
+      setBusy(true, "Uploading to Google Drive...");
+      try {
+        const res = await callServer("uploadDocument", {
+          usn: APP.selectedStudentUsn,
+          project_id: pid,
+          file_name: file.name,
+          mime_type: file.type || "application/octet-stream",
+          base64: base64,
+          document_type: document.getElementById("ev-type")?.value || "OTHER",
+          caption: document.getElementById("ev-caption")?.value || "",
+          stage: 3
+        });
+        toast(res.message);
+        await refreshAll(true);
+      } catch (e) {
+        toast(e.message, true);
+      } finally {
+        setBusy(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.handleAddLink = async function (pid) {
+    const title = document.getElementById("ev-link-title")?.value.trim();
+    const url = document.getElementById("ev-link-url")?.value.trim();
+    if (!url) return toast("Enter a valid URL.", true);
+    setBusy(true, "Saving link...");
+    try {
+      const res = await callServer("addEvidenceLink", {
+        usn: APP.selectedStudentUsn,
+        project_id: pid,
+        title: title || url,
+        url: url,
+        document_type: "LINK"
+      });
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  window.removeEvidence = async function (pid, docId) {
+    setBusy(true, "Removing evidence...");
+    try {
+      const res = await callServer("deleteDocument", {
+        usn: APP.role === "Admin" ? "" : APP.selectedStudentUsn,
+        project_id: pid,
+        document_id: docId
+      });
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ==================== DISCUSSIONS & REGISTRATION ====================
+
+  function renderDiscussionPage() {
+    const proj = getCurrentProject();
+    if (!proj) return '<div class="card">Select a project first.</div>';
+    const msgs = proj.discussions || [];
+    const authorName = APP.role === "Faculty"
+      ? ((APP.bootstrap.facultyList || []).find(f => f.faculty_id === APP.selectedFacultyId)?.full_name || "Faculty")
+      : (APP.role === "Team Lead" ? (APP.selectedStudentUsn || "Student") : APP.role);
+
+    return `
+      <div class="card">
+        <h2>Project Discussions — ${esc(proj.project_title)}</h2>
+        ${APP.role !== "HOD" ? `
+          <div style="margin:12px 0 18px;padding:12px;border:1px solid var(--line);border-radius:10px">
+            <div class="grid two">
+              <div class="field"><label>Topic</label><input id="disc-topic" value="Design Review"></div>
+              <div class="field"><label>Message</label><input id="disc-msg" placeholder="Write a message to team / guide..."></div>
+            </div>
+            <button class="btn primary" onclick="sendDiscussion('${esc(proj.project_id)}','${esc(authorName)}')">Post Message</button>
+          </div>` : '<p class="muted">HOD oversight is read-only.</p>'}
+        ${msgs.length ? msgs.map(m => `
+          <div style="border-bottom:1px solid var(--line);padding:10px 0">
+            <div style="display:flex;justify-content:space-between">
+              <b>${esc(m.author_name)} <span class="tag gray">${esc(m.author_role)}</span></b>
+              <span class="muted" style="font-size:.8rem">${esc(m.topic)} • ${esc(String(m.created_at || "").slice(0, 16).replace("T"," "))}</span>
+            </div>
+            <p style="margin:6px 0 0">${esc(m.message)}</p>
+          </div>`).join("") : '<p class="muted">No messages yet.</p>'}
+      </div>`;
+  }
+
+  window.sendDiscussion = async function (pid, author) {
+    const topic = document.getElementById("disc-topic")?.value.trim() || "General";
+    const msg = document.getElementById("disc-msg")?.value.trim();
+    if (!msg) return toast("Enter a message.", true);
+    setBusy(true, "Posting message...");
+    try {
+      await callServer("postDiscussionMessage", {
+        project_id: pid, author_name: author, author_role: APP.role, topic: topic, message: msg
+      });
+      toast("Message posted.");
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  function renderRegisterPage() {
+    const teams = (APP.bootstrap && APP.bootstrap.teamsList) || [];
+    return `
+      <div class="card" style="max-width:760px">
+        <h2>Register New Mini-Project</h2>
+        <div class="field"><label>Project Title</label><input id="reg-title" placeholder="Enter mini-project title"></div>
+        <div class="grid two">
+          <div class="field"><label>Owner Type</label><select id="reg-owner"><option value="TEAM">TEAM</option><option value="STUDENT">INDIVIDUAL</option></select></div>
+          <div class="field"><label>Team ID</label><select id="reg-team">${teams.map(t => `<option value="${esc(t.team_id)}">${esc(t.team_id)} — ${esc(t.team_name)}</option>`).join("")}</select></div>
+        </div>
+        <div class="field"><label>Abstract / Summary</label><textarea id="reg-abs" rows="3"></textarea></div>
+        <div class="field"><label>Problem Statement</label><textarea id="reg-prob" rows="3"></textarea></div>
+        <div class="field"><label>Technologies</label><input id="reg-tech" placeholder="C++, SQLite, TCP Sockets..."></div>
+        <button class="btn primary" onclick="submitNewProject()">Register &amp; Initialize Stages 0–4</button>
+      </div>`;
+  }
+
+  window.submitNewProject = async function () {
+    setBusy(true, "Creating project in Sheets...");
+    try {
+      const res = await callServer("createProject", {
+        usn: APP.selectedStudentUsn,
+        project_title: document.getElementById("reg-title")?.value,
+        owner_type: document.getElementById("reg-owner")?.value,
+        team_id: document.getElementById("reg-team")?.value,
+        abstract: document.getElementById("reg-abs")?.value,
+        problem_statement: document.getElementById("reg-prob")?.value,
+        technologies: document.getElementById("reg-tech")?.value
+      });
+      toast(res.message);
+      APP.selectedProjectId = res.project_id;
+      APP.page = "edit";
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // ==================== ADMIN & SHEETJS ROSTER IMPORT ====================
+
+  function renderAdminPage() {
+    const b = APP.bootstrap || {};
+    const c = b.counts || {};
+    return `
+      <div class="card" style="margin-bottom:16px">
+        <h2>Admin Console &amp; Google Sheets Database</h2>
+        <p class="muted">Students: <b>${c.students || 0}</b> • Teams: <b>${c.teams || 0}</b> • Projects: <b>${c.projects || 0}</b> • Faculty: <b>${c.faculty || 0}</b></p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn primary" onclick="runOneClickSetup()">Populate 31-Team Cohort (SeedCohort)</button>
+          <button class="btn secondary" onclick="exportCohortWorkbook()">Export Workbook (.xlsx)</button>
+          ${b.spreadsheetUrl ? `<a class="btn secondary" target="_blank" href="${esc(b.spreadsheetUrl)}">Open Master Sheet ↗</a>` : ""}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <input id="admin-sheet-url" placeholder="Paste Google Sheet URL or ID to switch database..." style="flex:1;min-width:260px;padding:8px 10px;border:1px solid var(--line);border-radius:8px">
+          <button class="btn secondary" onclick="connectSheet()">Connect Sheet</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3>Atomic Excel / CSV Roster Import (SheetJS)</h3>
+        <p class="muted">Upload a spreadsheet (<code>.xlsx</code>, <code>.xls</code>, <code>.csv</code>) with columns: <code>Team ID</code>, <code>Name</code>, <code>USN</code>, <code>Theme</code>, <code>Guide</code>.</p>
+        <input type="file" accept=".xlsx,.xls,.csv" onchange="parseExcelFile(this)" style="margin:8px 0">
+        <div id="excel-preview-box">
+          ${APP.pendingRosterImport.length ? `
+            <p style="margin:8px 0"><b>${APP.pendingRosterImport.length}</b> roster rows staged for atomic import.</p>
+            <button class="btn primary" onclick="commitExcelRoster()">Commit ${APP.pendingRosterImport.length} Rows to Google Sheets</button>` : ""}
+        </div>
+      </div>
+
+      <div class="grid three">
+        <div class="card">
+          <h4>Add Student</h4>
+          <div class="field"><label>USN</label><input id="add-stu-usn" placeholder="01FE24BCI099"></div>
+          <div class="field"><label>Full Name</label><input id="add-stu-name"></div>
+          <button class="btn primary" onclick="quickAddStudent()">Add Student</button>
+        </div>
+        <div class="card">
+          <h4>Add Faculty</h4>
+          <div class="field"><label>Name</label><input id="add-fac-name"></div>
+          <div class="field"><label>Email</label><input id="add-fac-email"></div>
+          <button class="btn primary" onclick="quickAddFaculty()">Add Faculty</button>
+        </div>
+        <div class="card">
+          <h4>Department &amp; Login Passcodes</h4>
+          <div class="field"><label>Department Name</label><input id="set-dept" value="${esc((APP.overview && APP.overview.department) || "CS (AI)")}"></div>
+          <div class="field"><label>Academic Year</label><input id="set-year" value="${esc((APP.overview && APP.overview.academicYear) || "2026-27")}"></div>
+          <div class="field"><label>HOD Passcode</label><input id="set-hod-pass" placeholder="Default: HOD2026" value="${esc((APP.overview && APP.overview.settings && APP.overview.settings.hod_passcode) || "")}"></div>
+          <div class="field"><label>Admin Passcode</label><input id="set-admin-pass" placeholder="Default: ADMIN2026" value="${esc((APP.overview && APP.overview.settings && APP.overview.settings.admin_passcode) || "")}"></div>
+          <hr style="border:none;border-top:1px solid var(--line);margin:10px 0">
+          <h4 style="margin:6px 0">Workspace Gemini AI Settings (Sheets)</h4>
+          <div class="field"><label>Default Gemini Model</label>
+            <select id="set-gemini-model">
+              ${((APP.overview && APP.overview.geminiModels) || (APP.bootstrap && APP.bootstrap.geminiModels) || [
+                { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash (Recommended)" },
+                { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+                { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+                { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+                { id: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash-Lite" }
+              ]).map(m => `<option value="${esc(m.id)}" ${((APP.overview && APP.overview.settings && APP.overview.settings.gemini_model) || "gemini-3.8-flash") === m.id ? "selected" : ""}>${esc(m.label)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field"><label>Workspace Gemini API Key</label>
+            <input id="set-gemini-key" type="password" placeholder="${(APP.overview && APP.overview.settings && APP.overview.settings.gemini_key_masked) ? "Saved in Sheets: " + esc(APP.overview.settings.gemini_key_masked) : "Paste AIza... to save in Sheets"}" autocomplete="off">
+          </div>
+          <button class="btn primary" onclick="saveDeptSettings()">Save Settings to Sheets</button>
+        </div>
+      </div>`;
+  }
+
+  window.connectSheet = async function () {
+    const val = document.getElementById("admin-sheet-url")?.value.trim();
+    if (!val) return toast("Paste a Google Sheet URL or ID.", true);
+    setBusy(true, "Connecting sheet...");
+    try {
+      const res = await callServer("connectExistingSheet", val);
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  window.parseExcelFile = function (input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (typeof XLSX === "undefined") return toast("SheetJS library not loaded.", true);
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      try {
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type: "array" });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const raw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+        let lastTid = "", lastTheme = "", lastGuide = "";
+        APP.pendingRosterImport = raw.map(r => {
+          const norm = {};
+          Object.keys(r).forEach(k => { norm[k.trim().toLowerCase().replace(/[^a-z0-9]/g, "")] = String(r[k]).trim(); });
+          const tid = norm.teamid || norm.team || lastTid;
+          if (tid) lastTid = tid;
+          const theme = norm.theme || norm.topic || lastTheme;
+          if (theme) lastTheme = theme;
+          const guide = norm.guide || norm.facultyguide || norm.mentor || lastGuide;
+          if (guide) lastGuide = guide;
+          return {
+            teamId: tid,
+            usn: (norm.usn || "").toUpperCase(),
+            name: norm.name || norm.fullname || norm.studentname || "",
+            theme: theme,
+            guide: guide,
+            title: norm.title || norm.projecttitle || ""
+          };
+        }).filter(r => r.usn && r.name && r.teamId);
+        toast("Parsed " + APP.pendingRosterImport.length + " student rows.");
+        renderApp();
+      } catch (e) {
+        toast("Excel parse error: " + e.message, true);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  window.commitExcelRoster = async function () {
+    if (!APP.pendingRosterImport.length) return;
+    setBusy(true, "Committing roster atomically to Google Sheets...");
+    try {
+      const res = await callServer("adminImportRosterRows", { rows: APP.pendingRosterImport });
+      APP.pendingRosterImport = [];
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  window.exportCohortWorkbook = function () {
+    if (typeof XLSX === "undefined") return exportDepartmentCsv();
+    const rows = getProjects().map(p => ({
+      "Team ID": p.team ? p.team.team_id : p.owner_id,
+      "Theme": "Theme " + getProjectThemeId(p),
+      "Project Title": p.project_title,
+      "Faculty Mentor": p.faculty ? p.faculty.full_name : "",
+      "Members": (p.members || []).map(m => m.full_name + " (" + m.usn + ")").join(", "),
+      "Status": p.status
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ProjectGate_Cohort");
+    XLSX.writeFile(wb, "projectgate_cohort.xlsx");
+    toast("Exported projectgate_cohort.xlsx");
+  };
+
+  window.quickAddStudent = async function () {
+    setBusy(true, "Adding student...");
+    try {
+      const res = await callServer("adminAddStudent", {
+        usn: document.getElementById("add-stu-usn")?.value,
+        full_name: document.getElementById("add-stu-name")?.value
+      });
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+  };
+
+  window.quickAddFaculty = async function () {
+    setBusy(true, "Adding faculty...");
+    try {
+      const res = await callServer("adminAddFaculty", {
+        full_name: document.getElementById("add-fac-name")?.value,
+        email: document.getElementById("add-fac-email")?.value
+      });
+      toast(res.message);
+      await refreshAll(true);
+    } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+  };
+
+  window.saveDeptSettings = async function () {
+    setBusy(true, "Saving settings...");
+    try {
+      const payload = {
+        department_name: document.getElementById("set-dept")?.value,
+        academic_year: document.getElementById("set-year")?.value
+      };
+      const hodPass = document.getElementById("set-hod-pass")?.value.trim();
+      const adminPass = document.getElementById("set-admin-pass")?.value.trim();
+      const geminiModel = document.getElementById("set-gemini-model")?.value;
+      const geminiKey = document.getElementById("set-gemini-key")?.value.trim();
+      if (hodPass) payload.hod_passcode = hodPass;
+      if (adminPass) payload.admin_passcode = adminPass;
+      if (geminiModel) payload.gemini_model = geminiModel;
+      if (geminiKey) payload.gemini_api_key = geminiKey;
+      const res = await callServer("adminSaveDepartmentSettings", payload);
+      toast(res.message);
+      await refreshAll(true);
+      if (typeof window.loadAiMentorSettingsFromSheets === "function") window.loadAiMentorSettingsFromSheets();
+    } catch (e) { toast(e.message, true); } finally { setBusy(false); }
+  };
+
+  function renderMain() {
+    const view = document.getElementById("main-view");
+    if (!view) return;
+    if (APP.page === "department") view.innerHTML = renderDepartmentPage();
+    else if (APP.page === "portfolio") view.innerHTML = renderPortfolioPage();
+    else if (APP.page === "edit" || APP.page === "journey") view.innerHTML = renderJourneyPage();
+    else if (APP.page === "review") view.innerHTML = renderFacultyPage();
+    else if (APP.page === "allocation") view.innerHTML = renderAllocationPage();
+    else if (APP.page === "evidence") view.innerHTML = renderEvidencePage();
+    else if (APP.page === "discussion") view.innerHTML = renderDiscussionPage();
+    else if (APP.page === "register") view.innerHTML = renderRegisterPage();
+    else if (APP.page === "admin") view.innerHTML = renderAdminPage();
+    else if (APP.page === "mentor" && typeof window.renderMentorStudioPage === "function") {
+      view.innerHTML = window.renderMentorStudioPage();
+    } else {
+      view.innerHTML = renderOverviewPage();
+    }
+  }
+
+  function renderApp() {
+    const loginEl = document.getElementById("login-screen");
+    const rootEl = document.getElementById("workspace-split-root");
+    const ragEl = document.getElementById("rag-floating-root");
+
+    if (!APP.authenticated) {
+      if (loginEl) loginEl.style.display = "flex";
+      if (rootEl) rootEl.style.display = "none";
+      if (ragEl) ragEl.style.display = "none";
+      renderLoginScreen();
+      return;
+    }
+
+    if (loginEl) loginEl.style.display = "none";
+    if (rootEl) rootEl.style.display = APP.mentorSplitOpen ? "grid" : "block";
+    if (ragEl) ragEl.style.display = "block";
+
+    renderSidebar();
+    renderTopbar();
+    renderMain();
+    if (typeof window.syncMentorSplitPane === "function") window.syncMentorSplitPane();
+    if (typeof window.syncRagFabState === "function") window.syncRagFabState();
+  }
+  window.renderApp = renderApp;
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") window.closeLightbox();
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    applyTheme(APP.themeMode);
+    refreshAll(false);
+  });
+})();
+</script>

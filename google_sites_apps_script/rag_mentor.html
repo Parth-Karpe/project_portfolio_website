@@ -1,0 +1,817 @@
+<script>
+(function () {
+  "use strict";
+
+  const MENTOR_PERSONAS = [
+    {
+      id: "systems",
+      name: "Systems Thinking",
+      focus: "End-to-end dataflow, engine boundaries, failure modes, and throughput tradeoffs.",
+      samplePrompts: [
+        "Explain how Engine E1 hands off data to downstream components.",
+        "What happens when a crash or malformed input occurs mid-pipeline?"
+      ]
+    },
+    {
+      id: "cs_foundations",
+      name: "Foundational CS Knowledge",
+      focus: "OS, DBMS, Algorithms & Data Structures concepts explicitly mapped to the system.",
+      samplePrompts: [
+        "Which foundational CS courses drive the core indexing or scheduling decisions?",
+        "Analyze the Big-O complexity of your critical query/execution path."
+      ]
+    },
+    {
+      id: "faculty",
+      name: "Faculty Expertise",
+      focus: "Oral Viva defense readiness, requirement traceability (Need -> FR -> Test), and edge cases.",
+      samplePrompts: [
+        "Defend how every Functional Requirement maps to an acceptance verification test.",
+        "Justify your Out-of-Scope exclusions to an external examiner."
+      ]
+    },
+    {
+      id: "standards",
+      name: "Engineering Standards (IEEE 1016 / 830)",
+      focus: "IEEE 1016 Software Design Description alignment, measurable NFR targets, and interface clarity.",
+      samplePrompts: [
+        "Audit whether NFR targets have numeric pass/fail thresholds.",
+        "Check Stage 2 System Design completeness against IEEE 1016 views."
+      ]
+    },
+    {
+      id: "theme",
+      name: "Theme-Based Expertise",
+      focus: "Domain depth across Themes 1–6 (Storage, Analytics, Compilers/OS, Networking, Optimization, Concurrency).",
+      samplePrompts: [
+        "Compare your chosen storage/algorithm design against an alternative architecture.",
+        "Identify the primary resource bottleneck in your theme."
+      ]
+    }
+  ];
+
+  const SDD_SECTIONS = [
+    { key: "context", title: "1.1 Purpose, System Context & Scope", citation: "IEEE 1016 §1.1", stage: 0, elId: "sec-scope", keywords: ["purpose", "scope", "problem", "boundary", "stakeholder", "constraint"] },
+    { key: "req", title: "1.2 Functional & Non-Functional Traceability", citation: "IEEE 830 §3.2", stage: 1, elId: "sec-fr", keywords: ["requirement", "fr", "nfr", "latency", "throughput", "acceptance", "priority"] },
+    { key: "decomp", title: "2.1 Composition & Engine Decomposition", citation: "IEEE 1016 §5.2", stage: 0, elId: "sec-workflow-concept", keywords: ["engine", "module", "component", "decomposition", "pipeline", "subsystem"] },
+    { key: "arch", title: "2.2 Architectural & Dependency View", citation: "IEEE 1016 §5.4", stage: 2, elId: "sec-arch", keywords: ["architecture", "diagram", "dependency", "interface", "layer", "protocol"] },
+    { key: "data", title: "2.3 Data & Schema Design View", citation: "IEEE 1016 §5.5", stage: 2, elId: "sec-data-design", keywords: ["schema", "data", "table", "index", "storage", "persistence", "log"] },
+    { key: "algo", title: "2.4 Algorithmic & Control View", citation: "IEEE 1016 §5.6", stage: 2, elId: "sec-algo-design", keywords: ["algorithm", "complexity", "scheduling", "search", "optimization", "concurrent"] },
+    { key: "val", title: "3.1 Verification & Test Coverage", citation: "IEEE 1012 §4", stage: 4, elId: "sec-testing", keywords: ["test", "verification", "benchmark", "validation", "pass", "latency"] }
+  ];
+
+  const DEFAULT_GEMINI_MODELS = [
+    { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash (Recommended · 1M Context & Reasoning)" },
+    { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash (Fast & Balanced)" },
+    { id: "gemini-2.5-pro", label: "Gemini 2.5 Pro (Deep Reasoning & IEEE 1016 Audit)" },
+    { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash (General Purpose)" },
+    { id: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash-Lite (Ultra-Low Latency)" }
+  ];
+
+  const RAG_STATE = {
+    drawerOpen: false,
+    settingsOpen: false,
+    mentorSettingsOpen: false,
+    activePersona: "systems",
+    mentorStage: 0,
+    mentorMode: "quiz", // quiz | descriptive | revise
+    messages: [],
+    llmMode: localStorage.getItem("pg_llm_mode") || "auto",
+    geminiModel: localStorage.getItem("pg_gemini_model") || "gemini-3.8-flash",
+    storageScope: localStorage.getItem("pg_gemini_scope") || "personal",
+    sheetsMeta: null,
+    testStatus: "",
+    coachQuestion: "",
+    coachReply: null,
+    quizAnswers: {},
+    descriptiveScore: null,
+    reviseResult: null
+  };
+
+  function getUserSettingId() {
+    const a = window.APP || {};
+    const s = a.session || {};
+    return String(s.usn || s.facultyId || a.selectedStudentUsn || a.selectedFacultyId || a.role || "USER").trim();
+  }
+
+  function getGeminiModelsList() {
+    const a = window.APP || {};
+    return (a.bootstrap && Array.isArray(a.bootstrap.geminiModels) && a.bootstrap.geminiModels.length)
+      ? a.bootstrap.geminiModels
+      : ((a.overview && Array.isArray(a.overview.geminiModels) && a.overview.geminiModels.length)
+        ? a.overview.geminiModels
+        : DEFAULT_GEMINI_MODELS);
+  }
+
+  function getResolvedSheetsStatus() {
+    if (RAG_STATE.sheetsMeta && RAG_STATE.sheetsMeta.effective) {
+      return RAG_STATE.sheetsMeta.effective;
+    }
+    const s = (window.APP && window.APP.overview && window.APP.overview.settings) ||
+      (window.APP && window.APP.bootstrap && window.APP.bootstrap.settings) || {};
+    return {
+      hasKey: s.gemini_key_configured === "true" || Boolean(window.APP && window.APP.bootstrap && window.APP.bootstrap.hasGemini),
+      maskedKey: s.gemini_key_masked || "",
+      model: s.gemini_model || RAG_STATE.geminiModel || "gemini-3.8-flash",
+      mode: s.ai_mentor_mode || RAG_STATE.llmMode || "auto",
+      source: s.gemini_key_source || "Google Sheets"
+    };
+  }
+
+  function getProj() {
+    return typeof window.getCurrentProject === "function" ? window.getCurrentProject() : null;
+  }
+
+  function buildPortfolioChunks(proj) {
+    if (!proj) return [];
+    const chunks = [];
+    const getSt = n => (proj.stages || []).find(s => Number(s.stage_number) === n) || { fields: {} };
+    const s0 = getSt(0).fields || {};
+    const s1 = getSt(1).fields || {};
+    const s2 = getSt(2).fields || {};
+    const s3 = getSt(3).fields || {};
+    const s4 = getSt(4).fields || {};
+
+    const add = (id, label, text, stage, elId) => {
+      const clean = String(text || "").trim();
+      if (clean) chunks.push({ id, label, text: clean, stage, elId });
+    };
+
+    add("prob", "Stage 0 · Problem", s0.problem || proj.problem_statement, 0, "sec-problem");
+    add("obj", "Stage 0 · Objectives", Array.isArray(s0.objectives) ? s0.objectives.join(" ") : (s0.objectives || proj.objectives), 0, "sec-objectives");
+    add("scope", "Stage 0 · Scope", s0.scope || s0.solutionConcept || proj.abstract, 0, "sec-scope");
+
+    (s0.coursesTable || []).forEach((c, idx) => {
+      add("course-" + idx, "Course: " + (c.course || idx + 1), (c.course || "") + " — " + (c.concepts || "") + " (" + (c.role || "") + ")", 0, "sec-courses");
+    });
+    (s0.enginesTable || []).forEach((e, idx) => {
+      const eid = e.id || ("E" + (idx + 1));
+      add("eng-" + eid, "Engine " + eid, (e.name || e.engine || "") + ": " + (e.desc || ""), 0, "portfolio-engine-" + eid);
+    });
+    (s1.frTable || []).forEach((fr, idx) => {
+      const fid = fr.id || ("FR-" + (idx + 1));
+      add("fr-" + fid, fid, "Functional Requirement " + fid + ": " + (fr.desc || "") + " [Priority: " + (fr.priority || "Mandatory") + ", Need: " + (fr.sourceNeed || "") + "]", 1, "portfolio-fr-" + fid);
+    });
+    (s1.nfrTable || []).forEach((nf, idx) => {
+      const nid = nf.id || ("NFR-" + (idx + 1));
+      add("nfr-" + nid, nid, "Non-Functional Requirement " + nid + ": " + (nf.desc || "") + " [Category: " + (nf.cat || nf.category || "") + ", Target: " + (nf.target || "") + "]", 1, "portfolio-nfr-" + nid);
+    });
+    (s1.userStoryTable || []).forEach((u, idx) => {
+      add("uc-" + idx, u.id || ("UC-" + (idx + 1)), (u.actor || "") + ": " + (u.desc || "") + " — " + (u.mainFlow || ""), 1, "sec-usecase");
+    });
+    (s1.acceptanceTable || []).forEach((a, idx) => {
+      add("acc-" + idx, "Acceptance " + (a.req || idx + 1), (a.criteria || "") + " via " + (a.method || ""), 1, "sec-acceptance");
+    });
+
+    if (Array.isArray(s2.architecturePoints) && s2.architecturePoints.length) {
+      add("arch", "Stage 2 · Architecture", s2.architecturePoints.join(" "), 2, "sec-arch");
+    }
+    if (Array.isArray(s2.dataDesignPoints) && s2.dataDesignPoints.length) {
+      add("data", "Stage 2 · Data Design", s2.dataDesignPoints.join(" "), 2, "sec-data-design");
+    }
+    if (Array.isArray(s2.algorithmDesignPoints) && s2.algorithmDesignPoints.length) {
+      add("algo", "Stage 2 · Algorithm Design", s2.algorithmDesignPoints.join(" "), 2, "sec-algo-design");
+    }
+    add("impl", "Stage 3 · Implementation", (s3.implementation || "") + " " + (s3.modules || "") + " " + (proj.technologies || ""), 3, "sec-impl");
+    add("test", "Stage 4 · Testing", (s4.testing || "") + " " + (s4.test_results || "") + " " + (s4.metrics || ""), 4, "sec-testing");
+
+    return chunks;
+  }
+
+  function scoreChunksBM25(query, chunks) {
+    const tokens = String(query || "").toLowerCase().split(/\W+/).filter(w => w.length > 2);
+    if (!tokens.length) return chunks.slice(0, 3).map(c => ({ chunk: c, score: 1 }));
+    return chunks.map(c => {
+      const hay = (c.label + " " + c.text).toLowerCase();
+      let score = 0;
+      tokens.forEach(t => {
+        if (hay.includes(t)) score += (c.label.toLowerCase().includes(t) ? 3 : 1);
+      });
+      return { chunk: c, score };
+    }).sort((a, b) => b.score - a.score);
+  }
+
+  async function runPortfolioQuery(question) {
+    const proj = getProj();
+    if (!proj) return { provider: "BM25 RAG", answer: "Select a team project first.", citations: [] };
+    const chunks = buildPortfolioChunks(proj);
+    const top = scoreChunksBM25(question, chunks).filter(r => r.score > 0).slice(0, 3);
+    const contextText = top.map(r => "[" + r.chunk.label + "] " + r.chunk.text).join("\n");
+
+    const eff = getResolvedSheetsStatus();
+    const mode = RAG_STATE.llmMode || eff.mode || "auto";
+    const chosenModel = RAG_STATE.geminiModel || eff.model || "gemini-3.8-flash";
+
+    // Query Gemini AI via Google Apps Script backend using key & model stored in Google Sheets Settings tab
+    if (mode !== "bm25" && typeof window.callServer === "function") {
+      try {
+        const res = await window.callServer("askMentorChat", {
+          userId: getUserSettingId(),
+          model: chosenModel,
+          forceGemini: mode === "server",
+          systemPrompt: "You are ProjectGate AI Viva Assistant. Answer strictly from the supplied portfolio excerpts.",
+          prompt: "Question: " + question + "\n\nPortfolio Excerpts:\n" + (contextText || proj.project_title)
+        });
+        if (res && res.ok && res.text) {
+          return { provider: res.provider, answer: res.text, citations: top.map(r => r.chunk) };
+        }
+      } catch (e) {
+        if (mode === "server") {
+          return {
+            provider: "Gemini Error (" + chosenModel + ")",
+            answer: "Could not query Gemini (" + e.message + "). Check your API key in AI Mentor Settings.",
+            citations: top.map(r => r.chunk)
+          };
+        }
+      }
+    }
+
+    // Deterministic BM25 Grounded Fallback (always works)
+    if (!top.length) {
+      const def = chunks.slice(0, 2);
+      return {
+        provider: "BM25 Portfolio RAG",
+        answer: "Grounded overview for " + proj.project_title + ": " +
+          (def.map(d => d.text.slice(0, 220)).join(" ") || "Document Stage 0 and Stage 1 details to query deeper."),
+        citations: def
+      };
+    }
+
+    return {
+      provider: "BM25 Portfolio RAG",
+      answer: top.map(r => r.chunk.label + ": " + r.chunk.text.slice(0, 260) + (r.chunk.text.length > 260 ? "..." : "")).join("\n\n"),
+      citations: top.map(r => r.chunk)
+    };
+  }
+
+  // ==================== FLOATING RAG ASSISTANT DRAWER ====================
+
+  function renderAiSettingsBox(prefix) {
+    const models = getGeminiModelsList();
+    const eff = getResolvedSheetsStatus();
+    const curModel = RAG_STATE.geminiModel || eff.model || "gemini-3.8-flash";
+    const curMode = RAG_STATE.llmMode || eff.mode || "auto";
+    const isCustom = curModel && !models.some(m => m.id === curModel);
+
+    return `
+      <div id="${prefix}-ai-settings-box" style="padding:12px;background:var(--surface-2,#f8fafc);border:1px solid var(--line);border-radius:10px;font-size:.82rem;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <strong>Gemini AI Model &amp; Google Sheets Key Settings</strong>
+          <span class="tag ${eff.hasKey ? "green" : "amber"}">
+            ${eff.hasKey ? ("Key in Sheets: " + window.esc(eff.maskedKey || "Configured") + " (" + window.esc(eff.source) + ")") : "No Key in Sheets · Using BM25 Local"}
+          </span>
+        </div>
+
+        <div class="grid two" style="gap:8px">
+          <div class="field" style="margin-bottom:6px">
+            <label>Gemini AI Model</label>
+            <select id="${prefix}-cfg-model" onchange="onAiModelSelectChange('${prefix}', this.value)">
+              ${models.map(m => `<option value="${window.esc(m.id)}" ${curModel === m.id ? "selected" : ""}>${window.esc(m.label)}</option>`).join("")}
+              <option value="__custom__" ${isCustom ? "selected" : ""}>Custom Gemini Model ID...</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:6px">
+            <label>AI Mentor Provider Mode</label>
+            <select id="${prefix}-cfg-mode">
+              <option value="auto" ${curMode === "auto" ? "selected" : ""}>Auto (Gemini Sheets Key -&gt; BM25)</option>
+              <option value="server" ${curMode === "server" ? "selected" : ""}>Gemini AI Only (Sheets Key)</option>
+              <option value="bm25" ${curMode === "bm25" ? "selected" : ""}>Zero-Key BM25 Grounded Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="${prefix}-cfg-custom-wrap" class="field" style="margin-bottom:6px;display:${isCustom ? "block" : "none"}">
+          <label>Custom Gemini Model Name</label>
+          <input id="${prefix}-cfg-custom-model" placeholder="e.g. gemini-2.5-flash-preview-05-20" value="${isCustom ? window.esc(curModel) : ""}">
+        </div>
+
+        <div class="grid two" style="gap:8px">
+          <div class="field" style="margin-bottom:6px">
+            <label>Enter Gemini API Key (Saved to Google Sheets)</label>
+            <input id="${prefix}-cfg-key" type="password" placeholder="${eff.hasKey ? "Saved: " + window.esc(eff.maskedKey) + " (enter new to replace)" : "Paste AIza... Gemini API key"}" autocomplete="off">
+          </div>
+          <div class="field" style="margin-bottom:6px">
+            <label>Store Key In Sheets Scope</label>
+            <select id="${prefix}-cfg-scope">
+              <option value="personal" ${RAG_STATE.storageScope === "personal" ? "selected" : ""}>My User Account (${window.esc(getUserSettingId())})</option>
+              <option value="workspace" ${RAG_STATE.storageScope === "workspace" ? "selected" : ""}>Shared Workspace (All Users)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px">
+          <button type="button" class="btn primary" style="padding:6px 12px;font-size:.8rem" onclick="saveMentorSheetsSettings('${prefix}')">Save Key &amp; Model to Sheets</button>
+          <button type="button" class="btn secondary" style="padding:6px 10px;font-size:.8rem" onclick="testMentorGeminiKey('${prefix}')">Test Connection</button>
+          ${eff.hasKey ? `<button type="button" class="btn secondary" style="padding:6px 10px;font-size:.8rem;color:#b91c1c" onclick="clearMentorSheetsKey('${prefix}')">Clear Key</button>` : ""}
+          ${RAG_STATE.testStatus ? `<span class="muted" style="font-size:.76rem">${window.esc(RAG_STATE.testStatus)}</span>` : ""}
+        </div>
+      </div>`;
+  }
+
+  function mountRagWidgets() {
+    const root = document.getElementById("rag-floating-root");
+    if (!root) return;
+    const proj = getProj();
+    const title = proj ? ((proj.team ? proj.team.team_id + " · " : "") + proj.project_title) : "No Project Selected";
+
+    root.innerHTML = `
+      <button type="button" class="portfolio-chat-fab ${RAG_STATE.drawerOpen ? "active" : ""}" onclick="toggleRagDrawer()" title="AI Viva Assistant">
+        <span>💬</span><span>AI Viva Assistant</span>
+      </button>
+
+      <div class="portfolio-chat-drawer ${RAG_STATE.drawerOpen ? "open" : ""}" id="rag-drawer">
+        <div class="portfolio-chat-header">
+          <div>
+            <strong style="display:block;font-size:.95rem">AI Viva &amp; Portfolio Assistant</strong>
+            <span style="font-size:.75rem;opacity:.85">${window.esc(title.slice(0, 44))}</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn secondary" style="padding:4px 8px;font-size:.75rem" onclick="toggleRagSettings()">⚙️</button>
+            <button type="button" class="btn secondary" style="padding:4px 8px;font-size:.75rem" onclick="toggleRagDrawer()">✕</button>
+          </div>
+        </div>
+
+        ${RAG_STATE.settingsOpen ? renderAiSettingsBox("rag") : ""}
+
+        <div class="portfolio-chat-suggestions">
+          <button type="button" onclick="sendRagPreset('Summarize problem statement and objectives')">Problem &amp; Goals</button>
+          <button type="button" onclick="sendRagPreset('List functional requirements and measurable NFR targets')">FR &amp; NFR</button>
+          <button type="button" onclick="sendRagPreset('Explain core engines and architecture design')">Engines &amp; Arch</button>
+        </div>
+
+        <div class="portfolio-chat-messages" id="rag-messages">
+          ${RAG_STATE.messages.length === 0
+            ? `<div style="padding:16px;color:var(--muted);font-size:.86rem">Ask anything about <b>${window.esc(title)}</b>. Citations link directly back to Stage 0–4 sections.</div>`
+            : RAG_STATE.messages.map(m => `
+              <div class="chat-bubble-wrap ${m.role === "user" ? "user" : "assistant"}" style="margin-bottom:10px;text-align:${m.role === "user" ? "right" : "left"}">
+                <div class="chat-bubble-content" style="display:inline-block;max-width:92%;padding:10px 12px;border-radius:12px;background:${m.role === "user" ? "var(--brand,#4f46e5)" : "var(--surface-2,#f1f5f9)"};color:${m.role === "user" ? "#fff" : "var(--ink,#0f172a)"};font-size:.85rem;white-space:pre-line;text-align:left">
+                  ${m.provider ? `<div style="font-size:.7rem;opacity:.7;margin-bottom:4px;font-weight:700">${window.esc(m.provider)}</div>` : ""}
+                  ${window.esc(m.text)}
+                  ${(m.citations && m.citations.length) ? `
+                    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+                      ${m.citations.map(c => `<button type="button" class="rag-cite-pill" style="border:1px solid var(--brand);background:#fff;color:var(--brand);border-radius:999px;padding:2px 8px;font-size:.72rem;font-weight:700;cursor:pointer" onclick="window.jumpToSection('${window.esc(c.elId)}', ${Number(c.stage)})">[${window.esc(c.label)}]</button>`).join("")}
+                    </div>` : ""}
+                </div>
+              </div>`).join("")}
+        </div>
+
+        <form class="portfolio-chat-input-form" onsubmit="event.preventDefault();submitRagQuestion()">
+          <textarea id="rag-input" rows="2" placeholder="Ask about FRs, NFR metrics, engines, crash recovery..."></textarea>
+          <button type="submit" class="btn primary" style="padding:8px 14px">Ask</button>
+        </form>
+      </div>`;
+  }
+
+  window.syncRagFabState = function () {
+    const eff = getResolvedSheetsStatus();
+    if (!localStorage.getItem("pg_gemini_model") && eff.model) RAG_STATE.geminiModel = eff.model;
+    if (!localStorage.getItem("pg_llm_mode") && eff.mode) RAG_STATE.llmMode = eff.mode;
+    mountRagWidgets();
+  };
+  window.pgRagReset = function () {
+    RAG_STATE.messages = [];
+    RAG_STATE.quizAnswers = {};
+    RAG_STATE.descriptiveScore = null;
+    RAG_STATE.reviseResult = null;
+    RAG_STATE.coachReply = null;
+    mountRagWidgets();
+  };
+
+  window.onAiModelSelectChange = function (prefix, val) {
+    const wrap = document.getElementById(prefix + "-cfg-custom-wrap");
+    if (wrap) wrap.style.display = val === "__custom__" ? "block" : "none";
+  };
+
+  window.loadAiMentorSettingsFromSheets = async function () {
+    if (typeof window.callServer !== "function") return;
+    try {
+      const meta = await window.callServer("getAiMentorSettings", { userId: getUserSettingId() });
+      if (meta && meta.effective) {
+        RAG_STATE.sheetsMeta = meta;
+        RAG_STATE.geminiModel = meta.effective.model || RAG_STATE.geminiModel;
+        RAG_STATE.llmMode = meta.effective.mode || RAG_STATE.llmMode;
+        mountRagWidgets();
+        refreshMentorView();
+      }
+    } catch (e) {}
+  };
+
+  window.saveMentorSheetsSettings = async function (prefix) {
+    const modelSel = document.getElementById(prefix + "-cfg-model")?.value || "";
+    const customModel = document.getElementById(prefix + "-cfg-custom-model")?.value.trim() || "";
+    const model = modelSel === "__custom__" ? customModel : modelSel;
+    const mode = document.getElementById(prefix + "-cfg-mode")?.value || "auto";
+    const apiKey = document.getElementById(prefix + "-cfg-key")?.value.trim() || "";
+    const scope = document.getElementById(prefix + "-cfg-scope")?.value || "personal";
+
+    if (!model) {
+      if (typeof window.toast === "function") window.toast("Select or enter a Gemini model name.", true);
+      return;
+    }
+
+    RAG_STATE.geminiModel = model;
+    RAG_STATE.llmMode = mode;
+    RAG_STATE.storageScope = scope;
+    RAG_STATE.testStatus = "";
+    try {
+      localStorage.setItem("pg_gemini_model", model);
+      localStorage.setItem("pg_llm_mode", mode);
+      localStorage.setItem("pg_gemini_scope", scope);
+    } catch (e) {}
+
+    if (typeof window.callServer === "function") {
+      try {
+        const res = await window.callServer("saveAiMentorSettings", {
+          userId: getUserSettingId(),
+          actor: (window.APP && window.APP.session && window.APP.session.displayName) || getUserSettingId(),
+          scope: scope,
+          model: model,
+          mode: mode,
+          apiKey: apiKey || undefined
+        });
+        if (res && res.aiSettings) RAG_STATE.sheetsMeta = res.aiSettings;
+        if (res && res.settings && window.APP && window.APP.overview) {
+          window.APP.overview.settings = res.settings;
+        }
+        RAG_STATE.testStatus = "Saved to Google Sheets (" + model + ")";
+        if (typeof window.toast === "function") window.toast(res.message || "Saved Gemini settings to Sheets.");
+      } catch (err) {
+        RAG_STATE.testStatus = err.message;
+        if (typeof window.toast === "function") window.toast(err.message, true);
+      }
+    }
+    mountRagWidgets();
+    refreshMentorView();
+  };
+
+  window.clearMentorSheetsKey = async function (prefix) {
+    const scope = document.getElementById(prefix + "-cfg-scope")?.value || RAG_STATE.storageScope || "personal";
+    if (typeof window.callServer !== "function") return;
+    try {
+      const res = await window.callServer("saveAiMentorSettings", {
+        userId: getUserSettingId(),
+        scope: scope,
+        clearKey: true
+      });
+      if (res && res.aiSettings) RAG_STATE.sheetsMeta = res.aiSettings;
+      if (res && res.settings && window.APP && window.APP.overview) window.APP.overview.settings = res.settings;
+      RAG_STATE.testStatus = "Stored key cleared from Sheets.";
+      if (typeof window.toast === "function") window.toast("Cleared Gemini key from Google Sheets.");
+      mountRagWidgets();
+      refreshMentorView();
+    } catch (e) {
+      if (typeof window.toast === "function") window.toast(e.message, true);
+    }
+  };
+
+  window.testMentorGeminiKey = async function (prefix) {
+    const modelSel = document.getElementById(prefix + "-cfg-model")?.value || "";
+    const customModel = document.getElementById(prefix + "-cfg-custom-model")?.value.trim() || "";
+    const model = (modelSel === "__custom__" ? customModel : modelSel) || RAG_STATE.geminiModel;
+    const apiKey = document.getElementById(prefix + "-cfg-key")?.value.trim() || "";
+    if (typeof window.callServer !== "function") return;
+    RAG_STATE.testStatus = "Testing " + model + "...";
+    mountRagWidgets();
+    refreshMentorView();
+    try {
+      const res = await window.callServer("testGeminiConnection", {
+        userId: getUserSettingId(),
+        model: model,
+        apiKey: apiKey || undefined
+      });
+      RAG_STATE.testStatus = "Connected (" + res.model + "): " + (res.reply || "READY");
+      if (typeof window.toast === "function") window.toast("Gemini model " + res.model + " connected!");
+    } catch (e) {
+      RAG_STATE.testStatus = "Error: " + e.message;
+      if (typeof window.toast === "function") window.toast(e.message, true);
+    }
+    mountRagWidgets();
+    refreshMentorView();
+  };
+
+  window.toggleRagDrawer = function () {
+    RAG_STATE.drawerOpen = !RAG_STATE.drawerOpen;
+    mountRagWidgets();
+  };
+  window.toggleRagSettings = function () {
+    RAG_STATE.settingsOpen = !RAG_STATE.settingsOpen;
+    if (RAG_STATE.settingsOpen) window.loadAiMentorSettingsFromSheets();
+    mountRagWidgets();
+  };
+  window.toggleMentorSettings = function () {
+    RAG_STATE.mentorSettingsOpen = !RAG_STATE.mentorSettingsOpen;
+    if (RAG_STATE.mentorSettingsOpen) window.loadAiMentorSettingsFromSheets();
+    refreshMentorView();
+  };
+  window.saveRagSetting = function (field, val) {
+    if (field === "mode") { RAG_STATE.llmMode = val; localStorage.setItem("pg_llm_mode", val); }
+    if (field === "model") { RAG_STATE.geminiModel = val; localStorage.setItem("pg_gemini_model", val); }
+  };
+  window.sendRagPreset = function (q) {
+    const inp = document.getElementById("rag-input");
+    if (inp) inp.value = q;
+    window.submitRagQuestion();
+  };
+  window.submitRagQuestion = async function () {
+    const inp = document.getElementById("rag-input");
+    const q = inp && inp.value.trim();
+    if (!q) return;
+    RAG_STATE.messages.push({ role: "user", text: q });
+    mountRagWidgets();
+    const res = await runPortfolioQuery(q);
+    RAG_STATE.messages.push({ role: "assistant", text: res.answer, provider: res.provider, citations: res.citations });
+    mountRagWidgets();
+    const box = document.getElementById("rag-messages");
+    if (box) box.scrollTop = box.scrollHeight;
+  };
+
+  // ==================== SPLIT-SCREEN MENTOR WORKSPACE ====================
+
+  function generateMentorQuestions(proj, personaId, stageNum) {
+    const chunks = buildPortfolioChunks(proj);
+    const stageChunks = chunks.filter(c => c.stage === Number(stageNum));
+    const lead = (stageChunks[0] || chunks[0] || { label: "Overview", text: proj.project_title, elId: "sec-problem", stage: 0 });
+    const fr = chunks.find(c => c.id.startsWith("fr-"));
+    const nfr = chunks.find(c => c.id.startsWith("nfr-"));
+    const eng = chunks.find(c => c.id.startsWith("eng-"));
+
+    const clip = s => String(s || "").slice(0, 120) + (String(s || "").length > 120 ? "..." : "");
+
+    return [
+      {
+        qid: "q1",
+        prompt: `[${personaId.toUpperCase()}] Based on "${lead.label}" (${clip(lead.text)}), which engineering principle most directly justifies this design choice?`,
+        options: [
+          "Explicit separation of concerns paired with verifiable invariant/target enforcement",
+          "Avoiding documentation so implementation stays informal",
+          "Replacing automated validation with manual assumptions",
+          "Storing all mutable state unindexed without recovery guarantees"
+        ],
+        correct: 0,
+        rationale: "Your portfolio documents structured invariants and explicit verification criteria in " + lead.label + ".",
+        citation: lead
+      },
+      {
+        qid: "q2",
+        prompt: fr
+          ? `How does ${fr.label} (${clip(fr.text)}) trace forward into acceptance testing?`
+          : `Which Stage ${stageNum} artifact establishes objective pass/fail verification?`,
+        options: [
+          "Through subjective visual inspection only",
+          "Through a named Acceptance Criterion and repeatable test case mapped to Requirement ID",
+          "By skipping Out-of-Scope boundary definitions",
+          "Only during final presentation slides"
+        ],
+        correct: 1,
+        rationale: "Every FR must link back to a Stage 0 Need and forward to an executable verification method.",
+        citation: fr || lead
+      },
+      {
+        qid: "q3",
+        prompt: nfr
+          ? `Regarding ${nfr.label} (${clip(nfr.text)}), what makes a Non-Functional Requirement viva-ready?`
+          : (eng ? `What is the primary architectural risk if ${eng.label} (${clip(eng.text)}) experiences heavy load?` : "What prevents silent failures in production?"),
+        options: [
+          "Measurable numeric bounds, clear exception flows, and automated regression checks",
+          "Vague adjectives like 'fast' and 'reliable' without targets",
+          "Increasing UI color contrast only",
+          "Disabling logging under load"
+        ],
+        correct: 0,
+        rationale: "Quantified NFR targets and explicit failure-path contracts anchor IEEE 1016 design reviews.",
+        citation: nfr || eng || lead
+      }
+    ];
+  }
+
+  function renderMentorInnerHtml() {
+    const proj = getProj();
+    if (!proj) return '<div class="card">Select a team project to launch the AI Mentor Studio.</div>';
+    const persona = MENTOR_PERSONAS.find(p => p.id === RAG_STATE.activePersona) || MENTOR_PERSONAS[0];
+    const mcqs = generateMentorQuestions(proj, persona.id, RAG_STATE.mentorStage);
+    const eff = getResolvedSheetsStatus();
+
+    return `
+      <div class="mentor-dashboard" style="padding:16px">
+        <div class="mentor-dashboard-top" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div>
+            <span class="tag blue">${window.esc(proj.team ? "Team " + proj.team.team_id : proj.project_id)}</span>
+            <span class="tag ${eff.hasKey ? "green" : "gray"}" style="margin-left:6px">${window.esc(eff.model)}</span>
+            <h2 style="margin:4px 0 0">${window.esc(proj.project_title)} — AI Mentor Studio</h2>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn secondary" onclick="toggleMentorSettings()">⚙️ AI Model &amp; Keys</button>
+            ${window.APP.mentorSplitOpen ? `<button class="btn secondary" onclick="closeMentorSplit()">Restore Full Portfolio ✕</button>` : ""}
+          </div>
+        </div>
+
+        ${RAG_STATE.mentorSettingsOpen ? renderAiSettingsBox("mentor") : ""}
+
+        <div class="mentor-stage-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+          ${[0,1,2,3,4].map(n => `<button class="mentor-stage-choice ${RAG_STATE.mentorStage === n ? "active" : ""}" style="padding:6px 12px;border-radius:8px;border:1px solid var(--line);cursor:pointer" onclick="setMentorStage(${n})">Stage ${n}</button>`).join("")}
+        </div>
+
+        <div class="mentor-menu" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+          ${MENTOR_PERSONAS.map(p => `<button class="btn ${p.id === persona.id ? "primary" : "secondary"}" style="padding:6px 10px;font-size:.82rem" onclick="setMentorPersona('${p.id}')">${window.esc(p.name)}</button>`).join("")}
+        </div>
+
+        <div class="card" style="margin-bottom:14px;background:var(--surface-2,#f8fafc)">
+          <strong>${window.esc(persona.name)}</strong>
+          <p class="muted" style="margin:4px 0 10px;font-size:.86rem">${window.esc(persona.focus)}</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn ${RAG_STATE.mentorMode === "quiz" ? "primary" : "secondary"}" style="padding:6px 12px" onclick="setMentorMode('quiz')">MCQ Quiz (Grounded)</button>
+            <button class="btn ${RAG_STATE.mentorMode === "descriptive" ? "primary" : "secondary"}" style="padding:6px 12px" onclick="setMentorMode('descriptive')">Descriptive Defense</button>
+            <button class="btn ${RAG_STATE.mentorMode === "revise" ? "primary" : "secondary"}" style="padding:6px 12px" onclick="setMentorMode('revise')">Review the Work (IEEE 1016 SDD)</button>
+            <button class="btn ${RAG_STATE.mentorMode === "gemini" ? "primary" : "secondary"}" style="padding:6px 12px" onclick="setMentorMode('gemini')">✨ Gemini AI Mentor</button>
+          </div>
+        </div>
+
+        ${RAG_STATE.mentorMode === "gemini" ? `
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+              <h4 style="margin:0">Live Gemini AI Mentor (${window.esc(persona.name)})</h4>
+              <span class="tag ${eff.hasKey ? "green" : "amber"}">Model: ${window.esc(RAG_STATE.geminiModel || eff.model)}</span>
+            </div>
+            <p class="muted" style="font-size:.84rem;margin:0 0 8px">Uses your Gemini API key &amp; model saved in Google Sheets <code>Settings</code> tab to critique this project with grounded portfolio citations.</p>
+            <textarea id="mentor-gemini-prompt" rows="3" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px" placeholder="Ask ${window.esc(persona.name)} to challenge your Stage ${RAG_STATE.mentorStage} design, stress-test NFRs, or generate viva questions...">${window.esc(RAG_STATE.coachQuestion || "")}</textarea>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" class="btn primary" onclick="askGeminiMentorStudio()">Ask Gemini Model →</button>
+              ${!eff.hasKey ? `<button type="button" class="btn secondary" onclick="if(!RAG_STATE.mentorSettingsOpen)toggleMentorSettings()">Configure Gemini Key in Sheets</button>` : ""}
+            </div>
+            ${RAG_STATE.coachReply ? `
+              <div style="margin-top:12px;padding:12px;border-radius:10px;background:var(--surface-2,#f1f5f9);white-space:pre-line;font-size:.86rem">
+                <div style="font-size:.74rem;font-weight:700;color:var(--brand);margin-bottom:4px">${window.esc(RAG_STATE.coachReply.provider)}</div>
+                ${window.esc(RAG_STATE.coachReply.answer)}
+              </div>` : ""}
+          </div>` : ""}
+
+        ${RAG_STATE.mentorMode === "quiz" ? `
+          <div style="display:flex;flex-direction:column;gap:12px">
+            ${mcqs.map((q, idx) => {
+              const picked = RAG_STATE.quizAnswers[q.qid];
+              const answered = picked !== undefined;
+              return `
+                <div class="card">
+                  <p style="font-weight:700;margin:0 0 8px">Q${idx + 1}. ${window.esc(q.prompt)}</p>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    ${q.options.map((opt, oi) => {
+                      let bg = "var(--surface,#fff)";
+                      if (answered) {
+                        if (oi === q.correct) bg = "#dcfce7";
+                        else if (oi === picked) bg = "#ffe4e6";
+                      }
+                      return `<button type="button" style="text-align:left;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:${bg};cursor:pointer;font-size:.86rem" onclick="answerMentorMcq('${q.qid}', ${oi})">${String.fromCharCode(65 + oi)}. ${window.esc(opt)}</button>`;
+                    }).join("")}
+                  </div>
+                  ${answered ? `
+                    <div style="margin-top:8px;font-size:.82rem;color:${picked === q.correct ? "#166534" : "#9f1239"}">
+                      <b>${picked === q.correct ? "✓ Correct!" : "✗ Review Needed:"}</b> ${window.esc(q.rationale)}
+                      <button type="button" style="margin-left:8px;border:none;background:none;color:var(--brand);font-weight:700;cursor:pointer;text-decoration:underline" onclick="window.jumpToSection('${window.esc(q.citation.elId)}', ${Number(q.citation.stage)})">Jump to ${window.esc(q.citation.label)}</button>
+                    </div>` : ""}
+                </div>`;
+            }).join("")}
+          </div>` : ""}
+
+        ${RAG_STATE.mentorMode === "descriptive" ? `
+          <div class="card">
+            <h4>Descriptive Viva Prompt (${window.esc(persona.name)})</h4>
+            <p>${window.esc(persona.samplePrompts[0])}</p>
+            <textarea id="mentor-desc-ans" rows="4" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px" placeholder="Draft your team defense explaining requirements, design tradeoffs, and verification..."></textarea>
+            <button class="btn primary" onclick="gradeDescriptiveAnswer()">Evaluate Defense Against Portfolio</button>
+            ${RAG_STATE.descriptiveScore ? `
+              <div style="margin-top:12px;padding:12px;border-radius:10px;background:var(--surface-2,#f1f5f9)">
+                <b>Evidence Alignment Score: ${RAG_STATE.descriptiveScore.pct}%</b>
+                <p style="margin:6px 0 0;font-size:.86rem">${window.esc(RAG_STATE.descriptiveScore.feedback)}</p>
+              </div>` : ""}
+          </div>` : ""}
+
+        ${RAG_STATE.mentorMode === "revise" ? `
+          <div class="card">
+            <h4>IEEE 1016 SDD &amp; Portfolio Completeness Review</h4>
+            <p class="muted" style="font-size:.84rem">Evaluates this team's Sheets submissions (or paste an updated draft below) against IEEE 1016 SDD standards.</p>
+            <textarea id="mentor-revise-draft" rows="3" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px" placeholder="Optional: paste draft text to check, or leave blank to audit live Sheets portfolio..."></textarea>
+            <button class="btn primary" onclick="runSddAlignmentCheck()">Run SDD &amp; Stage Alignment Check</button>
+            ${RAG_STATE.reviseResult ? `
+              <ul class="mentor-revise-list" style="margin-top:12px">
+                ${RAG_STATE.reviseResult.map(r => `
+                  <li style="padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <b>${window.esc(r.title)} <span class="tag gray">${window.esc(r.citation)}</span></b>
+                      <span class="tag ${r.status === "aligned" ? "green" : (r.status === "partial" ? "amber" : "red")}">${window.esc(r.status.toUpperCase())}</span>
+                    </div>
+                    <span class="muted" style="font-size:.82rem">${window.esc(r.note)}</span>
+                    <button type="button" style="align-self:flex-start;border:none;background:none;color:var(--brand);font-weight:700;cursor:pointer;padding:0;font-size:.8rem" onclick="window.jumpToSection('${window.esc(r.elId)}', ${Number(r.stage)})">Inspect Section →</button>
+                  </li>`).join("")}
+              </ul>` : ""}
+          </div>` : ""}
+      </div>`;
+  }
+
+  window.renderMentorStudioPage = renderMentorInnerHtml;
+
+  window.openMentorSplit = function (projectId) {
+    if (projectId && window.APP) window.APP.selectedProjectId = projectId;
+    if (window.APP) {
+      window.APP.page = "portfolio";
+      window.APP.mentorSplitOpen = true;
+    }
+    if (typeof window.renderApp === "function") window.renderApp();
+  };
+
+  window.closeMentorSplit = function () {
+    if (window.APP) window.APP.mentorSplitOpen = false;
+    if (typeof window.renderApp === "function") window.renderApp();
+  };
+
+  window.syncMentorSplitPane = function () {
+    const pane = document.getElementById("mentor-split-pane");
+    const handle = document.getElementById("mentor-split-handle");
+    const splitRoot = document.getElementById("workspace-split-root");
+    if (!pane || !splitRoot) return;
+    const active = Boolean(window.APP && window.APP.mentorSplitOpen && window.APP.page === "portfolio");
+    splitRoot.classList.toggle("split-active", active);
+    pane.style.display = active ? "block" : "none";
+    if (handle) handle.style.display = active ? "block" : "none";
+    if (active) pane.innerHTML = renderMentorInnerHtml();
+  };
+
+  window.setMentorPersona = function (id) { RAG_STATE.activePersona = id; RAG_STATE.quizAnswers = {}; refreshMentorView(); };
+  window.setMentorStage = function (n) { RAG_STATE.mentorStage = Number(n); RAG_STATE.quizAnswers = {}; refreshMentorView(); };
+  window.setMentorMode = function (m) { RAG_STATE.mentorMode = m; refreshMentorView(); };
+  window.answerMentorMcq = function (qid, idx) { RAG_STATE.quizAnswers[qid] = idx; refreshMentorView(); };
+
+  window.gradeDescriptiveAnswer = function () {
+    const proj = getProj();
+    const ans = (document.getElementById("mentor-desc-ans")?.value || "").trim();
+    if (!ans || !proj) return window.toast("Write an answer first.", true);
+    const chunks = buildPortfolioChunks(proj);
+    const scored = scoreChunksBM25(ans, chunks).filter(r => r.score > 0);
+    const pct = Math.min(100, Math.round((scored.length / Math.max(3, Math.min(6, chunks.length))) * 100));
+    RAG_STATE.descriptiveScore = {
+      pct: pct,
+      feedback: scored.length
+        ? "Matched " + scored.length + " portfolio sections (" + scored.slice(0, 3).map(s => s.chunk.label).join(", ") + "). Include specific metrics or acceptance methods to strengthen further."
+        : "Your draft did not reference specific FR/NFR IDs, Engine IDs, or concrete dataset metrics from this project."
+    };
+    refreshMentorView();
+  };
+
+  window.runSddAlignmentCheck = function () {
+    const proj = getProj();
+    if (!proj) return;
+    const extraDraft = (document.getElementById("mentor-revise-draft")?.value || "").toLowerCase();
+    const allText = (buildPortfolioChunks(proj).map(c => c.label + " " + c.text).join(" ") + " " + extraDraft).toLowerCase();
+
+    RAG_STATE.reviseResult = SDD_SECTIONS.map(sec => {
+      const hits = sec.keywords.filter(k => allText.includes(k)).length;
+      let status = "missing";
+      let note = "Little or no evidence found for " + sec.title + ".";
+      if (hits >= 3) {
+        status = "aligned";
+        note = "Well documented across " + hits + " IEEE indicators.";
+      } else if (hits >= 1) {
+        status = "partial";
+        note = "Partially addressed (" + hits + " indicators); consider adding concrete table rows or measurable targets.";
+      }
+      return { ...sec, status, note };
+    });
+    refreshMentorView();
+  };
+
+  window.askGeminiMentorStudio = async function () {
+    const proj = getProj();
+    const qEl = document.getElementById("mentor-gemini-prompt");
+    const q = (qEl && qEl.value.trim()) || ("Review Stage " + RAG_STATE.mentorStage + " for " + (proj ? proj.project_title : "this project") + " from the " + RAG_STATE.activePersona + " perspective.");
+    RAG_STATE.coachQuestion = q;
+    RAG_STATE.coachReply = { provider: "Querying " + (RAG_STATE.geminiModel || "gemini-3.8-flash") + "...", answer: "Evaluating portfolio chunks..." };
+    refreshMentorView();
+    const res = await runPortfolioQuery("[" + RAG_STATE.activePersona + " Persona · Stage " + RAG_STATE.mentorStage + "] " + q);
+    RAG_STATE.coachReply = { provider: res.provider, answer: res.answer };
+    refreshMentorView();
+  };
+
+  function refreshMentorView() {
+    if (window.APP && window.APP.mentorSplitOpen) {
+      window.syncMentorSplitPane();
+    } else if (window.APP && window.APP.page === "mentor" && typeof window.renderApp === "function") {
+      window.renderApp();
+    }
+  }
+
+  // Draggable splitter handler
+  document.addEventListener("DOMContentLoaded", function () {
+    const handle = document.getElementById("mentor-split-handle");
+    const splitRoot = document.getElementById("workspace-split-root");
+    if (!handle || !splitRoot) return;
+    let dragging = false;
+    handle.addEventListener("mousedown", function () { dragging = true; });
+    document.addEventListener("mousemove", function (e) {
+      if (!dragging) return;
+      const rect = splitRoot.getBoundingClientRect();
+      const leftPct = Math.min(72, Math.max(35, ((e.clientX - rect.left) / rect.width) * 100));
+      splitRoot.style.gridTemplateColumns = leftPct + "% 6px 1fr";
+    });
+    document.addEventListener("mouseup", function () { dragging = false; });
+  });
+})();
+</script>

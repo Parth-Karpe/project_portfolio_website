@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <base target="_top">
+  <title>ProjectGate AI | Engineering Mini-Project Portfolio &amp; Mentoring</title>
+  <?!= include('styles'); ?>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <script>
+    window.INITIAL_ROUTE = <?!= JSON.stringify(typeof initialRoute !== "undefined" ? initialRoute : {}) ?>;
+  </script>
+
+  <!-- First-Entry Login Gate -->
+  <section id="login-screen" class="login-screen">
+    <div class="card" style="padding:28px;text-align:center">
+      <h3>Loading ProjectGate AI Sign-In...</h3>
+      <p class="muted">Connecting to Google Sheets cohort roster.</p>
+    </div>
+  </section>
+
+  <div id="workspace-split-root" style="display:none;min-height:100vh">
+    <div class="shell mentor-split-left" id="app-shell">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="brand-row" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
+          <div class="brand">
+            <span class="brand-badge">PG</span>
+            <div>
+              <strong>ProjectGate AI</strong>
+              <small style="display:block;font-size:.7rem;opacity:.7">Sheets &amp; Drive Edition</small>
+            </div>
+          </div>
+          <button type="button" class="collapse-btn" onclick="toggleSidebar()" title="Collapse Sidebar">☰</button>
+        </div>
+
+        <div id="sidebar-session-badge" style="margin-bottom:12px;padding:10px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:.82rem">
+          <div style="opacity:.72;font-size:.7rem;margin-bottom:2px">Signed In Account</div>
+          <strong id="session-user-name">Not Signed In</strong>
+          <div id="session-user-role" style="opacity:.82;font-size:.75rem;margin-top:2px"></div>
+        </div>
+
+        <nav class="nav" id="sidebar-nav" style="display:flex;flex-direction:column;gap:4px;flex:1"></nav>
+
+        <div class="sidebar-footer" style="margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)">
+          <div id="sidebar-identity" style="margin-bottom:10px"></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button type="button" id="theme-toggle-btn" class="theme-btn" onclick="toggleTheme()" style="width:100%">🌙 Dark Mode</button>
+            <button type="button" class="theme-btn" onclick="logoutUser()" style="width:100%;background:rgba(244,63,94,.22);border-color:rgba(244,63,94,.4)">🚪 Sign Out</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Column -->
+      <div class="shell-main" style="display:flex;flex-direction:column;min-width:0">
+        <header class="topbar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <h2 id="topbar-page-title" style="margin:0;font-size:1.15rem">Department Cohort</h2>
+            <span id="topbar-sync-status"><span class="gas-badge-cloud">● Connected to Sheets &amp; Drive</span></span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <select id="topbar-team-select" onchange="onTopbarProjectChange(this.value)"
+              style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);max-width:290px;background:var(--surface,#fff);color:var(--ink)">
+              <option>Loading teams...</option>
+            </select>
+            <button type="button" class="btn secondary" style="padding:6px 12px" onclick="refreshAll(true)">↻ Sync</button>
+            <button type="button" class="btn secondary" style="padding:6px 12px" onclick="logoutUser()">Sign Out</button>
+          </div>
+        </header>
+
+        <main class="main" id="main-view" style="flex:1">
+          <div class="card" style="text-align:center;padding:36px">
+            <h3>Loading ProjectGate AI from Google Sheets...</h3>
+            <p class="muted">Fetching cohort rosters, 31 teams, structured Stages 0–4, and faculty mappings.</p>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div id="mentor-split-handle" class="mentor-split-handle" style="display:none" title="Drag to resize AI Mentor Pane"></div>
+    <section id="mentor-split-pane" class="mentor-split-pane" style="display:none"></section>
+  </div>
+
+  <!-- Zoomable Diagram Lightbox -->
+  <div id="diagram-lightbox" class="diagram-lightbox" onclick="if(event.target===this)closeLightbox()">
+    <div class="diagram-lightbox-toolbar">
+      <button type="button" onclick="zoomLightbox(0.25)">Zoom +</button>
+      <button type="button" onclick="zoomLightbox(-0.25)">Zoom −</button>
+      <button type="button" onclick="zoomLightbox(0)">Reset</button>
+      <button type="button" onclick="closeLightbox()">✕ Close</button>
+    </div>
+    <div class="diagram-lightbox-stage">
+      <img id="lightbox-img" src="" alt="Diagram Preview">
+    </div>
+    <div id="lightbox-caption" class="diagram-lightbox-caption"></div>
+  </div>
+
+  <!-- Floating AI Viva RAG Root -->
+  <div id="rag-floating-root"></div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <style>
+    #workspace-split-root.split-active {
+      display: grid !important;
+      grid-template-columns: 58% 6px 1fr;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #workspace-split-root.split-active .mentor-split-left {
+      overflow-y: auto;
+      height: 100vh;
+    }
+    #workspace-split-root.split-active .mentor-split-pane {
+      overflow-y: auto;
+      height: 100vh;
+      background: var(--surface, #fff);
+      border-left: 1px solid var(--line);
+    }
+  </style>
+
+  <?!= include('app_client'); ?>
+  <?!= include('rag_mentor'); ?>
+</body>
+</html>

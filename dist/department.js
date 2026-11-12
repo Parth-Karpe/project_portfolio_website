@@ -1255,7 +1255,7 @@ function switchTeam(id){
   if(window.syncTeamFromCloud) window.syncTeamFromCloud(id);
 }
 
-rolePages['Faculty Admin']=['Overview','Department','Team Portfolio'];
+rolePages['Faculty Admin']=['Overview','Department','Team Portfolio','Settings'];
 iconFor['Faculty Admin']='♙';
 currentIdentity=function(){
   if(state.role==='Faculty Admin') return state.department.facultyAdmin;

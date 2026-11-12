@@ -1146,6 +1146,44 @@ input[type="file"] {
   box-shadow: 0 2px 8px var(--brand-glow);
 }
 
+.workspace-app-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 18px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.workspace-app-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-subtle, var(--surface));
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.workspace-app-tab .workspace-app-tab-icon svg {
+  width: 14px;
+  height: 14px;
+}
+.workspace-app-tab:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.workspace-app-tab.active {
+  background: var(--brand-surface, #dce8ff);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
 /* Stages */
 .stage {
   display: flex;

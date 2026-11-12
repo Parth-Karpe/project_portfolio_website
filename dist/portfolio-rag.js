@@ -4217,7 +4217,16 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     const geminiModel = document.getElementById('chat-set-gemini-model')?.value || 'gemini-2.5-flash';
 
-    saveLLMSettings({ provider, geminiKey, geminiModel });
+    const prev = getLLMSettings();
+
+    saveLLMSettings({
+      provider,
+      geminiKey,
+      geminiModel,
+      ollamaUrl: prev.ollamaUrl,
+      ollamaModel: prev.ollamaModel,
+      ollamaToken: prev.ollamaToken
+    });
 
     memoryApiAvailable = null; // reset probe cache on save
 
@@ -6029,9 +6038,70 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(typeof sessionStorage === 'undefined') return null;
     try {
       const saved = JSON.parse(sessionStorage.getItem(assessmentKey(teamId, persona, stage, kind)) || 'null');
+      if(!saved) return null;
+      if(kind === 'descriptive' && saved.sequentialMode) return saved;
       if(saved && Array.isArray(saved.questions) && saved.questions.length === 5) return saved;
     } catch(_) {}
     return null;
+  }
+
+  const DESCRIPTIVE_PASS_TARGET = 4;
+
+  function cloneDescriptiveQuestion(q){
+    return {
+      templateId: q.templateId,
+      prompt: q.prompt,
+      layer: q.layer,
+      expectedPoints: q.expectedPoints ? q.expectedPoints.slice() : undefined,
+      source: q.source,
+      citation: q.citation,
+      rubric: q.rubric,
+      draft: '',
+      checked: false,
+      supported: false,
+      feedback: null
+    };
+  }
+
+  function shuffleIndexQueue(queue, seed){
+    const rng = createPRNG(seed || 1);
+    for(let i = queue.length - 1; i > 0; i--){
+      const j = Math.floor(rng() * (i + 1));
+      const tmp = queue[i];
+      queue[i] = queue[j];
+      queue[j] = tmp;
+    }
+  }
+
+  function wrapSequentialDescriptive(built, persona, stage, teamId){
+    const pool = (built.questions || []).map(q => cloneDescriptiveQuestion(q));
+    if(!pool.length) return built;
+    const questionQueue = pool.map((_, i) => i);
+    shuffleIndexQueue(questionQueue, personaSeed(persona + '|desc-queue', stage, teamId));
+    const activeQuestion = cloneDescriptiveQuestion(pool[questionQueue[0]]);
+    return Object.assign({}, built, {
+      pool,
+      questionQueue,
+      queuePos: 0,
+      passedCount: 0,
+      passTarget: DESCRIPTIVE_PASS_TARGET,
+      sequentialMode: true,
+      activeQuestion,
+      questions: [activeQuestion],
+      completed: false,
+      templateGuided: built.templateGuided !== false
+    });
+  }
+
+  function ensureSequentialActiveQuestion(quiz){
+    if(!quiz || !quiz.sequentialMode || quiz.completed) return;
+    if(!quiz.pool || !quiz.questionQueue || !quiz.questionQueue.length) return;
+    const pos = Number.isFinite(quiz.queuePos) ? quiz.queuePos : 0;
+    const idx = quiz.questionQueue[Math.min(pos, quiz.questionQueue.length - 1)];
+    if(!quiz.activeQuestion || !quiz.questions || !quiz.questions.length){
+      quiz.activeQuestion = cloneDescriptiveQuestion(quiz.pool[idx]);
+      quiz.questions = [quiz.activeQuestion];
+    }
   }
 
   function personaSeed(name, stage, teamId){
@@ -6704,29 +6774,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   function buildPersonaDescriptive(kb, persona, stageId){
     const stage = stageId || mentorStageKey();
     if(facultyBank(stage) && facultyBank(stage)[persona]) return facultyDescriptive(kb, persona, stage);
-    const pack = personaStageQuestions(kb, persona, stageId);
-    if(pack.limitation) return { teamId: kb && kb.teamId, dimension: persona, stage: pack.stage, kind: 'descriptive', questions: [], stageNote: pack.limitation };
-    const stem = PERSONA_DESCRIPTIVE_STEM[pack.lens.name];
-    const offset = personaSeed(pack.lens.name + '|descriptive', pack.stage, kb.teamId) % pack.facts.length;
-    const questions = [];
-    const used = new Set();
-    const seenCitations = {};
-    for(let step = 0; questions.length < 5 && step < pack.facts.length; step++){
-      const fact = pack.facts[(offset + step) % pack.facts.length];
-      if(used.has(fact.text)) continue;
-      used.add(fact.text);
-      seenCitations[fact.citation] = (seenCitations[fact.citation] || 0) + 1;
-      const point = seenCitations[fact.citation] > 1 ? ` Point ${seenCitations[fact.citation]}.` : '';
-      questions.push({
-        prompt: `${stem} in ${fact.label} ${fact.citation}.${point}`,
-        source: fact.text,
-        citation: fact.citation,
-        rubric: PERSONA_RUBRIC[pack.lens.name],
-        draft: ''
-      });
-    }
-    if(questions.length !== 5) return { teamId: kb.teamId, dimension: pack.lens.name, stage: pack.stage, kind: 'descriptive', questions: [], stageNote: assessmentLimitation(pack.lens.name, pack.stage) };
-    return { teamId: kb.teamId, dimension: pack.lens.name, stage: pack.stage, kind: 'descriptive', personaStage: true, questions };
+    const bank = facultyBank(stage);
+    const note = bank
+      ? `No descriptive template bank for "${persona}" on ${mentorStageLabel(stage)}. Try another persona.`
+      : `Faculty descriptive questions are available for Stage 0 and Stage 1. Switch the stage selector on the left.`;
+    return { teamId: kb && kb.teamId, dimension: persona, stage: String(stage), kind: 'descriptive', questions: [], stageNote: note };
   }
 
   function openPersonaMcq(kb, persona, stage, forceNew){
@@ -6801,6 +6853,25 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function renderDescriptiveCardHtml(quiz){
 
+    const note = quiz.stageNote ? `<p class="mentor-panel-note">${esc(quiz.stageNote)}</p>` : '';
+
+    if(quiz.sequentialMode){
+      const target = quiz.passTarget || DESCRIPTIVE_PASS_TARGET;
+      const passed = quiz.passedCount || 0;
+      if(quiz.completed){
+        return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Target reached: ${passed} / ${target} solid answers using your faculty question bank.</div></div><p class="mentor-panel-note"><strong>Practice complete.</strong> You earned at least ${target} passing answers for ${esc(mentorStageLabel(quiz.stage))}.</p><div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.startMentorDescriptive('${esc(quiz.dimension).replace(/'/g, "\\'")}', true)">Practice again</button></div></div>`;
+      }
+      ensureSequentialActiveQuestion(quiz);
+      const question = quiz.activeQuestion || (quiz.questions && quiz.questions[0]);
+      if(!question) return `<div class="mentor-descriptive">${note || '<p>No descriptive questions available.</p>'}</div>`;
+      const rubric = question.expectedPoints && question.expectedPoints.length
+        ? `<p class="mini"><strong>Panel expects:</strong> ${esc(question.expectedPoints.join(' · '))}</p>`
+        : '';
+      const body = `<article class="mentor-descriptive-q"><h3>Question</h3><p>${esc(question.prompt)}</p>${rubric}<textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea></article>`;
+      const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Submit answer</button><span class="mini" style="margin-left:10px">Score: <strong>${passed}</strong> / ${target} required</span></div>`;
+      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Faculty template questions · one at a time until you reach ${target} passing answers.</div></div>${body}${footer}</div>`;
+    }
+
     const questions = (quiz.questions || []).map((question, index) => {
 
       const grade = question.checked
@@ -6813,7 +6884,6 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     }).join('');
 
-    const note = quiz.stageNote ? `<p class="mentor-panel-note">${esc(quiz.stageNote)}</p>` : '';
     const body = questions || note || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>';
     const footer = (quiz.questions || []).length ? '<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div>' : '';
     return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Answers are checked against the documented portfolio lines.</div></div>${body}${footer}</div>`;
@@ -6885,32 +6955,35 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
 
     if(!forceNew){
       const saved = loadAssessment(teamId, persona, stage, 'descriptive');
-      if(saved && saved.questions && saved.questions.length === 5){
-        chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
-        window.mentorDashboardPanel = 'work';
-        isChatOpen = false;
-        if(mentorSurfaceOpen() && typeof render === 'function') render();
-        updateChatMessagesThread();
-        return;
+      if(saved){
+        if(saved.sequentialMode){
+          ensureSequentialActiveQuestion(saved);
+          chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
+          window.mentorDashboardPanel = 'work';
+          isChatOpen = false;
+          if(mentorSurfaceOpen() && typeof render === 'function') render();
+          updateChatMessagesThread();
+          return;
+        }
+        if(saved.questions && saved.questions.length === 5){
+          chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
+          window.mentorDashboardPanel = 'work';
+          isChatOpen = false;
+          if(mentorSurfaceOpen() && typeof render === 'function') render();
+          updateChatMessagesThread();
+          return;
+        }
       }
     }
 
-    const settings = getLLMSettings();
-    let descriptive = null;
-
-    if(Boolean(settings.geminiKey) || (typeof checkApiChatAvailability === 'function' && await checkApiChatAvailability())){
-      chatMessages = [{ role: 'assistant', text: MENTOR_PREPARE_QUESTIONS, html: mentorPrepareLoaderHtml() }];
-      if(mentorSurfaceOpen() && typeof render === 'function') render();
-      updateChatMessagesThread();
-      descriptive = await geminiDescriptiveQuestions(kb, persona, stage);
+    const built = buildPersonaDescriptive(kb, persona, stage);
+    if(built.stageNote || !built.questions || !built.questions.length){
+      chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: built }];
+    } else {
+      const descriptive = wrapSequentialDescriptive(built, persona, stage, teamId);
+      persistAssessment(descriptive);
+      chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive }];
     }
-
-    if(!descriptive){
-      descriptive = buildPersonaDescriptive(kb, persona, stage);
-    }
-
-    if(descriptive.questions && descriptive.questions.length === 5) persistAssessment(descriptive);
-    chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive }];
 
     window.mentorDashboardPanel = 'work';
 
@@ -6929,7 +7002,60 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     const message = chatMessages.find(item => item.type === 'descriptive');
 
     if(!message || !message.descriptive) return;
-    const questions = message.descriptive.questions || [];
+    const quiz = message.descriptive;
+
+    if(quiz.sequentialMode && !quiz.completed){
+      const field = document.querySelector('[data-descriptive-answer="0"]');
+      const question = quiz.activeQuestion || (quiz.questions && quiz.questions[0]);
+      if(!question || !field) return;
+
+      question.draft = field.value.trim();
+      if(!question.draft){
+        if(typeof toast === 'function') toast('Write an answer before submitting.');
+        return;
+      }
+
+      const feedback = descriptiveFeedback(question);
+      question.supported = feedback.supported;
+      question.feedback = feedback;
+      question.checked = true;
+
+      const target = quiz.passTarget || DESCRIPTIVE_PASS_TARGET;
+
+      if(question.supported){
+        quiz.passedCount = (quiz.passedCount || 0) + 1;
+        if(typeof toast === 'function') toast(`Solid answer. Score ${quiz.passedCount} / ${target}.`);
+      } else if(typeof toast === 'function'){
+        const tip = feedback.improvement || 'Cover the expected points from your portfolio.';
+        toast(`Not sufficient yet (${quiz.passedCount || 0} / ${target}). ${tip}`);
+      }
+
+      if(quiz.passedCount >= target){
+        quiz.completed = true;
+        quiz.score = { correct: quiz.passedCount, total: target };
+        persistAssessment(quiz);
+        updateChatMessagesThread();
+        if(mentorSurfaceOpen() && typeof render === 'function') render();
+        return;
+      }
+
+      const currentIdx = quiz.questionQueue[quiz.queuePos];
+      if(!question.supported && typeof currentIdx === 'number') quiz.questionQueue.push(currentIdx);
+
+      quiz.queuePos = (quiz.queuePos || 0) + 1;
+      if(quiz.queuePos >= quiz.questionQueue.length) quiz.queuePos = 0;
+
+      const nextIdx = quiz.questionQueue[quiz.queuePos];
+      quiz.activeQuestion = cloneDescriptiveQuestion(quiz.pool[nextIdx]);
+      quiz.questions = [quiz.activeQuestion];
+
+      persistAssessment(quiz);
+      updateChatMessagesThread();
+      if(mentorSurfaceOpen() && typeof render === 'function') render();
+      return;
+    }
+
+    const questions = quiz.questions || [];
 
     document.querySelectorAll('[data-descriptive-answer]').forEach(field => {
 
@@ -6951,58 +7077,14 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     });
 
     if(questions.length === 5){
-      message.descriptive.score = {
+      quiz.score = {
         correct: questions.filter(question => question.supported).length,
         total: 5
       };
-      persistAssessment(message.descriptive);
+      persistAssessment(quiz);
     }
 
     updateChatMessagesThread();
-
-    // AI-enhanced qualitative feedback via Gemini if key/API is available
-    const settings = getLLMSettings();
-    if(settings.geminiKey || (typeof checkApiChatAvailability === 'function' && await checkApiChatAvailability())){
-      const answered = questions.filter(q => q.draft && q.draft.length > 5);
-      if(answered.length > 0){
-        try {
-          const evalPrompt = `You are a faculty viva defense panel evaluating student responses for "${message.descriptive.dimension}".
-Evaluate each answer against expected points and provide concise constructive feedback.
-${answered.map((q, i) => `Question: ${q.prompt}\nExpected Points: ${(q.expectedPoints || [q.source]).join(', ')}\nStudent Answer: ${q.draft}`).join('\n\n')}
-
-Return ONLY a JSON array with one object per question:
-[
-  {
-    "supported": true,
-    "strength": "Brief sentence on what the student defended well",
-    "missing": ["Missing point 1", "Missing point 2"],
-    "improvement": "Key tip for external panel viva"
-  }
-]`;
-          const raw = await callPersonaModel('You are an academic evaluator. Return JSON only.', evalPrompt, true);
-          const parsed = parseModelJsonArray(raw);
-          if(Array.isArray(parsed) && parsed.length >= answered.length){
-            answered.forEach((q, i) => {
-              const fb = parsed[i];
-              if(fb){
-                if(typeof fb.supported === 'boolean') q.supported = fb.supported;
-                if(fb.strength) q.feedback.strength = fb.strength;
-                if(Array.isArray(fb.missing)) q.feedback.missing = fb.missing;
-                if(fb.improvement) q.feedback.improvement = fb.improvement;
-              }
-            });
-            if(message.descriptive){
-              message.descriptive.score = {
-                correct: questions.filter(question => question.supported).length,
-                total: 5
-              };
-              persistAssessment(message.descriptive);
-            }
-            updateChatMessagesThread();
-          }
-        } catch(_) {}
-      }
-    }
 
   };
 
@@ -7879,6 +7961,14 @@ Return ONLY a JSON array with one object per question:
   }
 
 
+
+  if(typeof window !== 'undefined'){
+    window.getLLMSettings = getLLMSettings;
+    window.saveLLMSettings = function(settings){
+      saveLLMSettings(settings);
+      memoryApiAvailable = null;
+    };
+  }
 
 })();
 

@@ -16,8 +16,14 @@ function upgradeState(){
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
 upgradeState();save();if(typeof restoreAuthSession==='function')restoreAuthSession();
-const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department'],HOD:['Department','Team Portfolio','Mentor Dashboard'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor','Department'],Student:['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor'],'Team Lead':['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor']};
-const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin']};
+const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department','Settings'],HOD:['Department','Team Portfolio','Mentor Dashboard','Settings'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor','Department','Settings'],Student:['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Settings'],'Team Lead':['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Settings']};
+const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin'],'Settings':ICONS.Settings,'Mentor Dashboard':ICONS['AI Mentor']};
+function workspaceAppTabs(){
+  const role = state.role;
+  const tabs = (rolePages[role] || []).filter(p => ['Overview','Team Portfolio','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Department','Settings','Admin Panel'].includes(p));
+  if(tabs.length < 2) return '';
+  return `<nav class="workspace-app-tabs" aria-label="Workspace sections">${tabs.map(p => `<button type="button" class="workspace-app-tab ${page===p?'active':''}" onclick="go('${p.replace(/'/g,"\\'")}')"><span class="workspace-app-tab-icon">${iconFor[p]||''}</span><span>${esc(p)}</span></button>`).join('')}</nav>`;
+}
 Object.assign(stageNames,{0:'Problem Identification',1:'Requirement Engineering',2:'Implementation',3:'Testing and Validations'});
 let selectedSection='',mediaURLs=[];
 function editableStage(n=state.stage){return isAdmin()&&!['Submitted','Approved'].includes(status(n))}
@@ -421,6 +427,10 @@ function sharedPageHeader(){
         ${roleIcon}
         <span>${esc(displayText)}</span>
       </div>
+      <button type="button" class="btn secondary" onclick="go('Settings')" title="AI settings" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
+        ${ICONS.Settings}
+        <span>Settings</span>
+      </button>
       <button type="button" class="btn secondary" onclick="window.signOutUser()" title="Sign out" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span>Sign Out</span>
@@ -637,7 +647,7 @@ render=function(){
     return;
   }
   if(!rolePages[state.role].includes(page))page=rolePages[state.role][0]||'Department';
-  const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Mentor Dashboard':typeof mentorDashboard==='function'?mentorDashboard:()=>'','Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion};
+  const m={name:currentIdentity()},views={'Overview':overview,'Admin Panel':adminPanel,'Team Portfolio':portfolio,'Mentor Dashboard':typeof mentorDashboard==='function'?mentorDashboard:()=>'','Design Journey':journey,'Evidence Library':evidenceLibrary,'AI Mentor':mentor,'Faculty Review':review,'Department':department,'Discussion':discussion,'Settings':typeof aiSettingsPage==='function'?aiSettingsPage:()=>heading('Settings','Loading…')};
   const isCol=typeof isSidebarCollapsed==='function'&&isSidebarCollapsed();
   const isPortfolio = page === 'Team Portfolio';
   const curTeamTheme = (typeof activeTeam === 'function' && activeTeam()?.theme_no) || (window.lastViewedTheme !== undefined && window.lastViewedTheme !== null && window.lastViewedTheme !== 'all' ? window.lastViewedTheme : 1);
@@ -652,7 +662,8 @@ render=function(){
   const showHome = !isFacRole;
   const navButtonsHtml = '';
 
-  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}${mentorSplit ? ' mentor-split' : ''}">${mentorSplit ? '<div class="mentor-split-left">' : ''}${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><img src="assets/kle_tech_logo.png" alt="KLE Technological University" class="kle-header-logo"><span class="kle-header-dept" style="margin-top:4px">Department of CSE(AI)</span></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div class="shell-main">${sharedPageHeader()}<main class="main">${views[page]()}</main></div>${mentorSplit ? '</div><div id="mentor-split-handle" class="mentor-split-handle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize the portfolio and mentor" aria-valuemin="20" aria-valuemax="80" tabindex="0"></div><section class="mentor-split-pane" aria-label="AI Mentor">' + mentorDashboard() + '</section>' : ''}</div>${modal||''}`;
+  const tabBar = isPortfolio ? '' : workspaceAppTabs();
+  $('#app').innerHTML=`<div class="shell ${!isPortfolio ? 'shell-no-sidebar' : (isCol ? 'sidebar-collapsed' : '')}${mentorSplit ? ' mentor-split' : ''}">${mentorSplit ? '<div class="mentor-split-left">' : ''}${isPortfolio ? `<aside class="sidebar ${isCol?'collapsed':''}" id="app-sidebar"><div class="school" style="margin-bottom:12px"><img src="assets/kle_tech_logo.png" alt="KLE Technological University" class="kle-header-logo"><span class="kle-header-dept" style="margin-top:4px">Department of CSE(AI)</span></div><nav class="nav portfolio-sidebar-nav" aria-label="Portfolio navigation">${portfolioSubnav()}</nav></aside>` : ''}<div class="shell-main">${sharedPageHeader()}${tabBar}<main class="main">${views[page]()}</main></div>${mentorSplit ? '</div><div id="mentor-split-handle" class="mentor-split-handle" role="separator" aria-orientation="horizontal" aria-label="Drag to resize the portfolio and mentor" aria-valuemin="20" aria-valuemax="80" tabindex="0"></div><section class="mentor-split-pane" aria-label="AI Mentor">' + mentorDashboard() + '</section>' : ''}</div>${modal||''}`;
   const form=$('#stageform');if(form){form.onsubmit=e=>{e.preventDefault();saveStage(true)};form.oninput=()=>{if(editableStage()){state.forms[state.stage]=state.forms[state.stage]||{};for(const[k,v]of new FormData(form))state.forms[state.stage][k]=v;if(save())$('#savehint').textContent='✓ Draft saved locally · '+new Date().toLocaleTimeString()}}}
   if(['Team Portfolio','Design Journey','Evidence Library'].includes(page))hydrateMedia();
   if(mentorSplit) bindMentorSplitHandle();
