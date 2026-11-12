@@ -140,7 +140,8 @@
       contents: [{ parts: [{ text: userPrompt }] }],
       generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens }
     });
-    for(const model of geminiModelList(settings.geminiModel || 'gemini-3.8-flash')){
+    const models = (opts && opts.model) ? [opts.model] : geminiModelList(settings.geminiModel || 'gemini-3.8-flash');
+    for(const model of models){
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
       for(let attempt = 0; attempt < 4; attempt++){
         try {
@@ -229,13 +230,48 @@
     return { text: '', provider: '' };
   }
 
-  /** OVHcloud anonymous Qwen, then Kilo kilo-auto/free. Gemini is paused. */
+  /** OVHcloud, then Kilo kilo-auto/free, then Gemini 3.8 Flash. */
   async function llmTextWithGeminiFirst(systemInstruction, prompt, opts){
-    if(getLLMSettings().provider === 'extractive') return { text: '', provider: '', triedKilo: false };
+    if(getLLMSettings().provider === 'extractive') return { text: '', provider: '', triedKilo: false, triedGemini: false };
     const ovh = await tryOvhFallback(systemInstruction, prompt, opts);
-    if(ovh.text) return ovh;
+    if(ovh.text) return Object.assign({ triedKilo: false, triedGemini: false }, ovh);
     const kilo = await tryKiloFree(systemInstruction, prompt, opts);
-    return kilo.text ? kilo : { text: '', provider: '', triedKilo: true };
+    if(kilo.text) return Object.assign({ triedKilo: true, triedGemini: false }, kilo);
+    const gemini = await tryGeminiFallback(systemInstruction, prompt, opts);
+    if(gemini.text) return Object.assign({ triedKilo: true, triedGemini: true }, gemini);
+    return { text: '', provider: '', triedKilo: true, triedGemini: true };
+  }
+
+  async function tryGeminiFallback(systemInstruction, prompt, opts){
+    const raw = opts && opts.raw;
+    const geminiOpts = Object.assign({}, opts || {}, { model: 'gemini-3.8-flash' });
+    const direct = await tryDirectGeminiText(systemInstruction, prompt, geminiOpts);
+    if(direct) return { text: direct, provider: 'Google Gemini (gemini-3.8-flash)' };
+    const userPrompt = String(prompt || '').slice(0, 3500);
+    if(!userPrompt) return { text: '', provider: '' };
+    const settings = getLLMSettings();
+    try {
+      const response = await fetchWithTimeout('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'gemini',
+          prompt: userPrompt,
+          systemInstruction: String(systemInstruction || '').slice(0, 6000),
+          geminiKey: settings.geminiKey,
+          geminiModel: 'gemini-3.8-flash'
+        })
+      }, (opts && opts.timeoutMs) || 45000);
+      if(!response.ok) return { text: '', provider: '' };
+      const data = await response.json();
+      if(!data || !data.text || data.useFallback) return { text: '', provider: '' };
+      return {
+        text: raw ? String(data.text) : polishLiveAnswer(data.text),
+        provider: data.provider || 'Google Gemini (gemini-3.8-flash)'
+      };
+    } catch(_) {
+      return { text: '', provider: '' };
+    }
   }
 
   function chatMessageText(message){
@@ -4054,7 +4090,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                 <select id="chat-set-provider">
 
-                  <option value="free" ${settings.provider!=='extractive'?'selected':''}>OVHcloud, then Kilo kilo-auto/free</option>
+                  <option value="free" ${settings.provider!=='extractive'?'selected':''}>OVHcloud, then Kilo, then Gemini</option>
 
                   <option value="extractive" ${settings.provider==='extractive'?'selected':''}>Deterministic Grounded RAG (Zero-Compute Offline)</option>
 
@@ -4068,7 +4104,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                 <strong style="font-size:12.5px;font-weight:700;display:block;margin-bottom:8px;color:var(--brand)">Free models (no API key)</strong>
 
-                <p class="mini" style="margin:0;color:var(--muted);line-height:1.45">Answers and descriptive grades call <strong>OVHcloud Qwen3.6-27B</strong> first (2 requests per minute). If that reply is missing or not JSON, the next call is <strong>Kilo kilo-auto/free</strong>. Do not put passwords or private data in answers.</p>
+                <p class="mini" style="margin:0;color:var(--muted);line-height:1.45">Answers and descriptive grades call <strong>OVHcloud Qwen3.6-27B</strong> first, then <strong>Kilo kilo-auto/free</strong>. <strong>Gemini 3.8 Flash</strong> runs only if both of those fail. Put the Gemini key in AI Settings. Do not put passwords or private data in answers.</p>
 
               </div>
 
@@ -5267,7 +5303,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         return `${label} — ${ex.text}`.slice(0, 280);
       });
       question.source = question.portfolioHints.join(' ');
-      question.expectedAnswerBrief = excerpts.slice(0, 2).map(e => `${e.label}: ${e.text.slice(0, 90)}`).join(' · ').slice(0, 320);
+      question.expectedAnswerBrief = (question.rubricLabels || []).map((label, index) => {
+        const ex = excerpts[index % excerpts.length];
+        const name = String((ex && ex.label) || '').split(':')[0].trim();
+        return name ? `${label} (${name})` : label;
+      }).filter(Boolean).slice(0, 4).join('; ');
     } else if(needsAnchor && courses.length){
       const pick = courses.slice(0, 2);
       question.portfolioHints = pick.map(c => `${c.course}: ${String(c.concepts).slice(0, 120)}`);
@@ -7043,56 +7083,65 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function reconcileDescriptiveQuestionMarks(question){
-    const local = question.localParse || question.feedback || {};
     const llm = question.llmFeedback;
-    const ratio = descriptiveSemanticRatio(local, llm);
+    if(question.llmPending || !llm || llm.unavailable){
+      question.marksEarned = null;
+      question.marksMax = DESCRIPTIVE_MARKS_SCALE;
+      question.conceptualCorrectness = null;
+      question.supported = false;
+      question.resubmitSuggestion = '';
+      return;
+    }
+    let ratio = 0;
+    if(typeof llm.conceptualCorrectness === 'number' && Number.isFinite(llm.conceptualCorrectness)){
+      ratio = Math.min(1, Math.max(0, llm.conceptualCorrectness));
+    } else if(typeof llm.marksEarned === 'number' && llm.marksMax){
+      ratio = llm.marksEarned / llm.marksMax;
+    } else if(llm.supported) ratio = DESCRIPTIVE_FULL_MARKS_RATIO;
     const scaled = descriptiveMarksFromSemanticRatio(ratio);
     question.conceptualCorrectness = scaled.conceptualCorrectness;
     question.marksMax = scaled.marksMax;
     question.marksEarned = scaled.marksEarned;
-    question.supported = scaled.satisfactory || !!(llm && llm.supported && ratio >= DESCRIPTIVE_PASS_RATIO);
+    question.supported = scaled.satisfactory;
     if(!question.supported){
-      const missing = [...(local.missing || [])];
-      if(llm && Array.isArray(llm.missing)) llm.missing.forEach(point => { if(point && !missing.includes(point)) missing.push(point); });
-      question.resubmitSuggestion = buildDescriptiveResubmitPrompt(question, {
-        missing,
-        pointResults: local.pointResults,
-        metCount: local.metCount,
-        total: local.total
+      const lines = [];
+      (llm.missing || []).forEach(point => {
+        const text = String(point || '').trim();
+        if(text) lines.push(`${lines.length + 1}. ${text}`);
       });
-      if(llm && (llm.suggestion || llm.resubmitPrompt)){
-        question.resubmitSuggestion += `\n\nMentor hint: ${String(llm.suggestion || llm.resubmitPrompt).trim()}`;
-      }
+      const suggestion = String(llm.suggestion || llm.resubmitPrompt || '').trim();
+      if(suggestion) lines.push(suggestion);
+      question.resubmitSuggestion = lines.join('\n');
     } else {
       question.resubmitSuggestion = '';
     }
   }
 
+  function gradePointList(points){
+    const items = (points || []).map(point => String(point || '').trim()).filter(Boolean).slice(0, 5);
+    if(!items.length) return '';
+    return `<ul class="grade-points">${items.map(point => `<li>${esc(point)}</li>`).join('')}</ul>`;
+  }
+
   function renderDescriptiveGrade(question){
-    const local = question.localParse || question.feedback || {};
-    const rows = (local.pointResults || []).map(row => {
-      const hint = row.checkText && row.checkText !== row.point ? `<br><span class="mini">Checked against portfolio vocabulary: ${esc(String(row.checkText).slice(0, 120))}</span>` : '';
-      return `<li>${row.met ? 'Met' : 'Missing'} · ${Math.round((row.overlap || 0) * 100)}% overlap · ${esc(row.point)}${hint}</li>`;
-    }).join('');
-    const localBlock = `<p><strong>1. Local parser:</strong> ${local.supported ? 'Pass' : 'Not yet'}${local.total ? ` · ${local.metCount}/${local.total} rubric points (matched to your Table 0.1 course/concept text)` : ''}</p>${rows ? `<ul>${rows}</ul>` : `<p><strong>Missing:</strong> ${esc((local.missing || []).join(', ') || 'None.')}</p>`}`;
     const llm = question.llmFeedback;
-    const llmBlock = !question.draft
+    const pending = !!question.llmPending;
+    const ready = !!(llm && !llm.unavailable && !pending);
+    if(!question.draft) return '';
+    if(pending){
+      return '<div class="mentor-grade"><p class="grade-status">Reviewing your answer…</p></div>';
+    }
+    if(!ready){
+      return `<div class="mentor-grade"><p class="grade-status">${esc((llm && llm.note) || 'The grading model did not return a grade. Resubmit.')}</p></div>`;
+    }
+    const status = question.supported ? 'Satisfactory' : 'Not satisfactory';
+    const marks = `${question.marksEarned != null ? question.marksEarned : '—'} / ${question.marksMax != null ? question.marksMax : '—'}`;
+    const note = llm.note ? `<p class="grade-note">${esc(llm.note)}</p>` : '';
+    const points = (llm.missing || []).length ? llm.missing : (question.supported ? [] : (question.rubricLabels || question.expectedPoints || []));
+    const pointsBlock = question.supported || !points.length
       ? ''
-      : question.llmPending
-      ? '<p><strong>2. LLM review:</strong> Checking the same answer…</p>'
-      : llm
-        ? `<p><strong>2. LLM review:</strong> ${llm.supported ? 'Pass' : 'Not yet'}${llm.note ? ` · ${esc(llm.note)}` : ''}</p>${(llm.missing || []).length ? `<p><strong>LLM still wants:</strong> ${esc(llm.missing.join(', '))}</p>` : ''}`
-        : '<p><strong>2. LLM review:</strong> Unavailable — check AI Settings (API key) and try resubmitting. The local parser result stands.</p>';
-    const resubmit = !question.supported && question.resubmitSuggestion
-      ? `<div class="descriptive-resubmit-prompt"><p><strong>Not satisfactory — revise your answer:</strong></p><pre class="descriptive-resubmit-text">${esc(question.resubmitSuggestion)}</pre></div>`
-      : '';
-    const brief = question.expectedAnswerBrief
-      ? `<p class="mini"><strong>Short expected answer:</strong> ${esc(question.expectedAnswerBrief)}</p>`
-      : '';
-    const conceptPct = question.conceptualCorrectness != null
-      ? `<span> · Conceptual: ${Math.round(question.conceptualCorrectness * 100)}% (5/5 at ≥70%)</span>`
-      : '';
-    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p><strong>Result:</strong> ${question.supported ? 'Satisfactory' : 'Not satisfactory'} · <strong>Marks:</strong> ${question.marksEarned != null ? question.marksEarned : '—'} / ${question.marksMax != null ? question.marksMax : '—'}${conceptPct} ${esc(question.citation || '')}</p>${brief}${localBlock}${llmBlock}${resubmit}<p><strong>Tip:</strong> ${esc(local.improvement || '')}</p></div>`;
+      : `<p class="grade-kicker">Cover these points</p>${gradePointList(points)}`;
+    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p class="grade-status"><strong>${status}</strong> · ${marks}</p>${note}${pointsBlock}</div>`;
   }
 
   function applyDescriptiveScore(quiz){
@@ -7158,18 +7207,27 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     const first = await llmTextWithGeminiFirst(systemInstruction, userPrompt, { raw: true, maxOutputTokens: 3072, timeoutMs: 45000 });
     let raw = first.text || '';
     let parsed = parseModelJsonArray(raw);
+    const gradeOpts = { raw: true, maxOutputTokens: 3072 };
+    const jsonInstruction = systemInstruction + ' Output the JSON array only.';
     if(!Array.isArray(parsed) && !first.triedKilo && !/kilo/i.test(first.provider || '')){
-      const kilo = await tryKiloFree(systemInstruction + ' Output the JSON array only.', userPrompt, { raw: true, maxOutputTokens: 3072 });
+      const kilo = await tryKiloFree(jsonInstruction, userPrompt, gradeOpts);
       if(kilo.text){
         raw = kilo.text;
+        parsed = parseModelJsonArray(raw);
+      }
+    }
+    if(!Array.isArray(parsed) && !first.triedGemini && !/gemini/i.test(first.provider || '')){
+      const gemini = await tryGeminiFallback(jsonInstruction, userPrompt, gradeOpts);
+      if(gemini.text){
+        raw = gemini.text;
         parsed = parseModelJsonArray(raw);
       }
     }
     if(!Array.isArray(parsed)){
       const snippet = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 160);
       const note = raw
-        ? `The model replied, but not as a grade JSON. Local marks still count.${snippet ? ' Reply: ' + snippet : ''}`
-        : 'The grading model did not respond. Local marks still count.';
+        ? `The model replied, but not as a grade JSON. Resubmit.${snippet ? ' Reply: ' + snippet : ''}`
+        : 'The grading model did not respond. Resubmit.';
       questions.forEach(question => {
         question.llmFeedback = {
           supported: false,
@@ -7426,12 +7484,12 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
       const kb = buildTeamKnowledgeBase(quiz.teamId);
       enrichDescriptiveQuestionFromPortfolio(question, kb, quiz.stage);
 
-      const feedback = descriptiveFeedback(question);
-      question.localParse = feedback;
-      question.feedback = feedback;
-      question.marksEarned = feedback.marksEarned;
-      question.marksMax = feedback.marksMax;
-      question.resubmitSuggestion = feedback.resubmitPrompt || '';
+      question.localParse = null;
+      question.feedback = null;
+      question.marksEarned = null;
+      question.marksMax = DESCRIPTIVE_MARKS_SCALE;
+      question.resubmitSuggestion = '';
+      question.supported = false;
       question.llmFeedback = null;
       question.llmPending = true;
       question.checked = true;
@@ -7448,6 +7506,15 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
         question.llmFeedback = { supported: false, unavailable: true, note: 'Network or API error during LLM review.', missing: [], suggestion: '' };
       }
       question.llmPending = false;
+      if(question.llmFeedback && question.llmFeedback.unavailable){
+        question.attemptCount = Math.max(0, (question.attemptCount || 1) - 1);
+        reconcileDescriptiveQuestionMarks(question);
+        persistAssessment(quiz);
+        updateChatMessagesThread();
+        if(mentorSurfaceOpen() && typeof render === 'function') render();
+        if(typeof toast === 'function') toast(question.llmFeedback.note || 'The grading model did not return a grade. Resubmit.');
+        return;
+      }
       reconcileDescriptiveQuestionMarks(question);
       applyDescriptiveScore(quiz);
 
@@ -7487,12 +7554,12 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
       question.draft = field.value.trim();
       if(question.draft) anyAnswer = true;
       enrichDescriptiveQuestionFromPortfolio(question, kb, quiz.stage);
-      const feedback = descriptiveFeedback(question);
-      question.localParse = feedback;
-      question.feedback = feedback;
-      question.marksEarned = feedback.marksEarned;
-      question.marksMax = feedback.marksMax;
-      question.resubmitSuggestion = feedback.resubmitPrompt || '';
+      question.localParse = null;
+      question.feedback = null;
+      question.marksEarned = null;
+      question.marksMax = DESCRIPTIVE_MARKS_SCALE;
+      question.resubmitSuggestion = '';
+      question.supported = false;
       question.checked = true;
       question.llmPending = !!question.draft;
       question.llmFeedback = null;
@@ -7511,7 +7578,10 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     try {
       await reviewDescriptiveWithLlm(answered, kb, quiz.dimension, quiz.stage);
     } catch(_) {}
-    questions.forEach(question => { question.llmPending = false; });
+    questions.forEach(question => {
+      question.llmPending = false;
+      if(question.draft) reconcileDescriptiveQuestionMarks(question);
+    });
     applyDescriptiveScore(quiz);
     persistAssessment(quiz);
     updateChatMessagesThread();

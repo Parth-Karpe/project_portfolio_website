@@ -84,6 +84,7 @@ async function handler(req, res) {
   }
 
   function geminiModelCandidates(requested) {
+    if ((requested || '').trim() === 'gemini-3.8-flash') return ['gemini-3.8-flash'];
     const names = [requested, 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     const unique = [];
     for (const name of names) {

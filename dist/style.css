@@ -3668,10 +3668,24 @@ html body .mentor-dashboard .mentor-work-form textarea {
   line-height: 1.45;
   color: var(--ink);
 }
-.mentor-grade.supported,
+.mentor-grade.supported .grade-status,
 .mentor-revise-list .supported em { color: #166534; }
-.mentor-grade.missed,
+.mentor-grade.missed .grade-status,
 .mentor-revise-list .missed em { color: #9f1239; }
+.mentor-grade .grade-status { margin: 0; font-size: 14px; }
+.mentor-grade .grade-note { margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink); }
+.mentor-grade .grade-kicker {
+  margin: 12px 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted, #64748b);
+}
+.grade-points { margin: 0; padding-left: 18px; }
+.grade-points li { margin: 3px 0; font-size: 14px; line-height: 1.4; color: var(--ink); }
+.mentor-grade.missed { border: 1px solid #fecdd3; background: #fff1f2; border-radius: 12px; padding: 12px 14px; }
+.mentor-grade.supported { border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 12px; padding: 12px 14px; }
 .mentor-source { margin: 6px 0 0; color: var(--ink); }
 .mentor-revise-list { list-style: none; padding: 0; margin: 14px 0 0; }
 .mentor-revise-list li { display: flex; flex-direction: column; gap: 4px; }
