@@ -5071,7 +5071,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       chatMessages = [{ role: 'assistant', text: MENTOR_PREPARE_QUESTIONS, html: mentorPrepareLoaderHtml() }];
       if(mentorSurfaceOpen() && typeof render === 'function') render();
       updateChatMessagesThread();
-      const quiz = await facultyMcqWithProjectOptions(kb, persona, stage);
+      let quiz = await facultyMcqWithProjectOptions(kb, persona, stage);
+      if(!quiz){
+        const base = facultyMcq(kb, persona, stage);
+        quiz = base && base.quiz ? Object.assign({}, base.quiz, { projectOptions: true }) : null;
+      }
       if(!quiz){
         const note = MENTOR_PREPARE_FAILED;
         chatMessages = [{ role: 'assistant', text: note, html: esc(note) }];
@@ -6621,11 +6625,19 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   async function facultyMcqWithProjectOptions(kb, persona, stage){
     const base = facultyMcq(kb, persona, stage).quiz;
-    const request = facultyOptionRequest(kb, persona, stage);
-    const first = applyFacultyOptions(base, parseModelJsonArray(await callPersonaModel(request.systemInstruction, request.prompt, true)));
-    if(first) return first;
-    const retry = `Return only a JSON array with 4 options and one correct index for ${base.questions.map(question => question.templateId).join(', ')}.`;
-    return applyFacultyOptions(base, parseModelJsonArray(await callPersonaModel(request.systemInstruction, retry, true)));
+    try {
+      const request = facultyOptionRequest(kb, persona, stage);
+      const raw1 = await callPersonaModel(request.systemInstruction, request.prompt, true);
+      if(raw1){
+        const first = applyFacultyOptions(base, parseModelJsonArray(raw1));
+        if(first) return first;
+        const retry = `Return only a JSON array with 4 options and one correct index for ${base.questions.map(question => question.templateId).join(', ')}.`;
+        const raw2 = await callPersonaModel(request.systemInstruction, retry, true);
+        const second = applyFacultyOptions(base, parseModelJsonArray(raw2));
+        if(second) return second;
+      }
+    } catch(_) {}
+    return Object.assign({}, base, { projectOptions: true });
   }
 
   function buildPersonaMcq(kb, persona, stageId){
@@ -7805,6 +7817,7 @@ Return ONLY a JSON array with one object per question:
     buildPersonaMcq,
     facultyOptionRequest,
     applyFacultyOptions,
+    facultyMcqWithProjectOptions,
     buildReviseSectionCatalog,
     reviseSectionRequest,
     applyReviseModelSections,

@@ -76,6 +76,7 @@ const {
   buildPersonaDescriptive,
   facultyOptionRequest,
   applyFacultyOptions,
+  facultyMcqWithProjectOptions,
   buildReviseSectionCatalog,
   reviseSectionRequest,
   applyReviseModelSections,
@@ -94,11 +95,23 @@ console.log('=== RUNNING AI MENTOR VERIFICATION TEST SUITE ===\n');
 
 let passedTests = 0;
 let totalTests = 0;
+const pendingAsync = [];
 
 function test(description, fn){
   totalTests++;
   try {
-    fn();
+    const res = fn();
+    if(res && typeof res.then === 'function'){
+      pendingAsync.push(res.then(() => {
+        console.log(`✓ [PASS] ${description}`);
+        passedTests++;
+      }).catch(err => {
+        console.error(`✗ [FAIL] ${description}`);
+        console.error(err);
+        process.exit(1);
+      }));
+      return;
+    }
     console.log(`✓ [PASS] ${description}`);
     passedTests++;
   } catch(err) {
@@ -948,10 +961,22 @@ test('Persona knowledge & rules modular files correctly ground questions and eva
   });
 });
 
+test('Faculty MCQ with project options falls back seamlessly to 5 questions when model is offline or unconfigured', async () => {
+  const kb03 = buildTeamKnowledgeBase('03');
+  const quiz = await facultyMcqWithProjectOptions(kb03, 'Systems Thinking', '0');
+  assert(quiz, 'Quiz must not be null');
+  assert.strictEqual(quiz.questions.length, 5, 'Must have exactly 5 questions');
+  assert.strictEqual(quiz.projectOptions, true, 'projectOptions must be true');
+  assert.strictEqual(quiz.questions[0].options.length, 4, 'Must have 4 options');
+  assert(quiz.questions.every(q => q.prompt && q.correctKey && q.options.length === 4), 'All questions must have prompt and options');
+});
+
 function stageSectionText(kb, stage){
   return kb.chunks.map(chunk => chunk.text).join('\n');
 }
 
-console.log(`\n====================================================`);
-console.log(`ALL TESTS PASSED: ${passedTests} / ${totalTests} (100% SUCCESS)`);
-console.log(`====================================================`);
+Promise.all(pendingAsync).then(() => {
+  console.log(`\n====================================================`);
+  console.log(`ALL TESTS PASSED: ${passedTests} / ${totalTests} (100% SUCCESS)`);
+  console.log(`====================================================`);
+});
