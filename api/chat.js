@@ -93,51 +93,70 @@ async function handler(req, res) {
     return unique;
   }
 
+  function sleepMs(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function geminiBusy(status, message) {
+    return status === 503 || status === 429 || status === 500 || /high demand|unavailable|overloaded|try again later|resource exhausted/i.test(String(message || ''));
+  }
+
   // Helper: call Google Gemini from server-side
   async function callGemini() {
     if (!geminiApiKey) throw new Error('No Gemini API key available');
     const models = geminiModelCandidates(geminiModel || 'gemini-3.8-flash');
     let lastErr = null;
+    const payload = JSON.stringify({
+      systemInstruction: {
+        parts: [{ text: systemInstruction || 'You are an accurate academic project portfolio AI assistant.' }]
+      },
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 4096
+      }
+    });
 
     for (const model of models) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiApiKey}`;
-      try {
-        const geminiRes = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: systemInstruction || 'You are an accurate academic project portfolio AI assistant.' }]
-            },
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.2,
-              maxOutputTokens: 4096
+      for (let attempt = 0; attempt < 4; attempt++) {
+        try {
+          const geminiRes = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: payload
+          });
+
+          if (geminiRes.ok) {
+            const data = await geminiRes.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              return {
+                text,
+                provider: `Google Gemini (${model})`
+              };
             }
-          })
-        });
-
-        if (geminiRes.ok) {
-          const data = await geminiRes.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            return {
-              text,
-              provider: `Google Gemini (${model})`
-            };
+            lastErr = new Error('Gemini returned an empty response');
+            break;
           }
-          lastErr = new Error('Gemini returned an empty response');
-          continue;
-        }
 
-        const errData = await geminiRes.json().catch(() => ({}));
-        const message = errData.error?.message || `HTTP ${geminiRes.status}`;
-        lastErr = new Error(message);
-        const missingModel = geminiRes.status === 404 || /not found|not supported|no longer available/i.test(message);
-        if (missingModel) continue;
-        break;
-      } catch (e) {
-        lastErr = e;
+          const errData = await geminiRes.json().catch(() => ({}));
+          const message = errData.error?.message || `HTTP ${geminiRes.status}`;
+          lastErr = new Error(message);
+          const missingModel = geminiRes.status === 404 || /not found|not supported|no longer available/i.test(message);
+          if (missingModel) break;
+          if (geminiBusy(geminiRes.status, message) && attempt < 3) {
+            await sleepMs(800 * (attempt + 1));
+            continue;
+          }
+          break;
+        } catch (e) {
+          lastErr = e;
+          if (attempt < 3) {
+            await sleepMs(800 * (attempt + 1));
+            continue;
+          }
+        }
       }
     }
     throw lastErr || new Error('Gemini call failed');

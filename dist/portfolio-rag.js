@@ -117,6 +117,14 @@
 
   }
 
+  function sleepMs(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function geminiBusy(status, message){
+    return status === 503 || status === 429 || status === 500 || /high demand|unavailable|overloaded|try again later|resource exhausted/i.test(String(message || ''));
+  }
+
   /** Gemini (browser) → /api/chat auto (Gemini → Ollama) */
   async function tryDirectGeminiText(systemInstruction, prompt, opts){
     const raw = opts && opts.raw;
@@ -127,23 +135,41 @@
     if(!geminiKey) return '';
     const userPrompt = String(prompt || '').slice(0, 3500);
     if(!userPrompt) return '';
+    const body = JSON.stringify({
+      systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+      contents: [{ parts: [{ text: userPrompt }] }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens }
+    });
     for(const model of geminiModelList(settings.geminiModel || 'gemini-3.8-flash')){
-      try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-        const gRes = await fetchWithTimeout(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens }
-          })
-        }, timeoutMs);
-        if(!gRes.ok) continue;
-        const gData = await gRes.json();
-        const text = gData.candidates?.[0]?.content?.parts?.[0]?.text;
-        if(text) return raw ? String(text) : polishLiveAnswer(text);
-      } catch(_) {}
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+      for(let attempt = 0; attempt < 4; attempt++){
+        try {
+          const gRes = await fetchWithTimeout(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body
+          }, timeoutMs);
+          if(gRes.ok){
+            const gData = await gRes.json();
+            const text = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if(text) return raw ? String(text) : polishLiveAnswer(text);
+            break;
+          }
+          const errText = await gRes.text().catch(() => '');
+          let message = errText;
+          try { message = JSON.parse(errText).error?.message || errText; } catch(_) {}
+          if(geminiBusy(gRes.status, message) && attempt < 3){
+            await sleepMs(800 * (attempt + 1));
+            continue;
+          }
+          break;
+        } catch(_) {
+          if(attempt < 3){
+            await sleepMs(800 * (attempt + 1));
+            continue;
+          }
+        }
+      }
     }
     return '';
   }
@@ -154,32 +180,52 @@
     const settings = getLLMSettings();
     const userPrompt = String(prompt || '').slice(0, 3500);
     if(!userPrompt) return { text: '', provider: '' };
-    try {
-      const isApiOk = await checkApiChatAvailability();
-      if(!isApiOk) return { text: '', provider: '' };
-      const response = await fetchWithTimeout('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: userPrompt,
-          systemInstruction,
-          provider: 'auto',
-          geminiKey: settings.geminiKey,
-          geminiModel: settings.geminiModel || 'gemini-3.8-flash',
-          ollamaToken: settings.ollamaToken,
-          ollamaModel: settings.ollamaModel,
-          ollamaUrl: settings.ollamaUrl
-        })
-      }, timeoutMs);
-      if(!response.ok) return { text: '', provider: '' };
-      const data = await response.json();
-      if(data && data.text && !data.useFallback){
-        return {
-          text: raw ? String(data.text) : polishLiveAnswer(data.text),
-          provider: data.provider || 'Live model'
-        };
+    const payload = JSON.stringify({
+      prompt: userPrompt,
+      systemInstruction,
+      provider: 'auto',
+      geminiKey: settings.geminiKey,
+      geminiModel: settings.geminiModel || 'gemini-3.8-flash',
+      ollamaToken: settings.ollamaToken,
+      ollamaModel: settings.ollamaModel,
+      ollamaUrl: settings.ollamaUrl
+    });
+    for(let attempt = 0; attempt < 4; attempt++){
+      try {
+        const isApiOk = await checkApiChatAvailability();
+        if(!isApiOk) return { text: '', provider: '' };
+        const response = await fetchWithTimeout('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        }, timeoutMs);
+        if(!response.ok){
+          if(geminiBusy(response.status, '') && attempt < 3){
+            await sleepMs(800 * (attempt + 1));
+            continue;
+          }
+          return { text: '', provider: '' };
+        }
+        const data = await response.json();
+        if(data && data.text && !data.useFallback){
+          return {
+            text: raw ? String(data.text) : polishLiveAnswer(data.text),
+            provider: data.provider || 'Live model'
+          };
+        }
+        const busy = geminiBusy(0, (data && (data.error || data.message)) || '');
+        if(busy && attempt < 3){
+          await sleepMs(800 * (attempt + 1));
+          continue;
+        }
+        return { text: '', provider: '' };
+      } catch(_) {
+        if(attempt < 3){
+          await sleepMs(800 * (attempt + 1));
+          continue;
+        }
       }
-    } catch(_) {}
+    }
     return { text: '', provider: '' };
   }
 
