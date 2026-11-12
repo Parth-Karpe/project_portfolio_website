@@ -24,7 +24,11 @@ function aiSettingsPage(){
   const llm = s.llm;
   const canEditViva = typeof state !== 'undefined';
 
-  return heading('AI & mentor settings', 'API keys, models, and generation engines. Saved in this browser only — not uploaded to ProjectGate servers.') +
+  const closeBtn = `<button type="button" class="btn secondary settings-page-close" onclick="window.closeSettingsPage()" title="Back to workspace" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;font-size:12px;font-weight:700">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Close
+      </button>`;
+  return heading('AI & mentor settings', 'API keys, models, and generation engines. Saved in this browser only — not uploaded to ProjectGate servers.', closeBtn) +
     `<div class="notice">Keys and tokens stay in <strong>localStorage</strong> on your device. Clearing site data removes them. The portfolio AI mentor and viva assistant read these values when you chat.</div>
     <div class="grid">
       <section class="card">
