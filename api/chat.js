@@ -33,7 +33,7 @@ async function handler(req, res) {
   const requestedProvider = body.provider || 'gemini'; // 'auto', 'gemini', 'ollama', 'vercel_api'
   const clientGeminiKey = (body.geminiKey || '').trim();
   const geminiApiKey = clientGeminiKey || process.env.GEMINI_API_KEY || '';
-  const geminiModel = (body.geminiModel || 'gemini-2.5-flash').trim();
+  const geminiModel = 'gemini-3.8-flash';
 
   const clientOllamaToken = (body.ollamaToken || '').trim();
   const ollamaToken = clientOllamaToken || process.env.OLLAMA_API_KEY || '';
@@ -83,20 +83,14 @@ async function handler(req, res) {
     };
   }
 
-  function geminiModelCandidates(requested) {
-    const names = [requested, 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-    const unique = [];
-    for (const name of names) {
-      const model = (name || '').trim();
-      if (model && !unique.includes(model)) unique.push(model);
-    }
-    return unique;
+  function geminiModelCandidates() {
+    return ['gemini-3.8-flash'];
   }
 
   // Helper: call Google Gemini from server-side
   async function callGemini() {
     if (!geminiApiKey) throw new Error('No Gemini API key available');
-    const models = geminiModelCandidates(geminiModel || 'gemini-2.5-flash');
+    const models = geminiModelCandidates();
     let lastErr = null;
 
     for (const model of models) {

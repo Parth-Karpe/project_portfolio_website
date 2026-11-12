@@ -9,7 +9,7 @@ function readAiSettingsBundle(){
     : {
         provider: localStorage.getItem('pg_llm_provider') || 'gemini',
         geminiKey: localStorage.getItem('pg_gemini_key') || '',
-        geminiModel: localStorage.getItem('pg_gemini_model') || 'gemini-2.5-flash',
+        geminiModel: 'gemini-3.8-flash',
         ollamaUrl: localStorage.getItem('pg_ollama_url') || 'https://ollama.com/api',
         ollamaModel: localStorage.getItem('pg_ollama_model') || 'gpt-oss:20b',
         ollamaToken: localStorage.getItem('pg_ollama_token') || ''
@@ -55,14 +55,9 @@ function aiSettingsPage(){
 
         <label for="pg-set-gemini-model">Gemini model</label>
         <select id="pg-set-gemini-model">
-          <option value="gemini-2.5-flash" ${llm.geminiModel === 'gemini-2.5-flash' ? 'selected' : ''}>gemini-2.5-flash (recommended)</option>
-          <option value="gemini-2.5-flash-lite" ${llm.geminiModel === 'gemini-2.5-flash-lite' ? 'selected' : ''}>gemini-2.5-flash-lite</option>
-          <option value="gemini-2.0-flash" ${llm.geminiModel === 'gemini-2.0-flash' ? 'selected' : ''}>gemini-2.0-flash</option>
-          <option value="gemini-1.5-flash" ${llm.geminiModel === 'gemini-1.5-flash' ? 'selected' : ''}>gemini-1.5-flash</option>
-          <option value="gemini-2.5-pro" ${llm.geminiModel === 'gemini-2.5-pro' ? 'selected' : ''}>gemini-2.5-pro</option>
+          <option value="gemini-3.8-flash" selected>gemini-3.8-flash</option>
         </select>
-        <label for="pg-set-gemini-model-custom" class="mini" style="margin-top:8px">Or custom model id</label>
-        <input id="pg-set-gemini-model-custom" type="text" placeholder="Leave blank to use the list above" value="${['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash','gemini-1.5-flash','gemini-2.5-pro'].includes(llm.geminiModel) ? '' : esc(llm.geminiModel)}">
+        <p class="mini">This app always calls <code>gemini-3.8-flash</code>.</p>
 
         <h3 style="margin:22px 0 10px;font-size:14px;color:var(--ink)">Ollama (cloud or local)</h3>
         <label for="pg-set-ollama-url">Ollama base URL</label>
@@ -121,9 +116,7 @@ function aiSettingsPage(){
 window.saveAiSettingsPage = function(){
   const provider = document.getElementById('pg-set-provider')?.value || 'gemini';
   const geminiKey = document.getElementById('pg-set-gemini-key')?.value || '';
-  const customModel = (document.getElementById('pg-set-gemini-model-custom')?.value || '').trim();
-  const listModel = document.getElementById('pg-set-gemini-model')?.value || 'gemini-2.5-flash';
-  const geminiModel = customModel || listModel;
+  const geminiModel = 'gemini-3.8-flash';
   const ollamaUrl = document.getElementById('pg-set-ollama-url')?.value || '';
   const ollamaModel = document.getElementById('pg-set-ollama-model')?.value || '';
   const ollamaToken = document.getElementById('pg-set-ollama-token')?.value || '';
