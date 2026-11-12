@@ -2,6 +2,8 @@
 
 AI-Powered Interactive Mini-Project Portfolio & Mentoring System
 
+Current behavior of the mentor, grading, model order, and file map is in [docs/PROJECT.md](docs/PROJECT.md). Sections below this note still describe the earlier demonstration (Gemini-first chat, two design-journey stages, Ollama viva). Where they differ, follow `docs/PROJECT.md`.
+
 ## Start
 
 Run `python -m http.server 4174 --bind 127.0.0.1 --directory dist` from this folder, then open http://127.0.0.1:4174. Keep the server running. No installation or build is needed. Use HTTP rather than opening HTML directly for reliable file storage and API access.
