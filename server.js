@@ -130,6 +130,9 @@ const server = http.createServer((req, res) => {
 
     res.statusCode = 200;
     res.setHeader('Content-Type', contentType);
+    if(ext === '.html' || ext === '.js' || ext === '.css'){
+      res.setHeader('Cache-Control', 'no-store');
+    }
     fs.createReadStream(filePath).pipe(res);
   });
 });
