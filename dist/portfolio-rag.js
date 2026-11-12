@@ -277,12 +277,28 @@
   function chatMessageText(message){
     if(!message) return '';
     const content = message.content;
-    if(typeof content === 'string' && content.trim()) return content;
+    if(typeof content === 'string' && content.trim()) return stripThinkTags(content);
     if(Array.isArray(content)){
       const joined = content.map(part => (typeof part === 'string' ? part : (part && part.text) || '')).join('');
-      if(joined.trim()) return joined;
+      if(joined.trim()) return stripThinkTags(joined);
     }
-    return typeof message.reasoning_content === 'string' ? message.reasoning_content : '';
+    return '';
+  }
+
+  function stripThinkTags(text){
+    return String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  }
+
+  function answerFromChoice(choice, raw){
+    const message = (choice && choice.message) || {};
+    const content = chatMessageText(message);
+    if(content) return content;
+    if(!choice || choice.finish_reason !== 'stop') return '';
+    const reasoning = stripThinkTags(message.reasoning || message.reasoning_content || '');
+    if(!reasoning) return '';
+    if(raw && parseModelJsonArray(reasoning)) return reasoning;
+    if(/^here'?s a thinking process/i.test(reasoning)) return '';
+    return reasoning.length < 2500 ? reasoning : '';
   }
 
   function freeChatMessages(systemInstruction, prompt){
@@ -314,7 +330,7 @@
       }, timeoutMs);
       if(!response.ok) return { text: '', provider: '' };
       const data = await response.json();
-      const text = chatMessageText(data && data.choices && data.choices[0] && data.choices[0].message);
+      const text = answerFromChoice(data && data.choices && data.choices[0], raw);
       if(!text) return { text: '', provider: '' };
       return { text: raw ? String(text) : polishLiveAnswer(text), provider };
     } catch(_) {
@@ -323,13 +339,15 @@
   }
 
   function tryOvhFallback(systemInstruction, prompt, opts){
+    const next = Object.assign({}, opts || {});
+    next.maxOutputTokens = Math.max(Number(next.maxOutputTokens) || 0, 4096);
     return tryOpenAiChat(
       'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
       'Qwen3.6-27B',
       'OVHcloud (Qwen3.6-27B)',
       systemInstruction,
       prompt,
-      opts
+      next
     );
   }
 
@@ -7219,7 +7237,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         parsed = parseModelJsonArray(raw);
       }
     }
-    if(!Array.isArray(parsed) && !first.triedGemini && !/gemini/i.test(first.provider || '')){
+    if(!Array.isArray(parsed) && !String(raw || '').trim() && !first.triedGemini && !/gemini/i.test(first.provider || '')){
       const gemini = await tryGeminiFallback(jsonInstruction, userPrompt, gradeOpts);
       if(gemini.text){
         raw = gemini.text;
