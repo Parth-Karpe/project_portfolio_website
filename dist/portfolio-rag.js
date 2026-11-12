@@ -54,7 +54,14 @@
 
       geminiKey: localStorage.getItem('pg_gemini_key') || '',
 
-      geminiModel: localStorage.getItem('pg_gemini_model') || 'gemini-2.5-flash',
+      geminiModel: (() => {
+        let model = localStorage.getItem('pg_gemini_model') || 'gemini-3.8-flash';
+        if(model === 'gemini-2.5-flash'){
+          model = 'gemini-3.8-flash';
+          try { localStorage.setItem('pg_gemini_model', model); } catch(_) {}
+        }
+        return model;
+      })(),
 
       ollamaUrl: localStorage.getItem('pg_ollama_url') || 'https://ollama.com/api',
 
@@ -86,7 +93,7 @@
 
 
 
-  const GEMINI_MODEL_FALLBACKS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  const GEMINI_MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 
 
@@ -120,7 +127,7 @@
     if(!geminiKey) return '';
     const userPrompt = String(prompt || '').slice(0, 3500);
     if(!userPrompt) return '';
-    for(const model of geminiModelList(settings.geminiModel || 'gemini-2.5-flash')){
+    for(const model of geminiModelList(settings.geminiModel || 'gemini-3.8-flash')){
       try {
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
         const gRes = await fetchWithTimeout(endpoint, {
@@ -158,7 +165,7 @@
           systemInstruction,
           provider: 'auto',
           geminiKey: settings.geminiKey,
-          geminiModel: settings.geminiModel || 'gemini-2.5-flash',
+          geminiModel: settings.geminiModel || 'gemini-3.8-flash',
           ollamaToken: settings.ollamaToken,
           ollamaModel: settings.ollamaModel,
           ollamaUrl: settings.ollamaUrl
@@ -3936,7 +3943,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                   <select id="chat-set-gemini-model" style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:12.5px">
 
-                    <option value="gemini-2.5-flash" ${(settings.geminiModel||'gemini-2.5-flash')==='gemini-2.5-flash'?'selected':''}>gemini-2.5-flash (Recommended - Fast &amp; High Accuracy)</option>
+                    <option value="gemini-3.8-flash" ${(settings.geminiModel||'gemini-3.8-flash')==='gemini-3.8-flash'?'selected':''}>gemini-3.8-flash (Recommended)</option>
+
+                    <option value="gemini-2.5-flash" ${(settings.geminiModel||'')==='gemini-2.5-flash'?'selected':''}>gemini-2.5-flash (legacy accounts)</option>
 
                     <option value="gemini-2.0-flash" ${(settings.geminiModel||'')==='gemini-2.0-flash'?'selected':''}>gemini-2.0-flash</option>
 
@@ -4076,7 +4085,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     const geminiKey = document.getElementById('chat-set-gemini-key')?.value || '';
 
-    const geminiModel = document.getElementById('chat-set-gemini-model')?.value || 'gemini-2.5-flash';
+    const geminiModel = document.getElementById('chat-set-gemini-model')?.value || 'gemini-3.8-flash';
 
     const prev = getLLMSettings();
 
