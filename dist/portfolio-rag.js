@@ -7009,10 +7009,18 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     };
   }
 
+  function trimAtSentence(text, max){
+    const s = String(text || '').replace(/\s+/g, ' ').trim();
+    if(s.length <= max) return s;
+    const chunk = s.slice(0, max);
+    const boundary = Math.max(chunk.lastIndexOf('. '), chunk.lastIndexOf('\n'), chunk.lastIndexOf('• '));
+    return boundary > max * 0.45 ? chunk.slice(0, boundary + 1).trim() : `${chunk.trim()}…`;
+  }
+
   async function reviewDescriptiveWithLlm(questions, kb, persona, stage){
     const stageKey = String(stage || '0');
     questions.forEach(q => enrichDescriptiveQuestionFromPortfolio(q, kb, stageKey));
-    const evidence = kb ? facultyContextLines(kb, stageKey, persona).slice(0, 1200) : '';
+    const evidence = kb ? trimAtSentence(facultyContextLines(kb, stageKey, persona), 2200) : '';
     const courseFallback = kb
       ? portfolioCourseRows(kb).map(c => `${c.course}: ${String(c.concepts).slice(0, 100)}`).join(' | ')
       : '';
@@ -7022,18 +7030,23 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const brief = question.expectedAnswerBrief ? `\nEXPECTED_BRIEF: ${question.expectedAnswerBrief}` : '';
       return `Q${index}\nPROMPT: ${String(question.prompt || '').slice(0, 280)}\nRUBRIC: ${(question.rubricLabels || question.expectedPoints || []).join(' | ')}\nPORTFOLIO_POINTS: ${points.slice(0, 700)}\nHINTS: ${hints.slice(0, 500)}${brief}\nANSWER: ${String(question.draft || '').slice(0, 500)}`;
     }).join('\n\n');
-    const raw = await callPersonaModel([
-      'Grade each viva answer against its expected points and PORTFOLIO_POINTS.',
-      'Treat abbreviations as valid (e.g. OS = Operating Systems, DAA = Design and Analysis of Algorithms, DBMS, POCD).',
-      'A point is covered when the answer states that idea, even in different words.',
-      'Do not require the answer to copy the point text.',
-      'Return only a JSON array: [{"id":0,"supported":true,"conceptualCorrectness":0.85,"missing":["point text"],"note":"one sentence","suggestion":"short resubmit prompt","marksEarned":5,"marksMax":5}]',
-      'conceptualCorrectness is 0.0–1.0 semantic coverage of rubric + portfolio anchors.',
-      'marksEarned is 5 only when conceptualCorrectness >= 0.7; otherwise round(conceptualCorrectness * 5) capped at 4.',
-      'supported is true when conceptualCorrectness >= 0.5.',
-      'When not supported, suggestion must name specific courses/concepts from PORTFOLIO_POINTS or HINTS.',
-      evidence ? `PORTFOLIO_EVIDENCE:\n${evidence}` : ''
-    ].filter(Boolean).join(' '), blocks, true);
+    const systemInstruction = [
+      'Grade each viva answer using RUBRIC, PORTFOLIO_POINTS, HINTS, and PORTFOLIO_EVIDENCE.',
+      'Treat abbreviations as valid: OS, DBMS, DAA, DSA, POCD, CN.',
+      'Course names in the answer may differ from HINTS if they appear in PORTFOLIO_EVIDENCE (e.g. DBMS vs Data Structures).',
+      'A rubric point is met when the idea is stated in different words — short answers are allowed.',
+      'Return ONLY a JSON array, no markdown.',
+      'Schema: [{"id":0,"supported":true,"conceptualCorrectness":0.85,"missing":[],"note":"one sentence","suggestion":"","marksEarned":5,"marksMax":5}]',
+      'conceptualCorrectness: 0.0–1.0 semantic coverage.',
+      'marksEarned 5 only if conceptualCorrectness >= 0.7; else round(conceptualCorrectness * 5) max 4.',
+      'supported true if conceptualCorrectness >= 0.5.',
+      'If not supported, suggestion must cite specific courses/concepts to add from evidence.'
+    ].join(' ');
+    const userPrompt = [
+      evidence ? `PORTFOLIO_EVIDENCE:\n${evidence}` : '',
+      'QUESTIONS:\n' + blocks
+    ].filter(Boolean).join('\n\n');
+    const raw = await callPersonaModel(systemInstruction, userPrompt, true);
     const parsed = parseModelJsonArray(raw);
     if(!Array.isArray(parsed)){
       questions.forEach(question => {
