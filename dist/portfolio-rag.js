@@ -7040,6 +7040,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const met = pointResults.filter(row => row.met).map(row => row.point);
       const missing = pointResults.filter(row => !row.met).map(row => row.point);
       const supported = met.length * 2 >= question.expectedPoints.length;
+      const resubmitPrompt = supported ? '' : buildDescriptiveResubmitPrompt(question, { missing, metCount: met.length, total: question.expectedPoints.length });
       return {
         supported,
         strength: met.length ? met.join(' ') : '',
@@ -7047,7 +7048,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         pointResults,
         metCount: met.length,
         total: question.expectedPoints.length,
-        improvement: supported ? 'Keep the explanation tied to this project.' : 'Cover the missing points with a specific explanation.'
+        marksEarned: met.length,
+        marksMax: question.expectedPoints.length,
+        improvement: supported ? 'Keep the explanation tied to this project.' : 'Cover the missing points with a specific explanation.',
+        resubmitPrompt
       };
     }
     const supported = answer ? portfolioOverlap(answer, question.source) >= 0.4 : false;
@@ -7057,12 +7061,60 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     sourceWords.forEach(token => {
       if(!answerWords.has(token) && !missing.includes(token) && missing.length < 6) missing.push(token);
     });
+    const resubmitPrompt = supported ? '' : buildDescriptiveResubmitPrompt(question, { missing, metCount: supported ? 1 : 0, total: 2, sourceFallback: true });
     return {
       supported,
       strength: supported ? `You used ideas documented in ${question.citation}.` : '',
       missing,
-      improvement: supported ? 'Keep the explanation tied to this section.' : `${question.rubric} The documented line is: ${question.source}`
+      marksEarned: supported ? 2 : 0,
+      marksMax: 2,
+      improvement: supported ? 'Keep the explanation tied to this section.' : `${question.rubric} The documented line is: ${question.source}`,
+      resubmitPrompt
     };
+  }
+
+  function buildDescriptiveResubmitPrompt(question, ctx){
+    const missing = (ctx.missing || []).slice();
+    const lines = [];
+    if(missing.length){
+      missing.forEach((point, index) => {
+        lines.push(`${index + 1}. Address this rubric point in your own words: ${point}`);
+      });
+    }
+    if(question.rubric && !ctx.sourceFallback){
+      lines.push(`${lines.length + 1}. Tie your answer to the learning outcome: ${question.rubric}`);
+    }
+    if(ctx.sourceFallback && question.source){
+      lines.push(`${lines.length + 1}. Use the documented line from ${question.citation || 'the portfolio'}: ${String(question.source).slice(0, 180)}`);
+    }
+    if(!lines.length) lines.push('Expand your answer with a specific concept from the portfolio and how it applies to this project.');
+    return lines.join('\n');
+  }
+
+  function reconcileDescriptiveQuestionMarks(question){
+    const local = question.localParse || question.feedback || {};
+    const total = local.total || question.marksMax || (question.expectedPoints && question.expectedPoints.length) || 2;
+    let met = local.metCount != null ? local.metCount : (local.marksEarned != null ? local.marksEarned : 0);
+    const llm = question.llmFeedback;
+    if(llm && llm.supported && met < Math.ceil(total / 2)){
+      met = Math.ceil(total / 2);
+    }
+    if(llm && typeof llm.marksEarned === 'number' && Number.isFinite(llm.marksEarned)){
+      met = Math.max(met, Math.min(total, Math.round(llm.marksEarned)));
+    }
+    question.marksMax = total;
+    question.marksEarned = Math.min(total, Math.max(0, met));
+    question.supported = !!(local.supported) || !!(llm && llm.supported);
+    if(!question.supported){
+      const missing = [...(local.missing || [])];
+      if(llm && Array.isArray(llm.missing)) llm.missing.forEach(point => { if(point && !missing.includes(point)) missing.push(point); });
+      question.resubmitSuggestion = buildDescriptiveResubmitPrompt(question, { missing, metCount: question.marksEarned, total });
+      if(llm && (llm.suggestion || llm.resubmitPrompt)){
+        question.resubmitSuggestion += `\n\nMentor hint: ${String(llm.suggestion || llm.resubmitPrompt).trim()}`;
+      }
+    } else {
+      question.resubmitSuggestion = '';
+    }
   }
 
   function pushLensQuiz(kb){
@@ -7105,14 +7157,25 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
       const grade = question.checked ? renderDescriptiveGrade(question) : '';
 
-      return `<article class="mentor-descriptive-q"><h3>Q${index + 1}</h3><p>${esc(question.prompt)}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
+      const marksBadge = question.checked && question.marksMax != null
+        ? `<span class="descriptive-marks-badge">Marks: ${question.marksEarned || 0} / ${question.marksMax}</span>`
+        : '';
+      return `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Q${index + 1}</h3>${marksBadge}</div><p>${esc(question.prompt)}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
 
     }).join('');
 
     const note = quiz.stageNote ? `<p class="mentor-panel-note">${esc(quiz.stageNote)}</p>` : '';
     const body = questions || note || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>';
+    const totalMarks = (quiz.questions || []).some(q => q.checked && q.marksMax != null)
+      ? (() => {
+        let earned = 0;
+        let max = 0;
+        (quiz.questions || []).forEach(q => { if(q.marksMax != null){ earned += q.marksEarned || 0; max += q.marksMax; } });
+        return `<p class="descriptive-total-marks"><strong>Total marks:</strong> ${earned} / ${max}</p>`;
+      })()
+      : '';
     const footer = (quiz.questions || []).length ? '<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div>' : '';
-    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Checked in two steps: local word-overlap parser, then an LLM review. Both are shown.</div></div>${body}${footer}</div>`;
+    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Each answer earns up to 4 marks (one per rubric point). Unsatisfactory answers get a resubmit prompt.</div>${totalMarks}</div>${body}${footer}</div>`;
 
   }
 
@@ -7179,14 +7242,27 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       : llm
         ? `<p><strong>2. LLM review:</strong> ${llm.supported ? 'Pass' : 'Not yet'}${llm.note ? ` · ${esc(llm.note)}` : ''}</p>${(llm.missing || []).length ? `<p><strong>LLM still wants:</strong> ${esc(llm.missing.join(', '))}</p>` : ''}`
         : '<p><strong>2. LLM review:</strong> Not available. The local parser result stands.</p>';
-    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p><strong>Result:</strong> ${question.supported ? 'Pass' : 'Not yet'}. ${esc(question.citation || '')}</p>${localBlock}${llmBlock}<p><strong>Improvement:</strong> ${esc(local.improvement || '')}</p></div>`;
+    const resubmit = !question.supported && question.resubmitSuggestion
+      ? `<div class="descriptive-resubmit-prompt"><p><strong>Not satisfactory — revise your answer:</strong></p><pre class="descriptive-resubmit-text">${esc(question.resubmitSuggestion)}</pre></div>`
+      : '';
+    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p><strong>Result:</strong> ${question.supported ? 'Satisfactory' : 'Not satisfactory'} · <strong>Marks:</strong> ${question.marksEarned != null ? question.marksEarned : '—'} / ${question.marksMax != null ? question.marksMax : '—'} ${esc(question.citation || '')}</p>${localBlock}${llmBlock}${resubmit}<p><strong>Improvement:</strong> ${esc(local.improvement || '')}</p></div>`;
   }
 
   function applyDescriptiveScore(quiz){
     if(!quiz || !Array.isArray(quiz.questions) || quiz.questions.length !== 5) return;
+    let marksEarned = 0;
+    let marksMax = 0;
+    quiz.questions.forEach(question => {
+      if(question.marksMax != null){
+        marksEarned += question.marksEarned || 0;
+        marksMax += question.marksMax;
+      }
+    });
     quiz.score = {
       correct: quiz.questions.filter(question => question.supported).length,
-      total: 5
+      total: 5,
+      marksEarned,
+      marksMax
     };
     persistAssessment(quiz);
   }
@@ -7200,8 +7276,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       'Grade each viva answer against its expected points.',
       'A point is covered when the answer states that idea, even in different words.',
       'Do not require the answer to copy the point text.',
-      'Return only a JSON array: [{"id":0,"supported":true,"missing":["point text"],"note":"one sentence"}]',
-      'supported is true when at least half of the points are covered.'
+      'Return only a JSON array: [{"id":0,"supported":true,"missing":["point text"],"note":"one sentence","suggestion":"short resubmit prompt for the student","marksEarned":2,"marksMax":4}]',
+      'supported is true when at least half of the points are covered.',
+      'When not supported, suggestion must tell the student exactly what to add on resubmit.'
     ].join(' '), blocks, true);
     const parsed = parseModelJsonArray(raw);
     if(!Array.isArray(parsed)) return;
@@ -7212,9 +7289,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       question.llmFeedback = {
         supported: item.supported === true || String(item.supported).toLowerCase() === 'true',
         missing,
-        note: String(item.note || item.explanation || '').slice(0, 280)
+        note: String(item.note || item.explanation || '').slice(0, 280),
+        suggestion: String(item.suggestion || item.resubmitPrompt || '').slice(0, 400),
+        marksEarned: Number.isFinite(Number(item.marksEarned)) ? Number(item.marksEarned) : null,
+        marksMax: Number.isFinite(Number(item.marksMax)) ? Number(item.marksMax) : null
       };
-      question.supported = !!(question.localParse && question.localParse.supported) || question.llmFeedback.supported;
+      reconcileDescriptiveQuestionMarks(question);
     });
   }
 
@@ -7234,10 +7314,14 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const feedback = descriptiveFeedback(question);
       question.localParse = feedback;
       question.feedback = feedback;
+      question.marksEarned = feedback.marksEarned;
+      question.marksMax = feedback.marksMax;
+      question.resubmitSuggestion = feedback.resubmitPrompt || '';
       question.supported = feedback.supported;
       question.checked = true;
       question.llmPending = !!question.draft;
       question.llmFeedback = null;
+      reconcileDescriptiveQuestionMarks(question);
     });
     if(!anyAnswer){
       if(typeof toast === 'function') toast('Write an answer before checking.');
