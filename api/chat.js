@@ -24,13 +24,13 @@ async function handler(req, res) {
 
   const body = req.body || {};
   const { prompt, systemInstruction } = body;
-  if (!prompt || String(prompt).length > 1000) {
+  if (!prompt || String(prompt).length > 4000) {
     return res.status(prompt ? 200 : 400).json(prompt
-      ? { useFallback: true, error: 'Prompt is longer than 1000 characters.' }
+      ? { useFallback: true, error: 'Prompt is longer than 4000 characters.' }
       : { error: 'Missing prompt parameter' });
   }
 
-  const requestedProvider = body.provider || 'auto'; // 'auto', 'gemini', 'ollama', 'vercel_api'
+  const requestedProvider = body.provider || 'gemini'; // 'auto', 'gemini', 'ollama', 'vercel_api'
   const clientGeminiKey = (body.geminiKey || '').trim();
   const geminiApiKey = clientGeminiKey || process.env.GEMINI_API_KEY || '';
   const geminiModel = (body.geminiModel || 'gemini-2.5-flash').trim();
@@ -143,8 +143,16 @@ async function handler(req, res) {
     throw lastErr || new Error('Gemini call failed');
   }
 
-  // 1. If explicit Ollama requested
+  // 1. If explicit Ollama requested — still try Gemini first when a key is available
   if (requestedProvider === 'ollama') {
+    if (geminiApiKey) {
+      try {
+        const result = await callGemini();
+        return res.status(200).json(result);
+      } catch (err) {
+        console.warn('Ollama mode: Gemini attempt failed, trying Ollama:', err.message);
+      }
+    }
     try {
       const result = await callOllama();
       return res.status(200).json(result);

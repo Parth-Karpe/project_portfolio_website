@@ -1146,6 +1146,44 @@ input[type="file"] {
   box-shadow: 0 2px 8px var(--brand-glow);
 }
 
+.workspace-app-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 18px 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.workspace-app-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg-subtle, var(--surface));
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.workspace-app-tab .workspace-app-tab-icon svg {
+  width: 14px;
+  height: 14px;
+}
+.workspace-app-tab:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.workspace-app-tab.active {
+  background: var(--brand-surface, #dce8ff);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+
 /* Stages */
 .stage {
   display: flex;
@@ -2475,19 +2513,19 @@ tbody tr:hover {
   align-items: center;
   gap: 8px;
   padding: 8px 14px 8px 16px;
-  background: var(--brand);
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 48%, #ec4899 100%);
   color: #fff;
   border: none;
   border-radius: 999px;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.45);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .portfolio-chat-fab:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
-  background: var(--brand-hover, #4338ca);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 22px rgba(225, 29, 72, 0.6);
+  background: linear-gradient(135deg, #be123c 0%, #e11d48 50%, #db2777 100%);
 }
 
 .portfolio-chat-fab.active {
@@ -3683,10 +3721,10 @@ html body .mentor-dashboard .mentor-work-form textarea {
   border-radius: 999px;
   border: 1px solid var(--line);
 }
-.mentor-revise-status-aligned { color: #166534; background: #ecfdf3; }
-.mentor-revise-status-partial { color: #92400e; background: #fffbeb; }
+.mentor-revise-status-aligned,
+.mentor-revise-status-partial { color: #1e40af; background: #eff6ff; border-color: #bfdbfe; }
 .mentor-revise-status-missing,
-.mentor-revise-status-not_addressed { color: #9f1239; background: #fff1f2; }
+.mentor-revise-status-not_addressed { color: #9f1239; background: #fff1f2; border-color: #fecdd3; }
 .mentor-revise-summary { margin: 0 0 8px; color: var(--ink); }
 .mentor-revise-gaps,
 .mentor-revise-suggestions {
@@ -4018,4 +4056,36 @@ html body:has(.mentor-split) #portfolio-chat-container .portfolio-chat-fab { rig
   margin-left:auto; padding:7px 14px; border-radius:999px;
   background:var(--blue,#1D4ED8); color:#fff;
   font-size:14px; font-weight:700; line-height:1.4; white-space:nowrap;
+}
+
+
+/* ============================================================
+   RBAC (Role-Based Access Control) Navigation & Modal Styles
+   ============================================================ */
+.user-role-card {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+.user-role-card:hover {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.04)) !important;
+  border-color: var(--line-strong, #94a3b8) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm) !important;
+}
+.user-role-card.role-student {
+  border-left: 3.5px solid #2563eb !important;
+}
+.user-role-card.role-faculty {
+  border-left: 3.5px solid #059669 !important;
+}
+.user-role-card.role-hod {
+  border-left: 3.5px solid #7c3aed !important;
+}
+
+.rbac-modal .card {
+  max-width: 580px !important;
+  border-radius: 14px;
+}
+.rbac-role-tabs button {
+  transition: all 0.15s ease;
 }
