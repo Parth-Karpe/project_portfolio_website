@@ -5859,6 +5859,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   const DESCRIPTIVE_PASS_TARGET = 4;
+  const DESCRIPTIVE_MAX_ATTEMPTS = 2;
 
   function cloneDescriptiveQuestion(q){
     return {
@@ -5872,7 +5873,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       draft: '',
       checked: false,
       supported: false,
-      feedback: null
+      feedback: null,
+      attemptCount: 0
     };
   }
 
@@ -6825,10 +6827,13 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const marksBadge = question.checked && question.marksMax != null
         ? `<span class="descriptive-marks-badge">Marks: ${question.marksEarned || 0} / ${question.marksMax}</span>`
         : '';
-      const submitLabel = question.checked && !question.supported ? 'Resubmit answer' : 'Submit answer';
-      const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Question</h3>${marksBadge}</div><p>${esc(question.prompt)}</p>${rubric}<textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
+      const attemptsUsed = question.attemptCount || 0;
+      const attemptsLeft = Math.max(0, DESCRIPTIVE_MAX_ATTEMPTS - attemptsUsed);
+      const canResubmit = !question.supported && attemptsLeft > 0;
+      const submitLabel = question.checked && canResubmit ? 'Resubmit answer' : 'Submit answer';
+      const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Question</h3>${marksBadge}</div><p>${esc(question.prompt)}</p>${rubric}<p class="mini descriptive-attempts-line">Attempts on this question: <strong>${attemptsUsed}</strong> / ${DESCRIPTIVE_MAX_ATTEMPTS}${canResubmit ? ` · <strong>${attemptsLeft}</strong> left` : ''}</p><textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
       const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">${submitLabel}</button><span class="mini" style="margin-left:10px">Passing answers: <strong>${passed}</strong> / ${target}</span></div>`;
-      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">One faculty question at a time. Each answer shows marks (per rubric point) and a revision prompt if not satisfactory.</div></div>${body}${footer}</div>`;
+      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Up to ${DESCRIPTIVE_MAX_ATTEMPTS} attempts per question. Full feedback and revision prompts appear after each submit.</div></div>${body}${footer}</div>`;
     }
 
     const questions = (quiz.questions || []).map((question, index) => {
@@ -6978,6 +6983,8 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
         return;
       }
 
+      question.attemptCount = (question.attemptCount || 0) + 1;
+
       const feedback = descriptiveFeedback(question);
       question.localParse = feedback;
       question.feedback = feedback;
@@ -7013,8 +7020,12 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
           return;
         }
         advanceSequentialDescriptiveQuiz(quiz);
+      } else if((question.attemptCount || 0) >= DESCRIPTIVE_MAX_ATTEMPTS){
+        if(typeof toast === 'function') toast(`Not satisfactory after ${DESCRIPTIVE_MAX_ATTEMPTS} attempts. Next question.`);
+        advanceSequentialDescriptiveQuiz(quiz);
       } else if(typeof toast === 'function'){
-        toast(`Not satisfactory — ${question.marksEarned || 0} / ${question.marksMax || 4} marks. Read the revision prompt on screen.`);
+        const left = DESCRIPTIVE_MAX_ATTEMPTS - (question.attemptCount || 0);
+        toast(`Not satisfactory — ${question.marksEarned || 0} / ${question.marksMax || 4} marks. ${left} attempt${left === 1 ? '' : 's'} left — revise using the prompt below.`);
       }
 
       persistAssessment(quiz);
