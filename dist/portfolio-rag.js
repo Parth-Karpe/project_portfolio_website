@@ -158,11 +158,46 @@
     return { text: '', provider: '' };
   }
 
+  async function tryOvhFallback(systemInstruction, prompt, opts){
+    const raw = opts && opts.raw;
+    const maxTokens = (opts && opts.maxOutputTokens) || (raw ? 3072 : 1024);
+    const userPrompt = String(prompt || '').slice(0, 3500);
+    if(!userPrompt) return { text: '', provider: '' };
+    const messages = [];
+    const system = String(systemInstruction || '').slice(0, 6000);
+    if(system) messages.push({ role: 'system', content: system });
+    messages.push({ role: 'user', content: userPrompt });
+    try {
+      const response = await fetchWithTimeout('https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'Qwen3.6-27B',
+          messages,
+          temperature: 0.2,
+          max_tokens: maxTokens
+        })
+      }, 45000);
+      if(!response.ok) return { text: '', provider: '' };
+      const data = await response.json();
+      const text = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      if(!text) return { text: '', provider: '' };
+      return {
+        text: raw ? String(text) : polishLiveAnswer(text),
+        provider: 'OVHcloud (Qwen3.6-27B)'
+      };
+    } catch(_) {
+      return { text: '', provider: '' };
+    }
+  }
+
   async function llmTextWithGeminiFirst(systemInstruction, prompt, opts){
     if((getLLMSettings().geminiKey || '').trim()){
       const direct = await tryDirectGeminiText(systemInstruction, prompt, opts);
       if(direct) return { text: direct, provider: 'Google Gemini' };
     }
+    const ovh = await tryOvhFallback(systemInstruction, prompt, opts);
+    if(ovh.text) return ovh;
     const proxied = await tryProxyAutoChat(systemInstruction, prompt, opts);
     if(proxied.text) return proxied;
     return { text: '', provider: '' };
