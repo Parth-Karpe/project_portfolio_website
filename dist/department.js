@@ -1910,7 +1910,7 @@ portfolio=function(){
       <section class="portfolio-section" id="stage-2">
         <div class="portfolio-section-title">
           <h2>Stage 3 - Implementation and Integration</h2>
-        </div>
+          </div>
         <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
         </div>
@@ -1920,7 +1920,7 @@ portfolio=function(){
       <section class="portfolio-section" id="stage-3">
         <div class="portfolio-section-title">
           <h2>Stage 4 - Testing and Validations</h2>
-        </div>
+          </div>
         <div class="empty-stage-notice" style="padding: 28px; text-align: center; color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: 12px; margin-top: 14px;">
           <p style="font-size: 15px; font-weight: 600; margin: 0; color: var(--muted);">Content will be updated soon.</p>
         </div>

@@ -358,8 +358,8 @@ function sharedPageHeader(){
   <button type="button" class="user-role-card" onclick="switchRole('HOD');go('Department')" style="display:inline-flex; align-items:center; gap:6px; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 14px; font-size:12.5px; font-weight:700; box-shadow:var(--shadow-xs);">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--brand)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     <span>Dr. Narayan D G</span>
-  </button>
-  <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
+      </button>
+      <button class="theme-toggle-btn" title="Toggle theme" onclick="toggleTheme()">${getTheme()==='dark'?ICONS.sun:ICONS.moon}</button>
 </div></header>`;
 }
 render=function(){
