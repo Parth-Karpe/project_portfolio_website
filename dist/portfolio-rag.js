@@ -5255,8 +5255,16 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return { marksEarned, marksMax, conceptualCorrectness: conceptual, satisfactory: conceptual >= DESCRIPTIVE_PASS_RATIO };
   }
 
+  function studentQuestionPrompt(prompt){
+    return String(prompt || '')
+      .replace(/(?:\s*Ground your answer in [\s\S]*?\(\[[^\]]+\]\)\.)+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   function enrichDescriptiveQuestionFromPortfolio(question, kb, stage){
     if(!question || !kb) return question;
+    question.prompt = studentQuestionPrompt(question.prompt);
     question.competency = question.competency || question.rubric || '';
     question.cognitiveLevel = question.cognitiveLevel || 'apply';
     const courses = portfolioCourseRows(kb);
@@ -5270,11 +5278,6 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       question.artifactRef = excerpts[0].citation;
       if(!question.citation) question.citation = excerpts[0].citation;
       question.portfolioExcerpt = excerpts.map(e => e.text).join(' ').slice(0, 420);
-    }
-    if(!question.promptBound && excerpts[0]){
-      const anchor = excerpts[0];
-      question.prompt = `${question.prompt} Ground your answer in ${anchor.label} (${anchor.citation}).`;
-      question.promptBound = true;
     }
     if(question.templateId === 'CS0-D1' && courses.length){
       const pick = courses.slice(0, 2);
@@ -7186,7 +7189,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const points = (question.gradingPoints || question.expectedPoints || []).map((point, pointIndex) => `${pointIndex + 1}. ${point}`).join(' | ') || question.source || '';
       const hints = (question.portfolioHints || []).join(' | ') || courseFallback;
       const brief = question.expectedAnswerBrief ? `\nEXPECTED_BRIEF: ${question.expectedAnswerBrief}` : '';
-      return `Q${index}\nPROMPT: ${String(question.prompt || '').slice(0, 280)}\nRUBRIC: ${(question.rubricLabels || question.expectedPoints || []).join(' | ')}\nPORTFOLIO_POINTS: ${points.slice(0, 700)}\nHINTS: ${hints.slice(0, 500)}${brief}\nANSWER: ${String(question.draft || '').slice(0, 500)}`;
+      return `Q${index}\nPROMPT: ${studentQuestionPrompt(question.prompt).slice(0, 280)}\nRUBRIC: ${(question.rubricLabels || question.expectedPoints || []).join(' | ')}\nPORTFOLIO_POINTS: ${points.slice(0, 700)}\nHINTS: ${hints.slice(0, 500)}${brief}\nANSWER: ${String(question.draft || '').slice(0, 500)}`;
     }).join('\n\n');
     const systemInstruction = [
       'Grade each viva answer using RUBRIC, PORTFOLIO_POINTS, HINTS, and PORTFOLIO_EVIDENCE.',
@@ -7327,7 +7330,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const attemptsLeft = Math.max(0, DESCRIPTIVE_MAX_ATTEMPTS - attemptsUsed);
       const canResubmit = !question.supported && attemptsLeft > 0;
       const submitLabel = question.checked && canResubmit ? 'Resubmit answer' : 'Submit answer';
-      const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Question</h3>${marksBadge}</div><p>${esc(question.prompt)}</p>${rubric}<p class="mini descriptive-attempts-line">Attempts on this question: <strong>${attemptsUsed}</strong> / ${DESCRIPTIVE_MAX_ATTEMPTS}${canResubmit ? ` · <strong>${attemptsLeft}</strong> left` : ''}</p><textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
+      const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Question</h3>${marksBadge}</div><p>${esc(studentQuestionPrompt(question.prompt))}</p>${rubric}<p class="mini descriptive-attempts-line">Attempts on this question: <strong>${attemptsUsed}</strong> / ${DESCRIPTIVE_MAX_ATTEMPTS}${canResubmit ? ` · <strong>${attemptsLeft}</strong> left` : ''}</p><textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
       const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">${submitLabel}</button><span class="mini" style="margin-left:10px">Passing answers: <strong>${passed}</strong> / ${target}</span></div>`;
       return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Faculty templates · Gemini 2.5 Flash semantic review · ${DESCRIPTIVE_MAX_ATTEMPTS} attempts per question · 5/5 marks at ≥70% conceptual correctness.</div></div>${body}${footer}</div>`;
     }
@@ -7337,7 +7340,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const marksBadge = question.checked && question.marksMax != null
         ? `<span class="descriptive-marks-badge">Marks: ${question.marksEarned || 0} / ${question.marksMax}</span>`
         : '';
-      return `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Q${index + 1}</h3>${marksBadge}</div><p>${esc(question.prompt)}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
+      return `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Q${index + 1}</h3>${marksBadge}</div><p>${esc(studentQuestionPrompt(question.prompt))}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
     }).join('');
 
     const totalMarks = (quiz.questions || []).some(q => q.checked && q.marksMax != null)
