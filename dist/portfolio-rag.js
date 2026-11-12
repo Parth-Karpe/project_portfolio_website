@@ -5267,7 +5267,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       if(!key || !specByKey[key] || seen.has(key)) return null;
       seen.add(key);
       const spec = specByKey[key];
-      const status = String(item.status || '').toLowerCase();
+      let status = String(item.status || '').toLowerCase().trim();
+      if(status === 'improvement' || status === 'needs_improvement' || status === 'needs_work') status = 'partial';
+      if(status === 'action_needed' || status === 'action needed') status = 'not_addressed';
+      if(status === 'complete' || status === 'good' || status === 'pass') status = 'aligned';
       if(!REVISE_STATUS.includes(status)) return null;
       let suggestion = String(item.suggestion || '').replace(/\s+/g, ' ').trim();
       if(!suggestion && Array.isArray(item.suggestions)) suggestion = String(item.suggestions[0] || '').replace(/\s+/g, ' ').trim();
@@ -5276,6 +5279,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         if(summary.length >= 12) suggestion = summary.slice(0, 280);
         else return null;
       }
+      suggestion = suggestion.replace(/\[(Table[^\]]*|FR[^\]]*|NFR[^\]]*|Stage[^\]]*)\]/gi, '$1');
       if(/\[Table|\[FR|\[NFR|\[Stage/i.test(suggestion)) return null;
       const draftQuotes = (item.draftQuotes || []).map(text => String(text || '').trim()).filter(Boolean).slice(0, 1);
       sections.push({
