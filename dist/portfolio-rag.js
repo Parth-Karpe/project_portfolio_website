@@ -4991,6 +4991,61 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   }
 
+  function pointCoverage(answer, source){
+    const answerSet = new Set(tokenize(answer).map(stemWord).filter(token => token.length > 2));
+    const docTokens = tokenize(source).map(stemWord).filter(token => token.length > 2);
+    if(!answerSet.size || !docTokens.length) return 0;
+    const hits = docTokens.filter(token => answerSet.has(token)).length;
+    return hits / docTokens.length;
+  }
+
+  function descriptivePointOverlap(answer, source){
+    if(!answer || !source) return 0;
+    return Math.max(portfolioOverlap(answer, source), pointCoverage(answer, source));
+  }
+
+  function isGenericDescriptivePoint(point){
+    const text = String(point || '').trim();
+    if(!text) return true;
+    if(/\b(DAA|DBMS|OS|POCD|CN|SQL|ACID|B-Tree|mutex|parser)\b/i.test(text)) return false;
+    return /^(name|explain|identify|describe|state|connect|judge)\b/i.test(text);
+  }
+
+  function portfolioCourseRows(kb){
+    const custom = (typeof window !== 'undefined' && typeof window.getTeamCustomStageData === 'function' && kb && kb.teamId)
+      ? (window.getTeamCustomStageData(kb.teamId)['0'] || {})
+      : {};
+    const st0 = Object.assign({}, (kb && kb.st0) || {}, custom);
+    return (st0.coursesTable || []).filter(row => row && row.course && row.concepts);
+  }
+
+  function enrichDescriptiveQuestionFromPortfolio(question, kb, stage){
+    if(!question || !kb) return question;
+    const courses = portfolioCourseRows(kb);
+    if(!courses.length) return question;
+    const needsAnchor = question.templateId === 'CS0-D1'
+      || (Array.isArray(question.expectedPoints) && question.expectedPoints.length && question.expectedPoints.every(isGenericDescriptivePoint));
+    if(!needsAnchor) return question;
+    const pick = courses.slice(0, 2);
+    const c1 = pick[0];
+    const c2 = pick[1] || pick[0];
+    question.portfolioHints = pick.map(c => `${c.course} (${c.role || 'course'}): ${String(c.concepts).slice(0, 160)}`);
+    question.citation = question.citation || '[Table 0.1]';
+    question.rubricLabels = (question.expectedPoints || []).slice();
+    const n = question.rubricLabels.length || 3;
+    const graded = [
+      `${c1.course} ${c1.concepts}`,
+      `${c1.course} role in this project ${c1.concepts} ${(kb && kb.title) || ''}`,
+      `${c2.course} ${c2.concepts}`,
+    ];
+    if(n >= 4) graded.push(`${c2.course} role in this project ${c2.concepts}`);
+    question.gradingPoints = graded.slice(0, n);
+    question.source = question.portfolioHints.join(' ');
+    const chunk = ((kb && kb.chunks) || []).find(c => c.id === 'table-0-1' || c.id === 'table-0-4');
+    if(chunk && chunk.text) question.portfolioExcerpt = String(chunk.text).slice(0, 420);
+    return question;
+  }
+
 
 
   const MENTOR_LENSES = [
@@ -5867,6 +5922,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       prompt: q.prompt,
       layer: q.layer,
       expectedPoints: q.expectedPoints ? q.expectedPoints.slice() : undefined,
+      gradingPoints: q.gradingPoints ? q.gradingPoints.slice() : undefined,
+      rubricLabels: q.rubricLabels ? q.rubricLabels.slice() : undefined,
+      portfolioHints: q.portfolioHints ? q.portfolioHints.slice() : undefined,
+      portfolioExcerpt: q.portfolioExcerpt,
       source: q.source,
       citation: q.citation,
       rubric: q.rubric,
@@ -5888,8 +5947,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     }
   }
 
-  function wrapSequentialDescriptive(built, persona, stage, teamId){
-    const pool = (built.questions || []).map(q => cloneDescriptiveQuestion(q));
+  function wrapSequentialDescriptive(built, persona, stage, teamId, kb){
+    const pool = (built.questions || []).map(q => enrichDescriptiveQuestionFromPortfolio(cloneDescriptiveQuestion(q), kb, stage));
     if(!pool.length) return built;
     const questionQueue = pool.map((_, i) => i);
     shuffleIndexQueue(questionQueue, personaSeed(persona + '|desc-queue', stage, teamId));
@@ -6410,7 +6469,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   function facultyDescriptive(kb, persona, stage){
     const questions = facultyBank(stage)[persona].descriptive.map(raw => {
       const item = resolveQuizItem(raw, kb);
-      return {
+      return enrichDescriptiveQuestionFromPortfolio({
         templateId: item.id,
         prompt: item.prompt,
         layer: item.layer || 'project',
@@ -6419,7 +6478,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         citation: '',
         rubric: item.focus,
         draft: ''
-      };
+      }, kb, stage);
     });
     return { teamId: kb && kb.teamId, dimension: persona, stage: String(stage), kind: 'descriptive', personaStage: true, templateGuided: true, questions };
   }
@@ -6606,25 +6665,28 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function descriptiveFeedback(question){
     const answer = question.draft || '';
-    if(question.expectedPoints && question.expectedPoints.length){
-      const pointResults = question.expectedPoints.map(point => {
-        const overlap = answer ? portfolioOverlap(answer, point) : 0;
-        return { point, overlap, met: overlap >= 0.4 };
+    const rubricLabels = question.rubricLabels || question.expectedPoints || [];
+    const gradingPoints = question.gradingPoints || question.expectedPoints || [];
+    if(gradingPoints.length){
+      const pointResults = gradingPoints.map((checkText, index) => {
+        const overlap = answer ? descriptivePointOverlap(answer, checkText) : 0;
+        const point = rubricLabels[index] || checkText;
+        return { point, checkText, overlap, met: overlap >= 0.32 };
       });
       const met = pointResults.filter(row => row.met).map(row => row.point);
       const missing = pointResults.filter(row => !row.met).map(row => row.point);
-      const supported = met.length * 2 >= question.expectedPoints.length;
-      const resubmitPrompt = supported ? '' : buildDescriptiveResubmitPrompt(question, { missing, metCount: met.length, total: question.expectedPoints.length });
+      const supported = met.length * 2 >= gradingPoints.length;
+      const resubmitPrompt = supported ? '' : buildDescriptiveResubmitPrompt(question, { missing, pointResults, metCount: met.length, total: gradingPoints.length });
       return {
         supported,
         strength: met.length ? met.join(' ') : '',
         missing,
         pointResults,
         metCount: met.length,
-        total: question.expectedPoints.length,
+        total: gradingPoints.length,
         marksEarned: met.length,
-        marksMax: question.expectedPoints.length,
-        improvement: supported ? 'Keep the explanation tied to this project.' : 'See the numbered revision prompt below and address each missing rubric point.',
+        marksMax: gradingPoints.length,
+        improvement: supported ? 'Keep the explanation tied to this project.' : 'Use the portfolio course list below — name real courses and concepts from your project, not the rubric headings alone.',
         resubmitPrompt
       };
     }
@@ -6648,11 +6710,25 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function buildDescriptiveResubmitPrompt(question, ctx){
-    const missing = (ctx.missing || []).slice();
     const lines = [];
-    if(missing.length){
+    if(question.portfolioHints && question.portfolioHints.length){
+      lines.push('From your portfolio (Table 0.1) — name two courses and explain how each helps this project:');
+      question.portfolioHints.forEach(hint => lines.push(`• ${hint}`));
+      lines.push('');
+    } else if(question.portfolioExcerpt){
+      lines.push(`Portfolio excerpt (${question.citation || 'Table 0.1'}): ${question.portfolioExcerpt.slice(0, 260)}`);
+      lines.push('');
+    }
+    const missingRows = (ctx.pointResults || []).filter(row => !row.met);
+    if(missingRows.length){
+      missingRows.forEach((row, index) => {
+        const hint = row.checkText && row.checkText !== row.point ? ` — e.g. mention: ${String(row.checkText).slice(0, 150)}` : '';
+        lines.push(`${index + 1}. ${row.point}${hint}`);
+      });
+    } else {
+      const missing = (ctx.missing || []).slice();
       missing.forEach((point, index) => {
-        lines.push(`${index + 1}. Address this rubric point in your own words: ${point}`);
+        lines.push(`${index + 1}. Address: ${point}`);
       });
     }
     if(question.rubric && !ctx.sourceFallback){
@@ -6693,8 +6769,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function renderDescriptiveGrade(question){
     const local = question.localParse || question.feedback || {};
-    const rows = (local.pointResults || []).map(row => `<li>${row.met ? 'Met' : 'Missing'} · ${Math.round((row.overlap || 0) * 100)}% overlap · ${esc(row.point)}</li>`).join('');
-    const localBlock = `<p><strong>1. Local parser:</strong> ${local.supported ? 'Pass' : 'Not yet'}${local.total ? ` · ${local.metCount}/${local.total} points (40% word overlap per point)` : ''}</p>${rows ? `<ul>${rows}</ul>` : `<p><strong>Missing:</strong> ${esc((local.missing || []).join(', ') || 'None.')}</p>`}`;
+    const rows = (local.pointResults || []).map(row => {
+      const hint = row.checkText && row.checkText !== row.point ? `<br><span class="mini">Checked against portfolio vocabulary: ${esc(String(row.checkText).slice(0, 120))}</span>` : '';
+      return `<li>${row.met ? 'Met' : 'Missing'} · ${Math.round((row.overlap || 0) * 100)}% overlap · ${esc(row.point)}${hint}</li>`;
+    }).join('');
+    const localBlock = `<p><strong>1. Local parser:</strong> ${local.supported ? 'Pass' : 'Not yet'}${local.total ? ` · ${local.metCount}/${local.total} rubric points (matched to your Table 0.1 course/concept text)` : ''}</p>${rows ? `<ul>${rows}</ul>` : `<p><strong>Missing:</strong> ${esc((local.missing || []).join(', ') || 'None.')}</p>`}`;
     const llm = question.llmFeedback;
     const llmBlock = !question.draft
       ? ''
@@ -6702,7 +6781,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       ? '<p><strong>2. LLM review:</strong> Checking the same answer…</p>'
       : llm
         ? `<p><strong>2. LLM review:</strong> ${llm.supported ? 'Pass' : 'Not yet'}${llm.note ? ` · ${esc(llm.note)}` : ''}</p>${(llm.missing || []).length ? `<p><strong>LLM still wants:</strong> ${esc(llm.missing.join(', '))}</p>` : ''}`
-        : '<p><strong>2. LLM review:</strong> Not available. The local parser result stands.</p>';
+        : '<p><strong>2. LLM review:</strong> Unavailable — check AI Settings (API key) and try resubmitting. The local parser result stands.</p>';
     const resubmit = !question.supported && question.resubmitSuggestion
       ? `<div class="descriptive-resubmit-prompt"><p><strong>Not satisfactory — revise your answer:</strong></p><pre class="descriptive-resubmit-text">${esc(question.resubmitSuggestion)}</pre></div>`
       : '';
@@ -6732,10 +6811,12 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     };
   }
 
-  async function reviewDescriptiveWithLlm(questions){
+  async function reviewDescriptiveWithLlm(questions, kb, persona, stage){
+    const evidence = kb ? facultyContextLines(kb, stage, persona).slice(0, 1200) : '';
     const blocks = questions.map((question, index) => {
-      const points = (question.expectedPoints || []).map((point, pointIndex) => `${pointIndex + 1}. ${point}`).join(' | ') || question.source || '';
-      return `Q${index}\nPROMPT: ${String(question.prompt || '').slice(0, 280)}\nPOINTS: ${points.slice(0, 500)}\nANSWER: ${String(question.draft || '').slice(0, 500)}`;
+      const points = (question.gradingPoints || question.expectedPoints || []).map((point, pointIndex) => `${pointIndex + 1}. ${point}`).join(' | ') || question.source || '';
+      const hints = (question.portfolioHints || []).join(' | ');
+      return `Q${index}\nPROMPT: ${String(question.prompt || '').slice(0, 280)}\nRUBRIC: ${(question.rubricLabels || question.expectedPoints || []).join(' | ')}\nPORTFOLIO_POINTS: ${points.slice(0, 500)}\nHINTS: ${hints.slice(0, 400)}\nANSWER: ${String(question.draft || '').slice(0, 500)}`;
     }).join('\n\n');
     const raw = await callPersonaModel([
       'Grade each viva answer against its expected points.',
@@ -6743,10 +6824,22 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       'Do not require the answer to copy the point text.',
       'Return only a JSON array: [{"id":0,"supported":true,"missing":["point text"],"note":"one sentence","suggestion":"short resubmit prompt for the student","marksEarned":2,"marksMax":4}]',
       'supported is true when at least half of the points are covered.',
-      'When not supported, suggestion must tell the student exactly what to add on resubmit.'
-    ].join(' '), blocks, true);
+      'When not supported, suggestion must name specific courses/concepts from PORTFOLIO_POINTS or HINTS.',
+      evidence ? `PORTFOLIO_EVIDENCE:\n${evidence}` : ''
+    ].filter(Boolean).join(' '), blocks, true);
     const parsed = parseModelJsonArray(raw);
-    if(!Array.isArray(parsed)) return;
+    if(!Array.isArray(parsed)){
+      questions.forEach(question => {
+        question.llmFeedback = {
+          supported: false,
+          unavailable: true,
+          note: 'Grading model did not return JSON. Open AI Settings and confirm your API key, then resubmit.',
+          missing: [],
+          suggestion: ''
+        };
+      });
+      return;
+    }
     parsed.forEach(item => {
       const question = questions[Number(item && item.id)];
       if(!question) return;
@@ -6948,7 +7041,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     if(built.stageNote || !built.questions || !built.questions.length){
       chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: built }];
     } else {
-      const descriptive = wrapSequentialDescriptive(built, persona, stage, teamId);
+      const descriptive = wrapSequentialDescriptive(built, persona, stage, teamId, kb);
       persistAssessment(descriptive);
       chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive }];
     }
@@ -6985,6 +7078,9 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
 
       question.attemptCount = (question.attemptCount || 0) + 1;
 
+      const kb = buildTeamKnowledgeBase(quiz.teamId);
+      enrichDescriptiveQuestionFromPortfolio(question, kb, quiz.stage);
+
       const feedback = descriptiveFeedback(question);
       question.localParse = feedback;
       question.feedback = feedback;
@@ -7002,8 +7098,10 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
       if(mentorSurfaceOpen() && typeof render === 'function') render();
 
       try {
-        await reviewDescriptiveWithLlm([question]);
-      } catch(_) {}
+        await reviewDescriptiveWithLlm([question], kb, quiz.dimension, quiz.stage);
+      } catch(_) {
+        question.llmFeedback = { supported: false, unavailable: true, note: 'Network or API error during LLM review.', missing: [], suggestion: '' };
+      }
       question.llmPending = false;
       reconcileDescriptiveQuestionMarks(question);
       applyDescriptiveScore(quiz);
@@ -7035,6 +7133,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     }
 
     const questions = quiz.questions || [];
+    const kb = buildTeamKnowledgeBase(quiz.teamId);
     let anyAnswer = false;
     document.querySelectorAll('[data-descriptive-answer]').forEach(field => {
       const idx = Number(field.dataset.descriptiveAnswer);
@@ -7042,6 +7141,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
       if(!question) return;
       question.draft = field.value.trim();
       if(question.draft) anyAnswer = true;
+      enrichDescriptiveQuestionFromPortfolio(question, kb, quiz.stage);
       const feedback = descriptiveFeedback(question);
       question.localParse = feedback;
       question.feedback = feedback;
@@ -7064,7 +7164,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
 
     const answered = questions.filter(question => question.draft);
     try {
-      await reviewDescriptiveWithLlm(answered);
+      await reviewDescriptiveWithLlm(answered, kb, quiz.dimension, quiz.stage);
     } catch(_) {}
     questions.forEach(question => { question.llmPending = false; });
     applyDescriptiveScore(quiz);
