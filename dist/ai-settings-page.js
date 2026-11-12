@@ -28,8 +28,8 @@ function aiSettingsPage(){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Close
       </button>`;
-  return heading('AI & mentor settings', 'API keys, models, and generation engines. Saved in this browser only — not uploaded to ProjectGate servers.', closeBtn) +
-    `<div class="notice">Keys and tokens stay in <strong>localStorage</strong> on your device. Generation order: <strong>Google Gemini</strong> (your API key) → <strong>/api/chat</strong> (Gemini, then Ollama) → offline/template fallbacks.</div>
+  return heading('AI & mentor settings', 'Free models for the mentor. Saved in this browser only — not uploaded to ProjectGate servers.', closeBtn) +
+    `<div class="notice">Live answers and grades use <strong>OVHcloud Qwen3.6-27B</strong>, then <strong>Kilo kilo-auto/free</strong> if OVH does not return usable text. No API key. Offline extractive RAG stays available. Gemini and Ollama are paused.</div>
     <div class="grid">
       <section class="card">
         <div class="card-head">
@@ -42,13 +42,12 @@ function aiSettingsPage(){
 
         <label for="pg-set-provider">Generation engine</label>
         <select id="pg-set-provider">
-          <option value="gemini" ${llm.provider === 'gemini' ? 'selected' : ''}>Google Gemini first (recommended)</option>
-          <option value="auto" ${llm.provider === 'auto' ? 'selected' : ''}>Auto — Gemini, then Ollama proxy, then offline</option>
-          <option value="ollama" ${llm.provider === 'ollama' ? 'selected' : ''}>Prefer Ollama after Gemini fails</option>
+          <option value="free" ${llm.provider !== 'extractive' ? 'selected' : ''}>OVHcloud, then Kilo kilo-auto/free</option>
           <option value="extractive" ${llm.provider === 'extractive' ? 'selected' : ''}>Offline extractive RAG (no API key)</option>
         </select>
+        <p class="mini">OVH allows 2 anonymous requests per minute from this browser. If that reply is missing, Kilo <code>kilo-auto/free</code> runs through this app (about 200 requests per hour on the server address). Do not put passwords or private data in answers sent to Kilo.</p>
 
-        <h3 style="margin:18px 0 10px;font-size:14px;color:var(--ink)">Google Gemini</h3>
+        <h3 style="margin:18px 0 10px;font-size:14px;color:var(--ink)">Google Gemini (paused)</h3>
         <label for="pg-set-gemini-key">Gemini API key</label>
         <input id="pg-set-gemini-key" type="password" autocomplete="off" placeholder="AIzaSy..." value="${esc(llm.geminiKey)}">
         <p class="mini">Get a key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Stored as <code>pg_gemini_key</code>.</p>

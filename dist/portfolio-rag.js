@@ -229,42 +229,147 @@
     return { text: '', provider: '' };
   }
 
+  /** OVHcloud anonymous Qwen, then Kilo kilo-auto/free. Gemini is paused. */
   async function llmTextWithGeminiFirst(systemInstruction, prompt, opts){
-    if((getLLMSettings().geminiKey || '').trim()){
-      const direct = await tryDirectGeminiText(systemInstruction, prompt, opts);
-      if(direct) return { text: direct, provider: 'Google Gemini' };
-    }
-    const proxied = await tryProxyAutoChat(systemInstruction, prompt, opts);
-    if(proxied.text) return proxied;
-    return { text: '', provider: '' };
+    if(getLLMSettings().provider === 'extractive') return { text: '', provider: '', triedKilo: false };
+    const ovh = await tryOvhFallback(systemInstruction, prompt, opts);
+    if(ovh.text) return ovh;
+    const kilo = await tryKiloFree(systemInstruction, prompt, opts);
+    return kilo.text ? kilo : { text: '', provider: '', triedKilo: true };
   }
 
+  function chatMessageText(message){
+    if(!message) return '';
+    const content = message.content;
+    if(typeof content === 'string' && content.trim()) return content;
+    if(Array.isArray(content)){
+      const joined = content.map(part => (typeof part === 'string' ? part : (part && part.text) || '')).join('');
+      if(joined.trim()) return joined;
+    }
+    return typeof message.reasoning_content === 'string' ? message.reasoning_content : '';
+  }
 
+  function freeChatMessages(systemInstruction, prompt){
+    const userPrompt = String(prompt || '').slice(0, 3500);
+    if(!userPrompt) return null;
+    const messages = [];
+    const system = String(systemInstruction || '').slice(0, 6000);
+    if(system) messages.push({ role: 'system', content: system });
+    messages.push({ role: 'user', content: userPrompt });
+    return messages;
+  }
+
+  async function tryOpenAiChat(url, model, provider, systemInstruction, prompt, opts, headers){
+    const raw = opts && opts.raw;
+    const maxTokens = (opts && opts.maxOutputTokens) || (raw ? 3072 : 1024);
+    const timeoutMs = (opts && opts.timeoutMs) || 45000;
+    const messages = freeChatMessages(systemInstruction, prompt);
+    if(!messages) return { text: '', provider: '' };
+    try {
+      const response = await fetchWithTimeout(url, {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, headers || {}),
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.2,
+          max_tokens: maxTokens
+        })
+      }, timeoutMs);
+      if(!response.ok) return { text: '', provider: '' };
+      const data = await response.json();
+      const text = chatMessageText(data && data.choices && data.choices[0] && data.choices[0].message);
+      if(!text) return { text: '', provider: '' };
+      return { text: raw ? String(text) : polishLiveAnswer(text), provider };
+    } catch(_) {
+      return { text: '', provider: '' };
+    }
+  }
+
+  function tryOvhFallback(systemInstruction, prompt, opts){
+    return tryOpenAiChat(
+      'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions',
+      'Qwen3.6-27B',
+      'OVHcloud (Qwen3.6-27B)',
+      systemInstruction,
+      prompt,
+      opts
+    );
+  }
+
+  async function tryKiloFree(systemInstruction, prompt, opts){
+    const raw = opts && opts.raw;
+    const userPrompt = String(prompt || '').slice(0, 3500);
+    if(!userPrompt) return { text: '', provider: '' };
+    try {
+      const response = await fetchWithTimeout('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'kilo',
+          prompt: userPrompt,
+          systemInstruction: String(systemInstruction || '').slice(0, 6000),
+          maxOutputTokens: (opts && opts.maxOutputTokens) || (raw ? 3072 : 1024)
+        })
+      }, (opts && opts.timeoutMs) || 45000);
+      if(!response.ok) return { text: '', provider: '' };
+      const data = await response.json();
+      if(!data || !data.text || data.useFallback) return { text: '', provider: '' };
+      return {
+        text: raw ? String(data.text) : polishLiveAnswer(data.text),
+        provider: data.provider || 'Kilo (kilo-auto/free)'
+      };
+    } catch(_) {
+      return { text: '', provider: '' };
+    }
+  }
 
   function parseModelJsonArray(raw){
-
     if(!raw) return null;
-
-    const cleaned = String(raw).replace(/```json|```/gi, '');
-
-    const start = cleaned.indexOf('[');
-
-    const end = cleaned.lastIndexOf(']');
-
-    if(start < 0 || end <= start) return null;
-
-    try {
-
-      const parsed = JSON.parse(cleaned.slice(start, end + 1));
-
-      return Array.isArray(parsed) ? parsed : null;
-
-    } catch(_) {
-
-      return null;
-
+    const cleaned = String(raw)
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
+      .replace(/```json|```/gi, '')
+      .trim();
+    const arrays = [];
+    for(let i = 0; i < cleaned.length; i++){
+      if(cleaned[i] !== '[') continue;
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      for(let j = i; j < cleaned.length; j++){
+        const ch = cleaned[j];
+        if(inString){
+          if(escaped) escaped = false;
+          else if(ch === '\\') escaped = true;
+          else if(ch === '"') inString = false;
+          continue;
+        }
+        if(ch === '"') inString = true;
+        else if(ch === '[') depth++;
+        else if(ch === ']'){
+          depth--;
+          if(depth === 0){
+            arrays.push(cleaned.slice(i, j + 1));
+            break;
+          }
+        }
+      }
     }
-
+    for(let n = arrays.length - 1; n >= 0; n--){
+      try {
+        const parsed = JSON.parse(arrays[n]);
+        if(Array.isArray(parsed) && parsed.some(item => item && (item.id != null || item.supported != null || item.note || item.marksEarned != null))) return parsed;
+      } catch(_) {}
+    }
+    const objStart = cleaned.indexOf('{');
+    const objEnd = cleaned.lastIndexOf('}');
+    if(objStart >= 0 && objEnd > objStart){
+      try {
+        const obj = JSON.parse(cleaned.slice(objStart, objEnd + 1));
+        if(obj && typeof obj === 'object' && !Array.isArray(obj)) return [Object.assign({ id: 0 }, obj)];
+      } catch(_) {}
+    }
+    return null;
   }
 
 
@@ -3949,9 +4054,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                 <select id="chat-set-provider">
 
-                  <option value="gemini" ${settings.provider==='gemini'?'selected':''}>Google Gemini AI (Live Dynamic Questions &amp; Mentoring)</option>
-
-                  <option value="auto" ${settings.provider==='auto'?'selected':''}>Auto (Vercel Server Proxy / Gemini)</option>
+                  <option value="free" ${settings.provider!=='extractive'?'selected':''}>OVHcloud, then Kilo kilo-auto/free</option>
 
                   <option value="extractive" ${settings.provider==='extractive'?'selected':''}>Deterministic Grounded RAG (Zero-Compute Offline)</option>
 
@@ -3963,45 +4066,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
               <div class="chat-settings-divider" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line,#e2e8f0)">
 
-                <strong style="font-size:12.5px;font-weight:700;display:block;margin-bottom:8px;color:var(--brand)">Google Gemini API Key (1-Year Free Student Key)</strong>
+                <strong style="font-size:12.5px;font-weight:700;display:block;margin-bottom:8px;color:var(--brand)">Free models (no API key)</strong>
 
-
-
-                <div class="chat-settings-group" style="margin-bottom:8px">
-
-                  <label for="chat-set-gemini-key">Gemini API Key</label>
-
-                  <input id="chat-set-gemini-key" type="password" placeholder="AIzaSy... (paste your Gemini API key)" value="${esc(settings.geminiKey)}">
-
-                  <small style="color:var(--muted);display:block;margin-top:5px;font-size:11px;line-height:1.4">
-
-                    🔑 Get your free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;text-decoration:underline">Google AI Studio</a>. Free tier includes generous quotas for students. Generates viva MCQs and evaluations directly. Key stays safely in your browser.
-
-                  </small>
-
-                </div>
-
-
-
-                <div class="chat-settings-group">
-
-                  <label for="chat-set-gemini-model">Gemini Model</label>
-
-                  <select id="chat-set-gemini-model" style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:12.5px">
-
-                    <option value="gemini-3.8-flash" ${(settings.geminiModel||'gemini-3.8-flash')==='gemini-3.8-flash'?'selected':''}>gemini-3.8-flash (Recommended)</option>
-
-                    <option value="gemini-2.5-flash" ${(settings.geminiModel||'')==='gemini-2.5-flash'?'selected':''}>gemini-2.5-flash (legacy accounts)</option>
-
-                    <option value="gemini-2.0-flash" ${(settings.geminiModel||'')==='gemini-2.0-flash'?'selected':''}>gemini-2.0-flash</option>
-
-                    <option value="gemini-1.5-flash" ${(settings.geminiModel||'')==='gemini-1.5-flash'?'selected':''}>gemini-1.5-flash</option>
-
-                    <option value="gemini-2.5-pro" ${(settings.geminiModel||'')==='gemini-2.5-pro'?'selected':''}>gemini-2.5-pro (Deep Faculty Reasoning)</option>
-
-                  </select>
-
-                </div>
+                <p class="mini" style="margin:0;color:var(--muted);line-height:1.45">Answers and descriptive grades call <strong>OVHcloud Qwen3.6-27B</strong> first (2 requests per minute). If that reply is missing or not JSON, the next call is <strong>Kilo kilo-auto/free</strong>. Do not put passwords or private data in answers.</p>
 
               </div>
 
@@ -4127,18 +4194,14 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   window.saveChatSettingsFromModal = function(){
 
-    const provider = document.getElementById('chat-set-provider')?.value || 'gemini';
-
-    const geminiKey = document.getElementById('chat-set-gemini-key')?.value || '';
-
-    const geminiModel = document.getElementById('chat-set-gemini-model')?.value || 'gemini-3.8-flash';
+    const provider = document.getElementById('chat-set-provider')?.value || 'free';
 
     const prev = getLLMSettings();
 
     saveLLMSettings({
       provider,
-      geminiKey,
-      geminiModel,
+      geminiKey: prev.geminiKey,
+      geminiModel: prev.geminiModel,
       ollamaUrl: prev.ollamaUrl,
       ollamaModel: prev.ollamaModel,
       ollamaToken: prev.ollamaToken
@@ -4148,7 +4211,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     window.closeChatSettingsModal();
 
-    if(typeof toast === 'function') toast('Gemini AI settings saved!');
+    if(typeof toast === 'function') toast('Mentor settings saved.');
 
     renderChatDrawer();
 
@@ -7081,7 +7144,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       'Treat abbreviations as valid: OS, DBMS, DAA, DSA, POCD, CN.',
       'Course names in the answer may differ from HINTS if they appear in PORTFOLIO_EVIDENCE (e.g. DBMS vs Data Structures).',
       'A rubric point is met when the idea is stated in different words — short answers are allowed.',
-      'Return ONLY a JSON array, no markdown.',
+      'Return ONLY a JSON array. No markdown, no explanation, no thinking tags.',
       'Schema: [{"id":0,"supported":true,"conceptualCorrectness":0.85,"missing":[],"note":"one sentence","suggestion":"","marksEarned":5,"marksMax":5}]',
       'conceptualCorrectness: 0.0–1.0 semantic coverage.',
       'marksEarned 5 only if conceptualCorrectness >= 0.7; else round(conceptualCorrectness * 5) max 4.',
@@ -7092,14 +7155,26 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       evidence ? `PORTFOLIO_EVIDENCE:\n${evidence}` : '',
       'QUESTIONS:\n' + blocks
     ].filter(Boolean).join('\n\n');
-    const raw = await callPersonaModel(systemInstruction, userPrompt, true);
-    const parsed = parseModelJsonArray(raw);
+    const first = await llmTextWithGeminiFirst(systemInstruction, userPrompt, { raw: true, maxOutputTokens: 3072, timeoutMs: 45000 });
+    let raw = first.text || '';
+    let parsed = parseModelJsonArray(raw);
+    if(!Array.isArray(parsed) && !first.triedKilo && !/kilo/i.test(first.provider || '')){
+      const kilo = await tryKiloFree(systemInstruction + ' Output the JSON array only.', userPrompt, { raw: true, maxOutputTokens: 3072 });
+      if(kilo.text){
+        raw = kilo.text;
+        parsed = parseModelJsonArray(raw);
+      }
+    }
     if(!Array.isArray(parsed)){
+      const snippet = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+      const note = raw
+        ? `The model replied, but not as a grade JSON. Local marks still count.${snippet ? ' Reply: ' + snippet : ''}`
+        : 'The grading model did not respond. Local marks still count.';
       questions.forEach(question => {
         question.llmFeedback = {
           supported: false,
           unavailable: true,
-          note: 'Grading model did not return JSON. Open AI Settings and confirm your API key, then resubmit.',
+          note,
           missing: [],
           suggestion: ''
         };

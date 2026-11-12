@@ -162,6 +162,45 @@ async function handler(req, res) {
     throw lastErr || new Error('Gemini call failed');
   }
 
+  async function callKilo() {
+    const maxTokens = Math.min(4096, Number(body.maxOutputTokens) || 1024);
+    const messages = [];
+    const system = String(systemInstruction || '').slice(0, 6000);
+    if (system) messages.push({ role: 'system', content: system });
+    messages.push({ role: 'user', content: String(prompt).slice(0, 3500) });
+    const kRes = await fetch('https://ai-gateway.kilo.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer anonymous'
+      },
+      body: JSON.stringify({
+        model: 'kilo-auto/free',
+        messages,
+        temperature: 0.2,
+        max_tokens: maxTokens
+      })
+    });
+    if (!kRes.ok) {
+      const errText = await kRes.text().catch(() => '');
+      throw new Error(`Kilo HTTP ${kRes.status}: ${errText.slice(0, 180)}`);
+    }
+    const data = await kRes.json();
+    const message = data.choices?.[0]?.message || {};
+    const text = typeof message.content === 'string' ? message.content.trim() : '';
+    if (!text) throw new Error('Kilo returned empty response');
+    return { text, provider: 'Kilo (kilo-auto/free)' };
+  }
+
+  if (requestedProvider === 'kilo') {
+    try {
+      const result = await callKilo();
+      return res.status(200).json(result);
+    } catch (err) {
+      return res.status(200).json({ useFallback: true, error: err.message });
+    }
+  }
+
   // 1. If explicit Ollama requested — still try Gemini first when a key is available
   if (requestedProvider === 'ollama') {
     if (geminiApiKey) {
