@@ -6605,14 +6605,25 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   function descriptiveFeedback(question){
     const answer = question.draft || '';
     if(question.expectedPoints && question.expectedPoints.length){
-      const met = question.expectedPoints.filter(point => answer && portfolioOverlap(answer, point) >= 0.4);
-      const missing = question.expectedPoints.filter(point => !met.includes(point));
+      const pointResults = question.expectedPoints.map(point => {
+        const overlap = answer ? portfolioOverlap(answer, point) : 0;
+        return { point, overlap, met: overlap >= 0.4 };
+      });
+      const met = pointResults.filter(row => row.met).map(row => row.point);
+      const missing = pointResults.filter(row => !row.met).map(row => row.point);
       const supported = met.length * 2 >= question.expectedPoints.length;
+      const resubmitPrompt = supported ? '' : buildDescriptiveResubmitPrompt(question, { missing, metCount: met.length, total: question.expectedPoints.length });
       return {
         supported,
         strength: met.length ? met.join(' ') : '',
         missing,
-        improvement: supported ? 'Keep the explanation tied to this project.' : 'Cover the missing points with a specific explanation.'
+        pointResults,
+        metCount: met.length,
+        total: question.expectedPoints.length,
+        marksEarned: met.length,
+        marksMax: question.expectedPoints.length,
+        improvement: supported ? 'Keep the explanation tied to this project.' : 'See the numbered revision prompt below and address each missing rubric point.',
+        resubmitPrompt
       };
     }
     const supported = answer ? portfolioOverlap(answer, question.source) >= 0.4 : false;
@@ -6622,12 +6633,142 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     sourceWords.forEach(token => {
       if(!answerWords.has(token) && !missing.includes(token) && missing.length < 6) missing.push(token);
     });
+    const resubmitPrompt = supported ? '' : buildDescriptiveResubmitPrompt(question, { missing, metCount: supported ? 1 : 0, total: 2, sourceFallback: true });
     return {
       supported,
       strength: supported ? `You used ideas documented in ${question.citation}.` : '',
       missing,
-      improvement: supported ? 'Keep the explanation tied to this section.' : `${question.rubric} The documented line is: ${question.source}`
+      marksEarned: supported ? 2 : 0,
+      marksMax: 2,
+      improvement: supported ? 'Keep the explanation tied to this section.' : `${question.rubric} The documented line is: ${question.source}`,
+      resubmitPrompt
     };
+  }
+
+  function buildDescriptiveResubmitPrompt(question, ctx){
+    const missing = (ctx.missing || []).slice();
+    const lines = [];
+    if(missing.length){
+      missing.forEach((point, index) => {
+        lines.push(`${index + 1}. Address this rubric point in your own words: ${point}`);
+      });
+    }
+    if(question.rubric && !ctx.sourceFallback){
+      lines.push(`${lines.length + 1}. Tie your answer to the learning outcome: ${question.rubric}`);
+    }
+    if(ctx.sourceFallback && question.source){
+      lines.push(`${lines.length + 1}. Use the documented line from ${question.citation || 'the portfolio'}: ${String(question.source).slice(0, 180)}`);
+    }
+    if(!lines.length) lines.push('Expand your answer with a specific concept from the portfolio and how it applies to this project.');
+    return lines.join('\n');
+  }
+
+  function reconcileDescriptiveQuestionMarks(question){
+    const local = question.localParse || question.feedback || {};
+    const total = local.total || question.marksMax || (question.expectedPoints && question.expectedPoints.length) || 2;
+    let met = local.metCount != null ? local.metCount : (local.marksEarned != null ? local.marksEarned : 0);
+    const llm = question.llmFeedback;
+    if(llm && llm.supported && met < Math.ceil(total / 2)){
+      met = Math.ceil(total / 2);
+    }
+    if(llm && typeof llm.marksEarned === 'number' && Number.isFinite(llm.marksEarned)){
+      met = Math.max(met, Math.min(total, Math.round(llm.marksEarned)));
+    }
+    question.marksMax = total;
+    question.marksEarned = Math.min(total, Math.max(0, met));
+    question.supported = !!(local.supported) || !!(llm && llm.supported);
+    if(!question.supported){
+      const missing = [...(local.missing || [])];
+      if(llm && Array.isArray(llm.missing)) llm.missing.forEach(point => { if(point && !missing.includes(point)) missing.push(point); });
+      question.resubmitSuggestion = buildDescriptiveResubmitPrompt(question, { missing, metCount: question.marksEarned, total });
+      if(llm && (llm.suggestion || llm.resubmitPrompt)){
+        question.resubmitSuggestion += `\n\nMentor hint: ${String(llm.suggestion || llm.resubmitPrompt).trim()}`;
+      }
+    } else {
+      question.resubmitSuggestion = '';
+    }
+  }
+
+  function renderDescriptiveGrade(question){
+    const local = question.localParse || question.feedback || {};
+    const rows = (local.pointResults || []).map(row => `<li>${row.met ? 'Met' : 'Missing'} · ${Math.round((row.overlap || 0) * 100)}% overlap · ${esc(row.point)}</li>`).join('');
+    const localBlock = `<p><strong>1. Local parser:</strong> ${local.supported ? 'Pass' : 'Not yet'}${local.total ? ` · ${local.metCount}/${local.total} points (40% word overlap per point)` : ''}</p>${rows ? `<ul>${rows}</ul>` : `<p><strong>Missing:</strong> ${esc((local.missing || []).join(', ') || 'None.')}</p>`}`;
+    const llm = question.llmFeedback;
+    const llmBlock = !question.draft
+      ? ''
+      : question.llmPending
+      ? '<p><strong>2. LLM review:</strong> Checking the same answer…</p>'
+      : llm
+        ? `<p><strong>2. LLM review:</strong> ${llm.supported ? 'Pass' : 'Not yet'}${llm.note ? ` · ${esc(llm.note)}` : ''}</p>${(llm.missing || []).length ? `<p><strong>LLM still wants:</strong> ${esc(llm.missing.join(', '))}</p>` : ''}`
+        : '<p><strong>2. LLM review:</strong> Not available. The local parser result stands.</p>';
+    const resubmit = !question.supported && question.resubmitSuggestion
+      ? `<div class="descriptive-resubmit-prompt"><p><strong>Not satisfactory — revise your answer:</strong></p><pre class="descriptive-resubmit-text">${esc(question.resubmitSuggestion)}</pre></div>`
+      : '';
+    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p><strong>Result:</strong> ${question.supported ? 'Satisfactory' : 'Not satisfactory'} · <strong>Marks:</strong> ${question.marksEarned != null ? question.marksEarned : '—'} / ${question.marksMax != null ? question.marksMax : '—'} ${esc(question.citation || '')}</p>${localBlock}${llmBlock}${resubmit}<p><strong>Tip:</strong> ${esc(local.improvement || '')}</p></div>`;
+  }
+
+  function applyDescriptiveScore(quiz){
+    if(!quiz || !Array.isArray(quiz.questions)) return;
+    let marksEarned = 0;
+    let marksMax = 0;
+    quiz.questions.forEach(question => {
+      if(question.marksMax != null){
+        marksEarned += question.marksEarned || 0;
+        marksMax += question.marksMax;
+      }
+    });
+    if(quiz.sequentialMode){
+      quiz.score = Object.assign({}, quiz.score || {}, { marksEarned, marksMax });
+      return;
+    }
+    if(quiz.questions.length !== 5) return;
+    quiz.score = {
+      correct: quiz.questions.filter(question => question.supported).length,
+      total: 5,
+      marksEarned,
+      marksMax
+    };
+  }
+
+  async function reviewDescriptiveWithLlm(questions){
+    const blocks = questions.map((question, index) => {
+      const points = (question.expectedPoints || []).map((point, pointIndex) => `${pointIndex + 1}. ${point}`).join(' | ') || question.source || '';
+      return `Q${index}\nPROMPT: ${String(question.prompt || '').slice(0, 280)}\nPOINTS: ${points.slice(0, 500)}\nANSWER: ${String(question.draft || '').slice(0, 500)}`;
+    }).join('\n\n');
+    const raw = await callPersonaModel([
+      'Grade each viva answer against its expected points.',
+      'A point is covered when the answer states that idea, even in different words.',
+      'Do not require the answer to copy the point text.',
+      'Return only a JSON array: [{"id":0,"supported":true,"missing":["point text"],"note":"one sentence","suggestion":"short resubmit prompt for the student","marksEarned":2,"marksMax":4}]',
+      'supported is true when at least half of the points are covered.',
+      'When not supported, suggestion must tell the student exactly what to add on resubmit.'
+    ].join(' '), blocks, true);
+    const parsed = parseModelJsonArray(raw);
+    if(!Array.isArray(parsed)) return;
+    parsed.forEach(item => {
+      const question = questions[Number(item && item.id)];
+      if(!question) return;
+      const missing = Array.isArray(item.missing) ? item.missing.map(point => String(point)).slice(0, 4) : [];
+      question.llmFeedback = {
+        supported: item.supported === true || String(item.supported).toLowerCase() === 'true',
+        missing,
+        note: String(item.note || item.explanation || '').slice(0, 280),
+        suggestion: String(item.suggestion || item.resubmitPrompt || '').slice(0, 400),
+        marksEarned: Number.isFinite(Number(item.marksEarned)) ? Number(item.marksEarned) : null,
+        marksMax: Number.isFinite(Number(item.marksMax)) ? Number(item.marksMax) : null
+      };
+      reconcileDescriptiveQuestionMarks(question);
+    });
+  }
+
+  function advanceSequentialDescriptiveQuiz(quiz){
+    const currentIdx = quiz.questionQueue[quiz.queuePos];
+    if(typeof currentIdx !== 'number') return;
+    quiz.queuePos = (quiz.queuePos || 0) + 1;
+    if(quiz.queuePos >= quiz.questionQueue.length) quiz.queuePos = 0;
+    const nextIdx = quiz.questionQueue[quiz.queuePos];
+    quiz.activeQuestion = cloneDescriptiveQuestion(quiz.pool[nextIdx]);
+    quiz.questions = [quiz.activeQuestion];
   }
 
   function pushLensQuiz(kb){
@@ -6680,26 +6821,35 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const rubric = question.expectedPoints && question.expectedPoints.length
         ? `<p class="mini"><strong>Panel expects:</strong> ${esc(question.expectedPoints.join(' · '))}</p>`
         : '';
-      const body = `<article class="mentor-descriptive-q"><h3>Question</h3><p>${esc(question.prompt)}</p>${rubric}<textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea></article>`;
-      const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Submit answer</button><span class="mini" style="margin-left:10px">Score: <strong>${passed}</strong> / ${target} required</span></div>`;
-      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Faculty template questions · one at a time until you reach ${target} passing answers.</div></div>${body}${footer}</div>`;
+      const grade = question.checked ? renderDescriptiveGrade(question) : '';
+      const marksBadge = question.checked && question.marksMax != null
+        ? `<span class="descriptive-marks-badge">Marks: ${question.marksEarned || 0} / ${question.marksMax}</span>`
+        : '';
+      const submitLabel = question.checked && !question.supported ? 'Resubmit answer' : 'Submit answer';
+      const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Question</h3>${marksBadge}</div><p>${esc(question.prompt)}</p>${rubric}<textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
+      const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">${submitLabel}</button><span class="mini" style="margin-left:10px">Passing answers: <strong>${passed}</strong> / ${target}</span></div>`;
+      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">One faculty question at a time. Each answer shows marks (per rubric point) and a revision prompt if not satisfactory.</div></div>${body}${footer}</div>`;
     }
 
     const questions = (quiz.questions || []).map((question, index) => {
-
-      const grade = question.checked
-
-        ? `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p>${question.supported ? 'This matches the portfolio.' : 'This does not yet match the portfolio.'} ${esc(question.citation)}</p><p><strong>Strength:</strong> ${esc(question.feedback.strength || 'None yet.')}</p><p><strong>Missing concepts:</strong> ${esc(question.feedback.missing.length ? question.feedback.missing.join(', ') : 'None.')}</p><p><strong>Improvement:</strong> ${esc(question.feedback.improvement)}</p></div>`
-
+      const grade = question.checked ? renderDescriptiveGrade(question) : '';
+      const marksBadge = question.checked && question.marksMax != null
+        ? `<span class="descriptive-marks-badge">Marks: ${question.marksEarned || 0} / ${question.marksMax}</span>`
         : '';
-
-      return `<article class="mentor-descriptive-q"><h3>Q${index + 1}</h3><p>${esc(question.prompt)}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
-
+      return `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Q${index + 1}</h3>${marksBadge}</div><p>${esc(question.prompt)}</p><textarea data-descriptive-answer="${index}" rows="4" placeholder="Answer from the portfolio">${esc(question.draft || '')}</textarea>${grade}</article>`;
     }).join('');
 
+    const totalMarks = (quiz.questions || []).some(q => q.checked && q.marksMax != null)
+      ? (() => {
+        let earned = 0;
+        let max = 0;
+        (quiz.questions || []).forEach(q => { if(q.marksMax != null){ earned += q.marksEarned || 0; max += q.marksMax; } });
+        return `<p class="descriptive-total-marks"><strong>Total marks:</strong> ${earned} / ${max}</p>`;
+      })()
+      : '';
     const body = questions || note || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>';
     const footer = (quiz.questions || []).length ? '<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div>' : '';
-    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Answers are checked against the documented portfolio lines.</div></div>${body}${footer}</div>`;
+    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Each answer earns rubric marks. Unsatisfactory answers get a numbered revision prompt.</div>${totalMarks}</div>${body}${footer}</div>`;
 
   }
 
@@ -6829,38 +6979,43 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
       }
 
       const feedback = descriptiveFeedback(question);
-      question.supported = feedback.supported;
+      question.localParse = feedback;
       question.feedback = feedback;
+      question.marksEarned = feedback.marksEarned;
+      question.marksMax = feedback.marksMax;
+      question.resubmitSuggestion = feedback.resubmitPrompt || '';
+      question.llmFeedback = null;
+      question.llmPending = true;
       question.checked = true;
+      reconcileDescriptiveQuestionMarks(question);
 
       const target = quiz.passTarget || DESCRIPTIVE_PASS_TARGET;
+      persistAssessment(quiz);
+      updateChatMessagesThread();
+      if(mentorSurfaceOpen() && typeof render === 'function') render();
+
+      try {
+        await reviewDescriptiveWithLlm([question]);
+      } catch(_) {}
+      question.llmPending = false;
+      reconcileDescriptiveQuestionMarks(question);
+      applyDescriptiveScore(quiz);
 
       if(question.supported){
         quiz.passedCount = (quiz.passedCount || 0) + 1;
-        if(typeof toast === 'function') toast(`Solid answer. Score ${quiz.passedCount} / ${target}.`);
+        if(typeof toast === 'function') toast(`Satisfactory (${question.marksEarned}/${question.marksMax} marks). Passing answers: ${quiz.passedCount} / ${target}.`);
+        if(quiz.passedCount >= target){
+          quiz.completed = true;
+          quiz.score = Object.assign({}, quiz.score || {}, { correct: quiz.passedCount, total: target });
+          persistAssessment(quiz);
+          updateChatMessagesThread();
+          if(mentorSurfaceOpen() && typeof render === 'function') render();
+          return;
+        }
+        advanceSequentialDescriptiveQuiz(quiz);
       } else if(typeof toast === 'function'){
-        const tip = feedback.improvement || 'Cover the expected points from your portfolio.';
-        toast(`Not sufficient yet (${quiz.passedCount || 0} / ${target}). ${tip}`);
+        toast(`Not satisfactory — ${question.marksEarned || 0} / ${question.marksMax || 4} marks. Read the revision prompt on screen.`);
       }
-
-      if(quiz.passedCount >= target){
-        quiz.completed = true;
-        quiz.score = { correct: quiz.passedCount, total: target };
-        persistAssessment(quiz);
-        updateChatMessagesThread();
-        if(mentorSurfaceOpen() && typeof render === 'function') render();
-        return;
-      }
-
-      const currentIdx = quiz.questionQueue[quiz.queuePos];
-      if(!question.supported && typeof currentIdx === 'number') quiz.questionQueue.push(currentIdx);
-
-      quiz.queuePos = (quiz.queuePos || 0) + 1;
-      if(quiz.queuePos >= quiz.questionQueue.length) quiz.queuePos = 0;
-
-      const nextIdx = quiz.questionQueue[quiz.queuePos];
-      quiz.activeQuestion = cloneDescriptiveQuestion(quiz.pool[nextIdx]);
-      quiz.questions = [quiz.activeQuestion];
 
       persistAssessment(quiz);
       updateChatMessagesThread();
@@ -6869,35 +7024,42 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     }
 
     const questions = quiz.questions || [];
-
+    let anyAnswer = false;
     document.querySelectorAll('[data-descriptive-answer]').forEach(field => {
-
       const idx = Number(field.dataset.descriptiveAnswer);
       const question = questions[idx];
-
       if(!question) return;
-
       question.draft = field.value.trim();
-
+      if(question.draft) anyAnswer = true;
       const feedback = descriptiveFeedback(question);
-
-      question.supported = feedback.supported;
-
+      question.localParse = feedback;
       question.feedback = feedback;
-
+      question.marksEarned = feedback.marksEarned;
+      question.marksMax = feedback.marksMax;
+      question.resubmitSuggestion = feedback.resubmitPrompt || '';
       question.checked = true;
-
+      question.llmPending = !!question.draft;
+      question.llmFeedback = null;
+      reconcileDescriptiveQuestionMarks(question);
     });
-
-    if(questions.length === 5){
-      quiz.score = {
-        correct: questions.filter(question => question.supported).length,
-        total: 5
-      };
-      persistAssessment(quiz);
+    if(!anyAnswer){
+      if(typeof toast === 'function') toast('Write an answer before checking.');
+      return;
     }
-
+    applyDescriptiveScore(quiz);
+    persistAssessment(quiz);
     updateChatMessagesThread();
+    if(mentorSurfaceOpen() && typeof render === 'function') render();
+
+    const answered = questions.filter(question => question.draft);
+    try {
+      await reviewDescriptiveWithLlm(answered);
+    } catch(_) {}
+    questions.forEach(question => { question.llmPending = false; });
+    applyDescriptiveScore(quiz);
+    persistAssessment(quiz);
+    updateChatMessagesThread();
+    if(mentorSurfaceOpen() && typeof render === 'function') render();
 
   };
 

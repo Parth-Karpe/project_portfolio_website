@@ -3632,9 +3632,41 @@ html body .mentor-dashboard .mentor-work-form textarea {
   padding: 12px;
   margin: 10px 0;
 }
+.mentor-descriptive-q-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
 .mentor-descriptive-q h3 {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 16px !important;
+}
+.descriptive-marks-badge {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-muted, #64748b);
+}
+.descriptive-total-marks {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+.descriptive-resubmit-prompt {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #f59e0b66;
+  background: #fffbeb;
+}
+.descriptive-resubmit-text {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
 }
 .mentor-grade.supported,
 .mentor-revise-list .supported em { color: #166534; }
