@@ -110,6 +110,82 @@
 
   }
 
+  /** Gemini (browser) → /api/chat auto (Gemini → Ollama) */
+  async function tryDirectGeminiText(systemInstruction, prompt, opts){
+    const raw = opts && opts.raw;
+    const maxTokens = (opts && opts.maxOutputTokens) || (raw ? 3072 : 4096);
+    const timeoutMs = (opts && opts.timeoutMs) || (raw ? 35000 : 30000);
+    const settings = getLLMSettings();
+    const geminiKey = (settings.geminiKey || '').trim();
+    if(!geminiKey) return '';
+    const userPrompt = String(prompt || '').slice(0, 3500);
+    if(!userPrompt) return '';
+    for(const model of geminiModelList(settings.geminiModel || 'gemini-2.5-flash')){
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+        const gRes = await fetchWithTimeout(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+            contents: [{ parts: [{ text: userPrompt }] }],
+            generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens }
+          })
+        }, timeoutMs);
+        if(!gRes.ok) continue;
+        const gData = await gRes.json();
+        const text = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if(text) return raw ? String(text) : polishLiveAnswer(text);
+      } catch(_) {}
+    }
+    return '';
+  }
+
+  async function tryProxyAutoChat(systemInstruction, prompt, opts){
+    const raw = opts && opts.raw;
+    const timeoutMs = (opts && opts.timeoutMs) || 45000;
+    const settings = getLLMSettings();
+    const userPrompt = String(prompt || '').slice(0, 3500);
+    if(!userPrompt) return { text: '', provider: '' };
+    try {
+      const isApiOk = await checkApiChatAvailability();
+      if(!isApiOk) return { text: '', provider: '' };
+      const response = await fetchWithTimeout('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: userPrompt,
+          systemInstruction,
+          provider: 'auto',
+          geminiKey: settings.geminiKey,
+          geminiModel: settings.geminiModel || 'gemini-2.5-flash',
+          ollamaToken: settings.ollamaToken,
+          ollamaModel: settings.ollamaModel,
+          ollamaUrl: settings.ollamaUrl
+        })
+      }, timeoutMs);
+      if(!response.ok) return { text: '', provider: '' };
+      const data = await response.json();
+      if(data && data.text && !data.useFallback){
+        return {
+          text: raw ? String(data.text) : polishLiveAnswer(data.text),
+          provider: data.provider || 'Live model'
+        };
+      }
+    } catch(_) {}
+    return { text: '', provider: '' };
+  }
+
+  async function llmTextWithGeminiFirst(systemInstruction, prompt, opts){
+    if((getLLMSettings().geminiKey || '').trim()){
+      const direct = await tryDirectGeminiText(systemInstruction, prompt, opts);
+      if(direct) return { text: direct, provider: 'Google Gemini' };
+    }
+    const proxied = await tryProxyAutoChat(systemInstruction, prompt, opts);
+    if(proxied.text) return proxied;
+    return { text: '', provider: '' };
+  }
+
 
 
   function parseModelJsonArray(raw){
@@ -2566,113 +2642,12 @@ ${groundedContext}`;
 
     try {
 
-      const isApiOk = await checkApiChatAvailability();
-
-      let rawAiResponse = null;
-
-      let liveProvider = '';
-
-
-
-      // 1. Try server proxy /api/chat
-
-      if(isApiOk && (settings.provider === 'auto' || settings.provider === 'vercel_api' || settings.provider === 'ollama' || settings.provider === 'gemini')){
-
-        const res = await fetchWithTimeout('/api/chat', {
-
-          method: 'POST',
-
-          headers: { 'Content-Type': 'application/json' },
-
-          body: JSON.stringify({
-
-            prompt: userQuery ? `Generate a viva defense quiz for: ${userQuery}` : `Generate a 4-question viva defense quiz for Team ${kb.teamId}.`,
-
-            systemInstruction: systemPrompt,
-
-            provider: settings.provider,
-
-            geminiKey: settings.geminiKey,
-
-            geminiModel: settings.geminiModel || 'gemini-2.5-flash',
-
-            ollamaToken: settings.ollamaToken,
-
-            ollamaModel: settings.ollamaModel,
-
-            ollamaUrl: settings.ollamaUrl
-
-          })
-
-        }, 45000);
-
-
-
-        if(res.ok){
-
-          const data = await res.json();
-
-          if(data && data.text && !data.useFallback){
-
-            rawAiResponse = data.text;
-
-            liveProvider = data.provider || 'Live model';
-
-          }
-
-        }
-
-      }
-
-
-
-      // 2. Direct Gemini fallback if key is present
-
-      if(!rawAiResponse && settings.geminiKey && (settings.provider === 'auto' || settings.provider === 'gemini')){
-
-        for(const model of geminiModelList(settings.geminiModel)){
-
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.geminiKey}`;
-
-          try {
-
-        const gRes = await fetchWithTimeout(endpoint, {
-
-          method: 'POST',
-
-          headers: { 'Content-Type': 'application/json' },
-
-          body: JSON.stringify({
-
-            contents: [{ parts: [{ text: `${systemPrompt}\n\nGenerate the JSON quiz array now:` }] }],
-
-                generationConfig: { temperature: 0.2, maxOutputTokens: 4096 }
-
-          })
-
-            }, 40000);
-
-            if(!gRes.ok) continue;
-
-          const gData = await gRes.json();
-
-            const text = gData.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if(text){
-
-              rawAiResponse = text;
-
-              liveProvider = `Google Gemini (${model})`;
-
-              break;
-
-            }
-
-          } catch(_) {}
-
-        }
-
-      }
+      const quizUserPrompt = userQuery
+        ? `Generate a viva defense quiz for: ${userQuery}\n\nGenerate the JSON quiz array now:`
+        : `Generate a 4-question viva defense quiz for Team ${kb.teamId}.\n\nGenerate the JSON quiz array now:`;
+      const llmOut = await llmTextWithGeminiFirst(systemPrompt, quizUserPrompt, { raw: true, maxOutputTokens: 4096, timeoutMs: 40000 });
+      const rawAiResponse = llmOut.text;
+      const liveProvider = llmOut.provider;
 
 
 
@@ -3250,129 +3225,15 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-    // 1. Try Serverless / Local Proxy `/api/chat` (only if available)
-
-    const isApiOk = await checkApiChatAvailability();
-
-    if(isApiOk && (settings.provider === 'auto' || settings.provider === 'vercel_api' || settings.provider === 'ollama' || settings.provider === 'gemini')){
-
-      try {
-
-        const response = await fetchWithTimeout('/api/chat', {
-
-          method: 'POST',
-
-          headers: { 'Content-Type': 'application/json' },
-
-          body: JSON.stringify({
-
-            prompt: query,
-
-            systemInstruction: systemPrompt,
-
-            provider: settings.provider,
-
-            geminiKey: settings.geminiKey,
-
-            geminiModel: settings.geminiModel || 'gemini-2.5-flash',
-
-            ollamaToken: settings.ollamaToken,
-
-            ollamaModel: settings.ollamaModel,
-
-            ollamaUrl: settings.ollamaUrl
-
-          })
-
-        }, 30000);
-
-
-
-        if(response.ok){
-
-          const data = await response.json();
-
-          if(data && data.text && !data.useFallback){
-
-            return {
-
-              answer: polishLiveAnswer(data.text),
-
-              citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
-
-              provider: data.provider || 'AI Mentor (via Server Proxy)'
-
-            };
-
-          }
-
-        }
-
-      } catch(_) {}
-
-    }
-
-
-
-    // 2. Direct Gemini API if user configured key in browser settings
-
-    if(settings.geminiKey && (settings.provider === 'auto' || settings.provider === 'gemini')){
-
-      for(const model of geminiModelList(settings.geminiModel)){
-
-        const endpointUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.geminiKey}`;
-
-        try {
-
-          const res = await fetchWithTimeout(endpointUrl, {
-
-            method: 'POST',
-
-            headers: { 'Content-Type': 'application/json' },
-
-            body: JSON.stringify({
-
-              contents: [{
-
-                parts: [{ text: `${systemPrompt}\n\nUSER QUESTION:\n${query}\n\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].` }]
-
-              }],
-
-              generationConfig: { temperature: 0.2, maxOutputTokens: 4096 }
-
-            })
-
-          }, 30000);
-
-
-
-          if(res.ok){
-
-            const data = await res.json();
-
-            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            if(text){
-
-              return {
-
-                answer: polishLiveAnswer(text),
-
-                citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
-
-                provider: `Google Gemini (${model})`
-
-              };
-
-            }
-
-          }
-
-        } catch(_) {}
-
-      }
-
-    }
+  const userPrompt = `${query}\n\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].`;
+  const llmAnswer = await llmTextWithGeminiFirst(systemPrompt, userPrompt, { maxOutputTokens: 4096, timeoutMs: 30000 });
+  if(llmAnswer.text){
+    return {
+      answer: llmAnswer.text,
+      citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
+      provider: llmAnswer.provider || 'AI Mentor'
+    };
+  }
 
 
 
@@ -5774,58 +5635,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   async function callPersonaModel(systemInstruction, prompt, raw){
-    const settings = getLLMSettings();
     const userPrompt = String(prompt || '').slice(0, 3500);
     if(!userPrompt) return '';
-    const geminiKey = settings.geminiKey || '';
-    const geminiModel = settings.geminiModel || 'gemini-2.5-flash';
-
-    // 1. Try server proxy /api/chat
-    try {
-      const isApiOk = await checkApiChatAvailability();
-      if(isApiOk){
-        const response = await fetchWithTimeout('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: userPrompt,
-            systemInstruction,
-            provider: 'gemini',
-            geminiKey: geminiKey,
-            geminiModel: geminiModel
-          })
-        }, 45000);
-        if(response.ok){
-          const data = await response.json();
-          if(data && data.text && !data.useFallback) return raw ? String(data.text) : polishLiveAnswer(data.text);
-        }
-      }
-    } catch(_) {}
-
-    // 2. Direct client-side Gemini API fallback
-    if(geminiKey && (settings.provider === 'gemini' || settings.provider === 'auto')){
-      const models = typeof geminiModelList === 'function' ? geminiModelList(geminiModel) : [geminiModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-      for(const model of models){
-        try {
-          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
-          const gRes = await fetchWithTimeout(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
-              contents: [{ parts: [{ text: userPrompt }] }],
-              generationConfig: { temperature: 0.2, maxOutputTokens: 3072 }
-            })
-          }, 35000);
-          if(!gRes.ok) continue;
-          const gData = await gRes.json();
-          const text = gData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if(text) return raw ? String(text) : polishLiveAnswer(text);
-        } catch(_) {}
-      }
-    }
-
-    return '';
+    const out = await llmTextWithGeminiFirst(systemInstruction, userPrompt, { raw: !!raw, maxOutputTokens: 3072, timeoutMs: 45000 });
+    return out.text || '';
   }
 
   function foundationalQuizFromText(kb, raw){

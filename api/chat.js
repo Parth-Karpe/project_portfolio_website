@@ -143,8 +143,16 @@ async function handler(req, res) {
     throw lastErr || new Error('Gemini call failed');
   }
 
-  // 1. If explicit Ollama requested
+  // 1. If explicit Ollama requested — still try Gemini first when a key is available
   if (requestedProvider === 'ollama') {
+    if (geminiApiKey) {
+      try {
+        const result = await callGemini();
+        return res.status(200).json(result);
+      } catch (err) {
+        console.warn('Ollama mode: Gemini attempt failed, trying Ollama:', err.message);
+      }
+    }
     try {
       const result = await callOllama();
       return res.status(200).json(result);

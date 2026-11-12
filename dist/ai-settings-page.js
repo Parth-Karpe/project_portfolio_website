@@ -29,7 +29,7 @@ function aiSettingsPage(){
         Close
       </button>`;
   return heading('AI & mentor settings', 'API keys, models, and generation engines. Saved in this browser only — not uploaded to ProjectGate servers.', closeBtn) +
-    `<div class="notice">Keys and tokens stay in <strong>localStorage</strong> on your device. Clearing site data removes them. The portfolio AI mentor and viva assistant read these values when you chat.</div>
+    `<div class="notice">Keys and tokens stay in <strong>localStorage</strong> on your device. Generation order: <strong>Google Gemini</strong> (your API key) → <strong>/api/chat</strong> (Gemini, then Ollama) → offline/template fallbacks.</div>
     <div class="grid">
       <section class="card">
         <div class="card-head">
@@ -42,9 +42,9 @@ function aiSettingsPage(){
 
         <label for="pg-set-provider">Generation engine</label>
         <select id="pg-set-provider">
-          <option value="gemini" ${llm.provider === 'gemini' ? 'selected' : ''}>Google Gemini (direct API key)</option>
-          <option value="auto" ${llm.provider === 'auto' ? 'selected' : ''}>Auto (Vercel /api/chat proxy → Gemini, then fallbacks)</option>
-          <option value="ollama" ${llm.provider === 'ollama' ? 'selected' : ''}>Ollama (cloud or custom endpoint)</option>
+          <option value="gemini" ${llm.provider === 'gemini' ? 'selected' : ''}>Google Gemini first (recommended)</option>
+          <option value="auto" ${llm.provider === 'auto' ? 'selected' : ''}>Auto — Gemini, then Ollama proxy, then offline</option>
+          <option value="ollama" ${llm.provider === 'ollama' ? 'selected' : ''}>Prefer Ollama after Gemini fails</option>
           <option value="extractive" ${llm.provider === 'extractive' ? 'selected' : ''}>Offline extractive RAG (no API key)</option>
         </select>
 
