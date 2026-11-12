@@ -50,7 +50,7 @@
 
     return {
 
-      provider: localStorage.getItem('pg_llm_provider') || 'auto', // 'auto', 'vercel_api', 'gemini', 'ollama', 'extractive'
+      provider: localStorage.getItem('pg_llm_provider') || 'gemini', // 'gemini', 'auto', 'extractive'
 
       geminiKey: localStorage.getItem('pg_gemini_key') || '',
 
@@ -4031,17 +4031,15 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
               <div class="chat-settings-group">
 
-                <label for="chat-set-provider">Generation Provider</label>
+                <label for="chat-set-provider">AI Generation Engine</label>
 
                 <select id="chat-set-provider">
 
-                  <option value="auto" ${settings.provider==='auto'?'selected':''}>Auto (Extractive / Gemini Proxy)</option>
+                  <option value="gemini" ${settings.provider==='gemini'?'selected':''}>Google Gemini AI (Live Dynamic Questions &amp; Mentoring)</option>
 
-                  <option value="extractive" ${settings.provider==='extractive'?'selected':''}>Smart Extractive RAG (Zero-Compute Offline)</option>
+                  <option value="auto" ${settings.provider==='auto'?'selected':''}>Auto (Vercel Server Proxy / Gemini)</option>
 
-                  <option value="gemini" ${settings.provider==='gemini'?'selected':''}>Google Gemini</option>
-
-                  <option value="ollama" ${settings.provider==='ollama'?'selected':''}>Ollama Cloud (Free Usage Models)</option>
+                  <option value="extractive" ${settings.provider==='extractive'?'selected':''}>Deterministic Grounded RAG (Zero-Compute Offline)</option>
 
                 </select>
 
@@ -4049,67 +4047,23 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-              <div class="chat-settings-group">
+              <div class="chat-settings-divider" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line,#e2e8f0)">
 
-                <label for="chat-set-gemini-key">Google Gemini API Key (Optional)</label>
-
-                <input id="chat-set-gemini-key" type="password" placeholder="AIzaSy... (optional, saves locally)" value="${esc(settings.geminiKey)}">
-
-                <small style="color:var(--muted);display:block;margin-top:4px;font-size:10.5px">Paste a Gemini key and save. The next quiz and answers use that model. The key stays in this browser.</small>
-
-              </div>
-
-
-
-              <div class="chat-settings-group">
-
-                <label for="chat-set-gemini-model">Gemini Model Identifier</label>
-
-                <input id="chat-set-gemini-model" type="text" placeholder="gemini-2.5-flash" value="${esc(settings.geminiModel || 'gemini-2.5-flash')}">
-
-              </div>
-
-
-
-              <div class="chat-settings-divider">
-
-                <strong style="font-size:12px;font-weight:700;display:block;margin-bottom:8px;color:var(--brand)">Ollama Cloud (Free Usage Models)</strong>
+                <strong style="font-size:12.5px;font-weight:700;display:block;margin-bottom:8px;color:var(--brand)">Google Gemini API Key (1-Year Free Student Key)</strong>
 
 
 
                 <div class="chat-settings-group" style="margin-bottom:8px">
 
-                  <label for="chat-set-ollama-url">Ollama Cloud Endpoint URL</label>
+                  <label for="chat-set-gemini-key">Gemini API Key</label>
 
-                  <input id="chat-set-ollama-url" type="text" placeholder="https://ollama.com/api" value="${esc(settings.ollamaUrl || 'https://ollama.com/api')}">
+                  <input id="chat-set-gemini-key" type="password" placeholder="AIzaSy... (paste your Gemini API key)" value="${esc(settings.geminiKey)}">
 
-                </div>
+                  <small style="color:var(--muted);display:block;margin-top:5px;font-size:11px;line-height:1.4">
 
+                    🔑 Get your free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--brand);font-weight:700;text-decoration:underline">Google AI Studio</a>. Free tier includes generous quotas for students. Generates viva MCQs and evaluations directly. Key stays safely in your browser.
 
-
-                <div class="chat-settings-group" style="margin-bottom:8px">
-
-                  <label for="chat-set-ollama-model">Cloud Model</label>
-
-                  <input list="ollama-free-models" id="chat-set-ollama-model" type="text" placeholder="gpt-oss:20b" value="${esc(settings.ollamaModel || 'gpt-oss:20b')}">
-
-                  <datalist id="ollama-free-models">
-
-                    <option value="gpt-oss:20b">gpt-oss:20b (Recommended - Fast, high reasoning)</option>
-
-                    <option value="gemma4:31b">gemma4:31b</option>
-
-                    <option value="gpt-oss:120b">gpt-oss:120b (Heavy reasoning)</option>
-
-                    <option value="nemotron-3-nano:30b">nemotron-3-nano:30b</option>
-
-                    <option value="nemotron-3-super">nemotron-3-super</option>
-
-                    <option value="nemotron-3-ultra">nemotron-3-ultra</option>
-
-                    <option value="beam">beam</option>
-
-                  </datalist>
+                  </small>
 
                 </div>
 
@@ -4117,11 +4071,19 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                 <div class="chat-settings-group">
 
-                  <label for="chat-set-ollama-token">Ollama API Key / Bearer Token</label>
+                  <label for="chat-set-gemini-model">Gemini Model</label>
 
-                  <input id="chat-set-ollama-token" type="password" placeholder="Bearer ... or your Ollama API key" value="${esc(settings.ollamaToken || '')}">
+                  <select id="chat-set-gemini-model" style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:12.5px">
 
-                  <small style="color:var(--muted);display:block;margin-top:4px;font-size:10.5px">Connects to <code>https://ollama.com/api</code> using your free credits.</small>
+                    <option value="gemini-2.5-flash" ${(settings.geminiModel||'gemini-2.5-flash')==='gemini-2.5-flash'?'selected':''}>gemini-2.5-flash (Recommended - Fast &amp; High Accuracy)</option>
+
+                    <option value="gemini-2.0-flash" ${(settings.geminiModel||'')==='gemini-2.0-flash'?'selected':''}>gemini-2.0-flash</option>
+
+                    <option value="gemini-1.5-flash" ${(settings.geminiModel||'')==='gemini-1.5-flash'?'selected':''}>gemini-1.5-flash</option>
+
+                    <option value="gemini-2.5-pro" ${(settings.geminiModel||'')==='gemini-2.5-pro'?'selected':''}>gemini-2.5-pro (Deep Faculty Reasoning)</option>
+
+                  </select>
 
                 </div>
 
@@ -4249,25 +4211,19 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   window.saveChatSettingsFromModal = function(){
 
-    const provider = document.getElementById('chat-set-provider')?.value || 'auto';
+    const provider = document.getElementById('chat-set-provider')?.value || 'gemini';
 
     const geminiKey = document.getElementById('chat-set-gemini-key')?.value || '';
 
     const geminiModel = document.getElementById('chat-set-gemini-model')?.value || 'gemini-2.5-flash';
 
-    const ollamaUrl = document.getElementById('chat-set-ollama-url')?.value || 'https://ollama.com/api';
-
-    const ollamaModel = document.getElementById('chat-set-ollama-model')?.value || 'gpt-oss:20b';
-
-    const ollamaToken = document.getElementById('chat-set-ollama-token')?.value || '';
-
-    saveLLMSettings({ provider, geminiKey, geminiModel, ollamaUrl, ollamaModel, ollamaToken });
+    saveLLMSettings({ provider, geminiKey, geminiModel });
 
     memoryApiAvailable = null; // reset probe cache on save
 
     window.closeChatSettingsModal();
 
-    if(typeof toast === 'function') toast('Mentor settings saved!');
+    if(typeof toast === 'function') toast('Gemini AI settings saved!');
 
     renderChatDrawer();
 
@@ -5802,29 +5758,56 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   async function callPersonaModel(systemInstruction, prompt, raw){
     const settings = getLLMSettings();
-    const userPrompt = String(prompt || '').slice(0, 1000);
+    const userPrompt = String(prompt || '').slice(0, 3500);
     if(!userPrompt) return '';
+    const geminiKey = settings.geminiKey || '';
+    const geminiModel = settings.geminiModel || 'gemini-2.5-flash';
+
+    // 1. Try server proxy /api/chat
     try {
       const isApiOk = await checkApiChatAvailability();
-      if(!isApiOk) return '';
-      const response = await fetchWithTimeout('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: userPrompt,
-          systemInstruction,
-          provider: settings.provider,
-          geminiKey: settings.geminiKey,
-          geminiModel: settings.geminiModel || 'gemini-2.5-flash',
-          ollamaToken: settings.ollamaToken,
-          ollamaModel: settings.ollamaModel,
-          ollamaUrl: settings.ollamaUrl
-        })
-      }, 45000);
-      if(!response.ok) return '';
-      const data = await response.json();
-      if(data && data.text && !data.useFallback) return raw ? String(data.text) : polishLiveAnswer(data.text);
+      if(isApiOk){
+        const response = await fetchWithTimeout('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: userPrompt,
+            systemInstruction,
+            provider: 'gemini',
+            geminiKey: geminiKey,
+            geminiModel: geminiModel
+          })
+        }, 45000);
+        if(response.ok){
+          const data = await response.json();
+          if(data && data.text && !data.useFallback) return raw ? String(data.text) : polishLiveAnswer(data.text);
+        }
+      }
     } catch(_) {}
+
+    // 2. Direct client-side Gemini API fallback
+    if(geminiKey && (settings.provider === 'gemini' || settings.provider === 'auto')){
+      const models = typeof geminiModelList === 'function' ? geminiModelList(geminiModel) : [geminiModel, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+      for(const model of models){
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+          const gRes = await fetchWithTimeout(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+              contents: [{ parts: [{ text: userPrompt }] }],
+              generationConfig: { temperature: 0.2, maxOutputTokens: 3072 }
+            })
+          }, 35000);
+          if(!gRes.ok) continue;
+          const gData = await gRes.json();
+          const text = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if(text) return raw ? String(text) : polishLiveAnswer(text);
+        } catch(_) {}
+      }
+    }
+
     return '';
   }
 
@@ -6823,7 +6806,54 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-  window.startMentorDescriptive = function(dimension){
+  async function geminiDescriptiveQuestions(kb, persona, stage){
+    if(!kb) return null;
+    const pack = personaStageQuestions(kb, persona, stage);
+    if(!pack || pack.limitation || !pack.facts || !pack.facts.length) return null;
+    const factsText = pack.facts.slice(0, 8).map(f => `${f.citation} (${f.label}): ${f.text}`).join('\n');
+    const systemInstruction = `You are a strict university viva defense examiner conducting an oral defense for "${kb.title}" (Team ${kb.teamId}) under the "${persona}" evaluation rubric for Stage ${mentorStageLabel(stage)}.
+Based ONLY on the verified portfolio facts provided below, generate 5 probing descriptive viva defense questions that challenge students on their architecture, tradeoffs, algorithms, failure modes, or traceabilities.
+
+Return ONLY a valid JSON array of exactly 5 question objects with this schema:
+[
+  {
+    "prompt": "Detailed viva question prompt asking the student to explain and defend a specific design choice",
+    "citation": "${pack.facts[0]?.citation || '[Portfolio]'}",
+    "expectedPoints": ["technical concept 1", "tradeoff or algorithm 2", "verification metric 3"],
+    "rubric": "Assessment criteria for panel evaluation"
+  }
+]
+Do NOT output markdown backticks, conversational preamble, or extra text. Output ONLY the JSON array.`;
+
+    const prompt = `Verified deliverable facts for Team ${kb.teamId} (${kb.title}):\n${factsText}\n\nGenerate the 5 descriptive viva questions now:`;
+    const raw = await callPersonaModel(systemInstruction, prompt, true);
+    const parsed = parseModelJsonArray(raw);
+    if(parsed && parsed.length >= 4){
+      const questions = parsed.slice(0, 5).map((q, idx) => ({
+        prompt: String(q.prompt || ''),
+        source: pack.facts[idx % pack.facts.length]?.text || '',
+        citation: String(q.citation || pack.facts[idx % pack.facts.length]?.citation || '[Portfolio]'),
+        expectedPoints: Array.isArray(q.expectedPoints) ? q.expectedPoints.map(String) : [String(q.expectedPoints || '')],
+        rubric: String(q.rubric || PERSONA_RUBRIC[persona] || 'Technical accuracy and evidence traceability.'),
+        draft: '',
+        templateId: `gemini-desc-${idx + 1}`
+      }));
+      if(questions.length === 5 && questions.every(q => q.prompt && q.expectedPoints.length >= 2)){
+        return {
+          teamId: kb.teamId,
+          dimension: persona,
+          stage: stage,
+          kind: 'descriptive',
+          personaStage: true,
+          generatedBy: 'Google Gemini AI',
+          questions
+        };
+      }
+    }
+    return null;
+  }
+
+  window.startMentorDescriptive = async function(dimension, forceNew){
 
     if(dimension) window.mentorActiveDimension = dimension;
 
@@ -6834,9 +6864,35 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     clearActiveQuiz(teamId);
 
     const kb = buildTeamKnowledgeBase(teamId);
+    const persona = dimension || activeMentorName();
+    const stage = mentorStageKey();
 
-    const saved = loadAssessment(teamId, dimension || activeMentorName(), mentorStageKey(), 'descriptive');
-    const descriptive = saved || buildPersonaDescriptive(kb, dimension || activeMentorName(), mentorStageKey());
+    if(!forceNew){
+      const saved = loadAssessment(teamId, persona, stage, 'descriptive');
+      if(saved && saved.questions && saved.questions.length === 5){
+        chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
+        window.mentorDashboardPanel = 'work';
+        isChatOpen = false;
+        if(mentorSurfaceOpen() && typeof render === 'function') render();
+        updateChatMessagesThread();
+        return;
+      }
+    }
+
+    const settings = getLLMSettings();
+    let descriptive = null;
+
+    if(Boolean(settings.geminiKey) || (typeof checkApiChatAvailability === 'function' && await checkApiChatAvailability())){
+      chatMessages = [{ role: 'assistant', text: 'Preparing viva defense descriptive questions with Gemini...', html: mentorPrepareLoaderHtml() }];
+      if(mentorSurfaceOpen() && typeof render === 'function') render();
+      updateChatMessagesThread();
+      descriptive = await geminiDescriptiveQuestions(kb, persona, stage);
+    }
+
+    if(!descriptive){
+      descriptive = buildPersonaDescriptive(kb, persona, stage);
+    }
+
     if(descriptive.questions && descriptive.questions.length === 5) persistAssessment(descriptive);
     chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive }];
 
@@ -6852,15 +6908,17 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
 
-  window.gradeDescriptiveQuiz = function(){
+  window.gradeDescriptiveQuiz = async function(){
 
     const message = chatMessages.find(item => item.type === 'descriptive');
 
-    if(!message) return;
+    if(!message || !message.descriptive) return;
+    const questions = message.descriptive.questions || [];
 
     document.querySelectorAll('[data-descriptive-answer]').forEach(field => {
 
-      const question = message.descriptive.questions[Number(field.dataset.descriptiveAnswer)];
+      const idx = Number(field.dataset.descriptiveAnswer);
+      const question = questions[idx];
 
       if(!question) return;
 
@@ -6876,15 +6934,59 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
     });
 
-    if(message.descriptive && message.descriptive.questions && message.descriptive.questions.length === 5){
+    if(questions.length === 5){
       message.descriptive.score = {
-        correct: message.descriptive.questions.filter(question => question.supported).length,
+        correct: questions.filter(question => question.supported).length,
         total: 5
       };
       persistAssessment(message.descriptive);
     }
 
     updateChatMessagesThread();
+
+    // AI-enhanced qualitative feedback via Gemini if key/API is available
+    const settings = getLLMSettings();
+    if(settings.geminiKey || (typeof checkApiChatAvailability === 'function' && await checkApiChatAvailability())){
+      const answered = questions.filter(q => q.draft && q.draft.length > 5);
+      if(answered.length > 0){
+        try {
+          const evalPrompt = `You are a faculty viva defense panel evaluating student responses for "${message.descriptive.dimension}".
+Evaluate each answer against expected points and provide concise constructive feedback.
+${answered.map((q, i) => `Question: ${q.prompt}\nExpected Points: ${(q.expectedPoints || [q.source]).join(', ')}\nStudent Answer: ${q.draft}`).join('\n\n')}
+
+Return ONLY a JSON array with one object per question:
+[
+  {
+    "supported": true,
+    "strength": "Brief sentence on what the student defended well",
+    "missing": ["Missing point 1", "Missing point 2"],
+    "improvement": "Key tip for external panel viva"
+  }
+]`;
+          const raw = await callPersonaModel('You are an academic evaluator. Return JSON only.', evalPrompt, true);
+          const parsed = parseModelJsonArray(raw);
+          if(Array.isArray(parsed) && parsed.length >= answered.length){
+            answered.forEach((q, i) => {
+              const fb = parsed[i];
+              if(fb){
+                if(typeof fb.supported === 'boolean') q.supported = fb.supported;
+                if(fb.strength) q.feedback.strength = fb.strength;
+                if(Array.isArray(fb.missing)) q.feedback.missing = fb.missing;
+                if(fb.improvement) q.feedback.improvement = fb.improvement;
+              }
+            });
+            if(message.descriptive){
+              message.descriptive.score = {
+                correct: questions.filter(question => question.supported).length,
+                total: 5
+              };
+              persistAssessment(message.descriptive);
+            }
+            updateChatMessagesThread();
+          }
+        } catch(_) {}
+      }
+    }
 
   };
 
