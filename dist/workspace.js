@@ -442,13 +442,10 @@ function sharedPageHeader(){
         ${roleIcon}
         <span>${esc(displayText)}</span>
       </div>
-      ${page === 'Settings' ? `<button type="button" class="btn secondary" onclick="window.closeSettingsPage()" title="Back to workspace" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        <span>Close</span>
-      </button>` : `<button type="button" class="btn secondary" onclick="go('Settings')" title="AI settings" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
+      ${page !== 'Settings' ? `<button type="button" class="btn secondary" onclick="go('Settings')" title="AI settings" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
         ${ICONS.Settings}
         <span>Settings</span>
-      </button>`}
+      </button>` : ''}
       <button type="button" class="btn secondary" onclick="window.signOutUser()" title="Sign out" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span>Sign Out</span>

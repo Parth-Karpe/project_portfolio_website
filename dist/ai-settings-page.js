@@ -28,14 +28,13 @@ function aiSettingsPage(){
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Close
       </button>`;
-  return heading('AI & mentor settings', 'API keys, models, and generation engines. Saved in this browser only — not uploaded to ProjectGate servers.', closeBtn) +
-    `<div class="notice">Keys and tokens stay in <strong>localStorage</strong> on your device. Generation order: <strong>Google Gemini</strong> (your API key) → <strong>/api/chat</strong> (Gemini, then Ollama) → offline/template fallbacks.</div>
+  return heading('AI & mentor settings', 'API keys, models, and providers', closeBtn) +
+    `<div class="notice">Settings saved in this browser.</div>
     <div class="grid">
       <section class="card">
         <div class="card-head">
           <div>
-            <h2>Portfolio AI mentor &amp; viva assistant</h2>
-            <p>Used by the floating mentor chat on Team Portfolio and Mentor Dashboard.</p>
+            <h2>Portfolio mentor</h2>
           </div>
           <span class="tag">LLM</span>
         </div>
@@ -51,13 +50,12 @@ function aiSettingsPage(){
         <h3 style="margin:18px 0 10px;font-size:14px;color:var(--ink)">Google Gemini</h3>
         <label for="pg-set-gemini-key">Gemini API key</label>
         <input id="pg-set-gemini-key" type="password" autocomplete="off" placeholder="AIzaSy..." value="${esc(llm.geminiKey)}">
-        <p class="mini">Get a key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Stored as <code>pg_gemini_key</code>.</p>
+        <p class="mini"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Get a key from Google AI Studio</a></p>
 
         <label for="pg-set-gemini-model">Gemini model</label>
         <select id="pg-set-gemini-model">
           <option value="gemini-3.8-flash" selected>gemini-3.8-flash</option>
         </select>
-        <p class="mini">This app always calls <code>gemini-3.8-flash</code>.</p>
 
         <h3 style="margin:22px 0 10px;font-size:14px;color:var(--ink)">Ollama (cloud or local)</h3>
         <label for="pg-set-ollama-url">Ollama base URL</label>
@@ -65,7 +63,7 @@ function aiSettingsPage(){
 
         <label for="pg-set-ollama-model">Ollama model</label>
         <input id="pg-set-ollama-model" type="text" placeholder="gpt-oss:20b" value="${esc(llm.ollamaModel)}">
-        <p class="mini">Examples: gpt-oss:20b, gemma4:31b, qwen3:4b, nemotron-3-nano:30b</p>
+        <p class="mini">Examples: gpt-oss:20b, qwen3:4b</p>
 
         <label for="pg-set-ollama-token">Ollama bearer token (optional)</label>
         <input id="pg-set-ollama-token" type="password" autocomplete="off" placeholder="For Ollama Cloud" value="${esc(llm.ollamaToken)}">
@@ -75,16 +73,15 @@ function aiSettingsPage(){
         <section class="card">
           <div class="card-head">
             <div>
-              <h2>Viva practice studio</h2>
-              <p>Question generation on the AI Mentor page (submission coach vs live Ollama).</p>
+              <h2>Viva practice</h2>
             </div>
             <span class="tag amber">VIVA</span>
           </div>
           ${canEditViva ? `
             <label for="pg-set-viva-mode">Generation mode</label>
             <select id="pg-set-viva-mode">
-              <option value="demo" ${s.vivaMode === 'demo' ? 'selected' : ''}>Submission coach (offline, quotes your forms)</option>
-              <option value="ollama" ${s.vivaMode === 'ollama' ? 'selected' : ''}>Ollama (local or remote HTTP API)</option>
+              <option value="demo" ${s.vivaMode === 'demo' ? 'selected' : ''}>Submission coach (offline)</option>
+              <option value="ollama" ${s.vivaMode === 'ollama' ? 'selected' : ''}>Ollama (live)</option>
             </select>
 
             <label for="pg-set-viva-endpoint">Ollama endpoint (viva)</label>
@@ -92,18 +89,11 @@ function aiSettingsPage(){
 
             <label for="pg-set-viva-model">Model name (viva)</label>
             <input id="pg-set-viva-model" type="text" value="${esc(s.vivaOllama.model || 'qwen3:4b')}">
-            <p class="mini">Saved in your team workspace state (<code>projectgate-v1</code>) as well as used by the viva generator.</p>
           ` : `<p class="mini">Workspace state is not loaded.</p>`}
         </section>
 
         <section class="card" style="margin-top:18px">
-          <h2>Stored keys (this browser)</h2>
-          <ul class="mini" style="line-height:1.7;margin:0;padding-left:18px">
-            <li><code>pg_llm_provider</code> — active engine</li>
-            <li><code>pg_gemini_key</code> / <code>pg_gemini_model</code></li>
-            <li><code>pg_ollama_url</code> / <code>pg_ollama_model</code> / <code>pg_ollama_token</code></li>
-            <li><code>projectgate-v1</code> — viva Ollama endpoint &amp; mode</li>
-          </ul>
+          <h2>Browser settings</h2>
           <div class="actions" style="margin-top:16px">
             <button type="button" class="btn" onclick="window.saveAiSettingsPage()">Save all settings</button>
             <button type="button" class="btn secondary" onclick="window.clearAiSettingsKeys()">Clear API keys only</button>
