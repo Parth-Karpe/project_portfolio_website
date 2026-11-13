@@ -7208,7 +7208,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const history = renderDescriptiveQuestionHistory(quiz);
       const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Current question</h3>${marksBadge}</div><p>${esc(studentQuestionPrompt(question.prompt))}</p><p class="mini descriptive-attempts-line">Attempts on this question: <strong>${attemptsUsed}</strong> / ${DESCRIPTIVE_MAX_ATTEMPTS}${canResubmit ? ` · <strong>${attemptsLeft}</strong> left` : ''}</p><textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
       const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">${submitLabel}</button><span class="mini" style="margin-left:10px">Passing answers: <strong>${passed}</strong> / ${target}</span></div>`;
-      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Faculty templates · ${DESCRIPTIVE_MAX_ATTEMPTS} attempts per question · 5/5 marks at ≥70% conceptual correctness.</div></div>${history}${body}${footer}</div>`;
+      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div></div>${history}${body}${footer}</div>`;
     }
 
     const questions = (quiz.questions || []).map((question, index) => {
