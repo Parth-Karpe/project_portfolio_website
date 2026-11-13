@@ -6247,8 +6247,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
           if(!Array.isArray(saved.questionHistory)) saved.questionHistory = [];
           return saved;
         }
-        if(saved && Array.isArray(saved.questions) && saved.questions.length === 5) return saved;
-      } catch(_) {}
+      if(saved && Array.isArray(saved.questions) && saved.questions.length === 5) return saved;
+    } catch(_) {}
     }
     return null;
   }
