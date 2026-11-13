@@ -194,6 +194,37 @@ async function handler(req, res) {
   }
 
   if (requestedProvider === 'kilo') {
+    const gatewayUrl = process.env.CHAT_API_URL;
+    const gatewayToken = process.env.GATEWAY_TOKEN;
+    if (gatewayUrl && gatewayToken) {
+      try {
+        const url = new URL('/api/chat', gatewayUrl);
+        if (url.protocol !== 'https:' || url.username || url.password) {
+          throw new Error('Invalid gateway URL');
+        }
+        const messages = [];
+        if (typeof systemInstruction === 'string' && systemInstruction.trim()) {
+          messages.push({ role: 'system', content: systemInstruction.slice(0, 6000) });
+        }
+        messages.push({ role: 'user', content: String(prompt) });
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${gatewayToken}`
+          },
+          body: JSON.stringify({ messages }),
+          redirect: 'error',
+          signal: AbortSignal.timeout(15_000)
+        });
+        if (!response.ok) throw new Error('Gateway rejected the request');
+        const { reply } = await response.json();
+        if (typeof reply !== 'string' || !reply.trim()) throw new Error('Gateway returned no text');
+        return res.status(200).json({ text: reply.trim(), provider: 'Local Ollama (qwen3.5:4b)' });
+      } catch {
+        console.warn('Local Ollama gateway unavailable. Trying Kilo.');
+      }
+    }
     try {
       const result = await callKilo();
       return res.status(200).json(result);
