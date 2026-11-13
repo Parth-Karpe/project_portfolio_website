@@ -3673,6 +3673,34 @@ html body .mentor-dashboard .mentor-work-form textarea {
 .mentor-grade.missed .grade-status,
 .mentor-revise-list .missed em { color: #9f1239; }
 .mentor-grade .grade-status { margin: 0; font-size: 14px; }
+.mentor-grade-pending {
+  border: 1px solid var(--line, #e2e8f0);
+  background: var(--surface, #fff);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.grade-pending-loader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.grade-spinner {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--line, #e2e8f0);
+  border-top-color: var(--brand, #4f46e5);
+  border-radius: 50%;
+  animation: grade-spin 0.75s linear infinite;
+}
+.grade-pending-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-muted, #64748b);
+}
+@keyframes grade-spin {
+  to { transform: rotate(360deg); }
+}
 .mentor-grade .grade-note { margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink); }
 .mentor-grade .grade-suggestion { margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink); }
 .mentor-grade .grade-kicker {
