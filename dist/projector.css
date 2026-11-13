@@ -1305,8 +1305,13 @@ html body #sec-usecase .test-suite-table .tag {
   text-align: center !important;
 }
 
-html body .btn.auth-primary {
+html body .btn.auth-primary,
+html body .btn.stage-editor-tab {
   background: #dce6fb !important;
   color: #0b2a5b !important;
   border-color: #a5caff !important;
+}
+
+html body .btn.stage-editor-tab[aria-pressed="true"] {
+  border-color: #2563eb !important;
 }

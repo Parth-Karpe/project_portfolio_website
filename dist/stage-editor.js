@@ -373,11 +373,11 @@
 
     let contentHtml = '';
     const stageTabs = [
-      { id: '0', label: 'Stage 0: Problem Scope' },
-      { id: '1', label: 'Stage 1: Requirements' },
-      { id: 'system-design', label: 'Stage 2: System Design' },
-      { id: '2', label: 'Stage 3: Implementation' },
-      { id: '3', label: 'Stage 4: Testing & Metrics' }
+      { id: '0', label: 'Stage 0 - Problem Definition and Scope' },
+      { id: '1', label: 'Stage 1 - Requirement Analysis' },
+      { id: 'system-design', label: 'Stage 2 - System Design' },
+      { id: '2', label: 'Stage 3 - Implementation and Integration' },
+      { id: '3', label: 'Stage 4 - Testing and Validations' }
     ];
 
     if(stageId === '0'){
@@ -836,10 +836,6 @@
               <div style="display:flex;align-items:center;gap:16px;">
                 <img src="assets/kle_tech_logo.png" alt="KLE Tech" style="height:34px;width:auto;object-fit:contain;">
                 <div>
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:12px;font-weight:800;background:var(--accent,#2563eb);color:#fff;padding:2px 8px;border-radius:4px;letter-spacing:0.5px;">TEAM ${esc(teamId)}</span>
-                    <h2 style="margin:0;font-size:18px;font-weight:800;color:var(--ink);">Edit Project Portfolio &amp; Stage Data</h2>
-                  </div>
                   <span style="font-size:12.5px;color:var(--muted);font-weight:600;">${esc(curTeam?.title || 'Mini-Project')} · Department of CSE(AI)</span>
                 </div>
               </div>
@@ -847,9 +843,9 @@
             </div>
 
             <!-- Full-width Stage Switcher Tabs -->
-            <div style="display:flex;gap:8px;padding:12px 32px;background:var(--bg-subtle,#f1f5f9);border-bottom:1px solid var(--line);overflow-x:auto;flex-shrink:0;">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;padding:12px 32px;background:var(--surface);border-bottom:1px solid var(--line);flex-shrink:0;">
               ${stageTabs.map(st => `
-                <button type="button" class="btn ${stageId === st.id ? '' : 'secondary'}" onclick="window.openStageDataEditor('${st.id}')" style="padding:8px 18px;font-size:13px;font-weight:700;white-space:nowrap;border-radius:6px;">
+                <button type="button" class="btn stage-editor-tab" aria-pressed="${stageId === st.id}" onclick="window.openStageDataEditor('${st.id}')" style="padding:8px 18px;font-size:13px;font-weight:700;max-width:100%;white-space:normal;overflow-wrap:anywhere;border-radius:6px;">
                   ${st.label}
                 </button>
               `).join('')}
