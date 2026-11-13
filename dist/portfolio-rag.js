@@ -5062,9 +5062,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   const MENTOR_LENSES = [
     { name: 'Systems Thinking', help: 'Explain how the need, the boundary, and the flow fit together.', match: ['stage0-problem', 'stage0-objectives', 'table-0-4', 'table-0-5', 'table-0-2', 'diag-asis', 'table-0-1'] },
     { name: 'Foundational CS Knowledge', help: 'Connect a course idea to this project.', match: ['table-0-1', 'table-0-3', 'engine-'] },
-    { name: 'Faculty Expertise', help: 'Prepare the defense a guide would ask, using only these sections.', match: ['stage0-objectives', 'fr-', 'nfr-', 'table-testsuite'] },
-    { name: 'Engineering Standards', help: 'Check the quality targets and how the project says they are verified.', match: ['nfr-', 'table-testsuite'] },
-    { name: 'Theme-Based Expertise', help: 'Explain why this project belongs to its theme.', match: ['team-meta', 'table-0-3', 'engine-', 'table-0-2', 'diag-asis'] }
+    { name: 'Engineering Standards', help: 'Check the quality targets and how the project says they are verified.', match: ['nfr-', 'table-testsuite'] }
   ];
 
   const STAGE_KEEP = {
