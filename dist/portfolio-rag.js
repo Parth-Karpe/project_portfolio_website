@@ -3440,9 +3440,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   const userPrompt = `${query}\n\nStrict Rules: Answer only using verified portfolio facts above. Include citations like [FR-01], [Table 0.1].`;
   const llmAnswer = await llmTextWithGeminiFirst(systemPrompt, userPrompt, { maxOutputTokens: 4096, timeoutMs: 30000 });
   if(llmAnswer.text){
-    return {
+            return {
       answer: llmAnswer.text,
-      citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
+              citations: retrievedChunks.map(c => ({ citation: c.citation, elementId: c.elementId, label: c.label })),
       provider: llmAnswer.provider || 'AI Mentor'
     };
   }
@@ -4124,9 +4124,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                 <p class="mini" style="margin:0;color:var(--muted);line-height:1.45">Answers and descriptive grades call <strong>Kilo kilo-auto/free</strong> first, then <strong>OVHcloud Qwen3.6-27B</strong>. <strong>Gemini 3.8 Flash</strong> runs only if both of those fail. Put the Gemini key in AI Settings. Do not put passwords or private data in answers.</p>
 
-              </div>
+                </div>
 
-            </div>
+                </div>
 
 
 
@@ -6221,7 +6221,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     try {
       const saved = JSON.parse(sessionStorage.getItem(assessmentKey(teamId, persona, stage, kind)) || 'null');
       if(!saved) return null;
-      if(kind === 'descriptive' && saved.sequentialMode) return saved;
+      if(kind === 'descriptive' && saved.sequentialMode){
+        if(!Array.isArray(saved.questionHistory)) saved.questionHistory = [];
+        return saved;
+      }
       if(saved && Array.isArray(saved.questions) && saved.questions.length === 5) return saved;
     } catch(_) {}
     return null;
@@ -6277,6 +6280,48 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     };
   }
 
+  function ensureQuestionHistoryArray(quiz){
+    if(!quiz) return;
+    if(!Array.isArray(quiz.questionHistory)) quiz.questionHistory = [];
+  }
+
+  function snapshotDescriptiveForHistory(question){
+    const llm = question.llmFeedback;
+    return {
+      templateId: question.templateId,
+      prompt: question.prompt,
+      draft: String(question.draft || ''),
+      attemptCount: question.attemptCount || 0,
+      supported: !!question.supported,
+      marksEarned: question.marksEarned,
+      marksMax: question.marksMax,
+      checked: true,
+      llmPending: false,
+      llmFeedback: llm ? {
+        supported: llm.supported,
+        unavailable: llm.unavailable,
+        note: llm.note,
+        missing: Array.isArray(llm.missing) ? llm.missing.slice() : [],
+        suggestion: llm.suggestion,
+        conceptualCorrectness: llm.conceptualCorrectness
+      } : null,
+      leftAt: new Date().toISOString()
+    };
+  }
+
+  function archiveActiveDescriptiveQuestion(quiz){
+    if(!quiz || !quiz.sequentialMode) return;
+    ensureQuestionHistoryArray(quiz);
+    const q = quiz.activeQuestion;
+    if(!q || !q.checked) return;
+    if(!String(q.draft || '').trim()) return;
+    const snap = snapshotDescriptiveForHistory(q);
+    const hist = quiz.questionHistory;
+    const prev = hist.length ? hist[hist.length - 1] : null;
+    if(prev && prev.templateId === snap.templateId && prev.draft === snap.draft) return;
+    hist.push(snap);
+  }
+
   function shuffleIndexQueue(queue, seed){
     const rng = createPRNG(seed || 1);
     for(let i = queue.length - 1; i > 0; i--){
@@ -6303,6 +6348,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       activeQuestion,
       questions: [activeQuestion],
       completed: false,
+      questionHistory: [],
       templateGuided: built.templateGuided !== false
     });
   }
@@ -6916,11 +6962,30 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     const status = question.supported ? 'Satisfactory' : 'Not satisfactory';
     const marks = `${question.marksEarned != null ? question.marksEarned : '—'} / ${question.marksMax != null ? question.marksMax : '—'}`;
     const note = llm.note ? `<p class="grade-note">${esc(llm.note)}</p>` : '';
-    const points = (llm.missing || []).length ? llm.missing : (question.supported ? [] : (question.rubricLabels || question.expectedPoints || []));
-    const pointsBlock = question.supported || !points.length
+    const suggestion = !question.supported && String(llm.suggestion || '').trim()
+      ? `<p class="grade-suggestion">${esc(String(llm.suggestion).trim())}</p>`
+      : '';
+    const missing = Array.isArray(llm.missing) ? llm.missing : [];
+    const pointsBlock = question.supported || !missing.length
       ? ''
-      : `<p class="grade-kicker">Cover these points</p>${gradePointList(points)}`;
-    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p class="grade-status"><strong>${status}</strong> · ${marks}</p>${note}${pointsBlock}</div>`;
+      : `<p class="grade-kicker">Cover these points</p>${gradePointList(missing)}`;
+    return `<div class="mentor-grade ${question.supported ? 'supported' : 'missed'}"><p class="grade-status"><strong>${status}</strong> · ${marks}</p>${note}${suggestion}${pointsBlock}</div>`;
+  }
+
+  function renderDescriptiveQuestionHistory(quiz){
+    ensureQuestionHistoryArray(quiz);
+    const hist = quiz.questionHistory;
+    if(!hist.length) return '';
+    const items = hist.map((entry, index) => {
+      const row = Object.assign({}, entry, { checked: true, llmPending: false });
+      const grade = renderDescriptiveGrade(row);
+      const answer = entry.draft
+        ? `<p class="descriptive-history-answer"><strong>Your answer:</strong> ${esc(entry.draft)}</p>`
+        : '';
+      const idLabel = entry.templateId ? ` · ${esc(entry.templateId)}` : '';
+      return `<article class="descriptive-history-item"><h4 class="descriptive-history-title">Q${index + 1}${idLabel}</h4><p class="descriptive-history-prompt">${esc(studentQuestionPrompt(entry.prompt))}</p>${answer}${grade}</article>`;
+    }).join('');
+    return `<section class="descriptive-history" aria-label="Question history"><div class="descriptive-history-head"><h3>Question history</h3><span class="mini">Bank questions answered: ${hist.length}</span></div><div class="descriptive-history-list">${items}</div></section>`;
   }
 
   function applyDescriptiveScore(quiz){
@@ -7003,9 +7068,11 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       }
     }
     if(!Array.isArray(parsed)){
-      const snippet = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 160);
+      if(raw){
+        try { console.warn('[descriptive grade] Unparseable model reply', String(raw).slice(0, 300)); } catch(_) {}
+      }
       const note = raw
-        ? `The model replied, but not as a grade JSON. Resubmit.${snippet ? ' Reply: ' + snippet : ''}`
+        ? 'Could not read a grade from the model. Resubmit.'
         : 'The grading model did not respond. Resubmit.';
       questions.forEach(question => {
         question.llmFeedback = {
@@ -7039,6 +7106,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function advanceSequentialDescriptiveQuiz(quiz){
+    archiveActiveDescriptiveQuestion(quiz);
     const currentIdx = quiz.questionQueue[quiz.queuePos];
     if(typeof currentIdx !== 'number') return;
     quiz.queuePos = (quiz.queuePos || 0) + 1;
@@ -7090,14 +7158,13 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const target = quiz.passTarget || DESCRIPTIVE_PASS_TARGET;
       const passed = quiz.passedCount || 0;
       if(quiz.completed){
-        return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Target reached: ${passed} / ${target} solid answers using your faculty question bank.</div></div><p class="mentor-panel-note"><strong>Practice complete.</strong> You earned at least ${target} passing answers for ${esc(mentorStageLabel(quiz.stage))}.</p><div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.startMentorDescriptive('${esc(quiz.dimension).replace(/'/g, "\\'")}', true)">Practice again</button></div></div>`;
+        archiveActiveDescriptiveQuestion(quiz);
+        const history = renderDescriptiveQuestionHistory(quiz);
+        return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Target reached: ${passed} / ${target} solid answers using your faculty question bank.</div></div><p class="mentor-panel-note"><strong>Practice complete.</strong> You earned at least ${target} passing answers for ${esc(mentorStageLabel(quiz.stage))}.</p>${history}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.startMentorDescriptive('${esc(quiz.dimension).replace(/'/g, "\\'")}', true)">Practice again</button></div></div>`;
       }
       ensureSequentialActiveQuestion(quiz);
       const question = quiz.activeQuestion || (quiz.questions && quiz.questions[0]);
       if(!question) return `<div class="mentor-descriptive">${note || '<p>No descriptive questions available.</p>'}</div>`;
-      const rubric = question.expectedPoints && question.expectedPoints.length
-        ? `<p class="mini"><strong>Panel expects:</strong> ${esc(question.expectedPoints.join(' · '))}</p>`
-        : '';
       const grade = question.checked ? renderDescriptiveGrade(question) : '';
       const marksBadge = question.checked && question.marksMax != null
         ? `<span class="descriptive-marks-badge">Marks: ${question.marksEarned || 0} / ${question.marksMax}</span>`
@@ -7106,9 +7173,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       const attemptsLeft = Math.max(0, DESCRIPTIVE_MAX_ATTEMPTS - attemptsUsed);
       const canResubmit = !question.supported && attemptsLeft > 0;
       const submitLabel = question.checked && canResubmit ? 'Resubmit answer' : 'Submit answer';
-      const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Question</h3>${marksBadge}</div><p>${esc(studentQuestionPrompt(question.prompt))}</p>${rubric}<p class="mini descriptive-attempts-line">Attempts on this question: <strong>${attemptsUsed}</strong> / ${DESCRIPTIVE_MAX_ATTEMPTS}${canResubmit ? ` · <strong>${attemptsLeft}</strong> left` : ''}</p><textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
+      const history = renderDescriptiveQuestionHistory(quiz);
+      const body = `<article class="mentor-descriptive-q"><div class="mentor-descriptive-q-head"><h3>Current question</h3>${marksBadge}</div><p>${esc(studentQuestionPrompt(question.prompt))}</p><p class="mini descriptive-attempts-line">Attempts on this question: <strong>${attemptsUsed}</strong> / ${DESCRIPTIVE_MAX_ATTEMPTS}${canResubmit ? ` · <strong>${attemptsLeft}</strong> left` : ''}</p><textarea data-descriptive-answer="0" rows="5" placeholder="Answer using your portfolio and stage documents…">${esc(question.draft || '')}</textarea>${grade}</article>`;
       const footer = `<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">${submitLabel}</button><span class="mini" style="margin-left:10px">Passing answers: <strong>${passed}</strong> / ${target}</span></div>`;
-      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Faculty templates · graded by Kilo, then OVHcloud · ${DESCRIPTIVE_MAX_ATTEMPTS} attempts per question · 5/5 marks at ≥70% conceptual correctness.</div></div>${body}${footer}</div>`;
+      return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div><div class="quiz-meta">Faculty templates · graded by Kilo, then OVHcloud · ${DESCRIPTIVE_MAX_ATTEMPTS} attempts per question · 5/5 marks at ≥70% conceptual correctness.</div></div>${history}${body}${footer}</div>`;
     }
 
     const questions = (quiz.questions || []).map((question, index) => {
@@ -7201,19 +7269,19 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
       if(saved){
         if(saved.sequentialMode){
           ensureSequentialActiveQuestion(saved);
-          chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
-          window.mentorDashboardPanel = 'work';
-          isChatOpen = false;
-          if(mentorSurfaceOpen() && typeof render === 'function') render();
-          updateChatMessagesThread();
-          return;
-        }
+        chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
+        window.mentorDashboardPanel = 'work';
+        isChatOpen = false;
+        if(mentorSurfaceOpen() && typeof render === 'function') render();
+        updateChatMessagesThread();
+        return;
+      }
         if(saved.questions && saved.questions.length === 5){
           chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive: saved }];
           window.mentorDashboardPanel = 'work';
           isChatOpen = false;
-          if(mentorSurfaceOpen() && typeof render === 'function') render();
-          updateChatMessagesThread();
+      if(mentorSurfaceOpen() && typeof render === 'function') render();
+      updateChatMessagesThread();
           return;
         }
       }
@@ -7225,7 +7293,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     } else {
       const descriptive = wrapSequentialDescriptive(built, persona, stage, teamId, kb);
       persistAssessment(descriptive);
-      chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive }];
+    chatMessages = [{ role: 'assistant', type: 'descriptive', descriptive }];
     }
 
     window.mentorDashboardPanel = 'work';
@@ -7289,7 +7357,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
         question.attemptCount = Math.max(0, (question.attemptCount || 1) - 1);
         reconcileDescriptiveQuestionMarks(question);
         persistAssessment(quiz);
-        updateChatMessagesThread();
+    updateChatMessagesThread();
         if(mentorSurfaceOpen() && typeof render === 'function') render();
         if(typeof toast === 'function') toast(question.llmFeedback.note || 'The grading model did not return a grade. Resubmit.');
         return;
@@ -7301,6 +7369,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
         quiz.passedCount = (quiz.passedCount || 0) + 1;
         if(typeof toast === 'function') toast(`Satisfactory (${question.marksEarned}/${question.marksMax} marks). Passing answers: ${quiz.passedCount} / ${target}.`);
         if(quiz.passedCount >= target){
+          archiveActiveDescriptiveQuestion(quiz);
           quiz.completed = true;
           quiz.score = Object.assign({}, quiz.score || {}, { correct: quiz.passedCount, total: target });
           persistAssessment(quiz);
@@ -7314,7 +7383,7 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
         advanceSequentialDescriptiveQuiz(quiz);
       } else if(typeof toast === 'function'){
         const left = DESCRIPTIVE_MAX_ATTEMPTS - (question.attemptCount || 0);
-        toast(`Not satisfactory — ${question.marksEarned || 0} / ${question.marksMax || 4} marks. ${left} attempt${left === 1 ? '' : 's'} left — revise using the prompt below.`);
+        toast(`Not satisfactory — ${question.marksEarned || 0} / ${question.marksMax || 4} marks. ${left} attempt${left === 1 ? '' : 's'} left — see feedback on the card.`);
       }
 
       persistAssessment(quiz);
@@ -7350,13 +7419,13 @@ Do NOT output markdown backticks, conversational preamble, or extra text. Output
     }
     applyDescriptiveScore(quiz);
     persistAssessment(quiz);
-    updateChatMessagesThread();
+            updateChatMessagesThread();
     if(mentorSurfaceOpen() && typeof render === 'function') render();
 
     const answered = questions.filter(question => question.draft);
     try {
       await reviewDescriptiveWithLlm(answered, kb, quiz.dimension, quiz.stage);
-    } catch(_) {}
+        } catch(_) {}
     questions.forEach(question => {
       question.llmPending = false;
       if(question.draft) reconcileDescriptiveQuestionMarks(question);

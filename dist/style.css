@@ -3674,6 +3674,7 @@ html body .mentor-dashboard .mentor-work-form textarea {
 .mentor-revise-list .missed em { color: #9f1239; }
 .mentor-grade .grade-status { margin: 0; font-size: 14px; }
 .mentor-grade .grade-note { margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink); }
+.mentor-grade .grade-suggestion { margin: 8px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink); }
 .mentor-grade .grade-kicker {
   margin: 12px 0 4px;
   font-size: 11px;
@@ -3686,6 +3687,45 @@ html body .mentor-dashboard .mentor-work-form textarea {
 .grade-points li { margin: 3px 0; font-size: 14px; line-height: 1.4; color: var(--ink); }
 .mentor-grade.missed { border: 1px solid #fecdd3; background: #fff1f2; border-radius: 12px; padding: 12px 14px; }
 .mentor-grade.supported { border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 12px; padding: 12px 14px; }
+.descriptive-history {
+  margin: 16px 0 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface, #fff);
+}
+.descriptive-history-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.descriptive-history-head h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.descriptive-history-list {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.descriptive-history-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--bg, #f8fafc);
+}
+.descriptive-history-title { margin: 0 0 6px; font-size: 13px; font-weight: 700; }
+.descriptive-history-prompt { margin: 0 0 8px; font-size: 14px; line-height: 1.45; color: var(--ink); }
+.descriptive-history-answer {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-muted, #64748b);
+  white-space: pre-wrap;
+}
+.descriptive-history-item .mentor-grade { margin-top: 8px; }
 .mentor-source { margin: 6px 0 0; color: var(--ink); }
 .mentor-revise-list { list-style: none; padding: 0; margin: 14px 0 0; }
 .mentor-revise-list li { display: flex; flex-direction: column; gap: 4px; }

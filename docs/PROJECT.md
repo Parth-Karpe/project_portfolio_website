@@ -142,7 +142,8 @@ Descriptive practice is sequential.
 - A satisfactory answer counts toward the target of **4** passing answers (`DESCRIPTIVE_PASS_TARGET`).
 - Each question allows **3** attempts (`DESCRIPTIVE_MAX_ATTEMPTS`). A fail stays on that question until the cap, then the round moves on.
 - An attempt is not counted when the model returns no grade at all.
-- The card shows the result, the marks, one short note, and the missing points. It does not show a local word-overlap parser.
+- When you leave a bank question (pass, max attempts, or session complete), the final answer and LLM grade are appended to **question history** and stay visible for the rest of the session (persisted in `sessionStorage` with the quiz).
+- The card shows only the model grade: result, marks, `note`, `missing`, and `suggestion`. Faculty rubric text is sent in the grading prompt only, not shown on the card. It does not show a local word-overlap parser or raw model dumps.
 
 Marks:
 
