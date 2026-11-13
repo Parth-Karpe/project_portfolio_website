@@ -15,7 +15,7 @@ function upgradeState(){
   if(state.forms[1]&&!state.forms[1].functional)state.forms[1].functional='FR-01: Ingestion. FR-02: Algorithmic processing. FR-03: Export.';
   if(state.feedback&&!state.reviews?.[1]){state.reviews=state.reviews||{};state.reviews[1]={feedback:state.feedback,score:state.score}}
 }
-upgradeState();save();if(typeof restoreAuthSession==='function')restoreAuthSession();
+upgradeState();
 const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department','Settings'],HOD:['Department','Team Portfolio','Mentor Dashboard','Settings'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor','Department','Settings'],Student:['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Settings'],'Team Lead':['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Settings']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin'],'Settings':ICONS.Settings,'Mentor Dashboard':ICONS['AI Mentor']};
 function workspaceAppTabs(){
@@ -55,6 +55,7 @@ function switchPortfolioStage(stageNum, autoScroll = false){
   stageNum = String(stageNum);
   activePortfolioStage = stageNum;
   window.activePortfolioStage = stageNum;
+  if(typeof rememberWorkspaceView === 'function') rememberWorkspaceView();
   window.refreshPortfolioStageNav?.(stageNum);
   document.querySelectorAll('.portfolio-stage-tab').forEach(button=>{
     const active = String(button.dataset.tab) === stageNum;

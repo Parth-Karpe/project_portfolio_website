@@ -111,11 +111,6 @@
     } catch(e) {}
   }
 
-  // Always reset to login screen on initial page load / refresh:
-  // "after refreshing i should get the login page...then student/faculty/hod dashboard"
-  clearAuthSession();
-  try { sessionStorage.removeItem('pg_current_page'); } catch(e){}
-
   // Active UI state for auth screens
   let authMode = 'login'; // 'login' | 'register'
   let authRoleTab = 'Student'; // 'Student' | 'Faculty' | 'HOD'
@@ -131,7 +126,13 @@
 
   root.signOutUser = function(){
     clearAuthSession();
-    try { sessionStorage.removeItem('pg_current_page'); } catch(e){}
+    try {
+      sessionStorage.removeItem('pg_current_page');
+      sessionStorage.removeItem('pg_current_view');
+      sessionStorage.removeItem('pg_settings_return_page');
+    } catch(e){}
+    window.__authSessionRestored = false;
+    if(typeof resetWorkspaceView === 'function') resetWorkspaceView();
     authErrorMsg = '';
     authMode = 'login';
     if(typeof state !== 'undefined'){
@@ -373,6 +374,8 @@
   };
 
   function applyUserLogin(user){
+    const {password, ...sessionUser} = user;
+    user = sessionUser;
     setAuthSession(user);
     authErrorMsg = '';
 
