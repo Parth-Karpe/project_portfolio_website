@@ -230,16 +230,16 @@
     return { text: '', provider: '' };
   }
 
-  /** OVHcloud, then Kilo kilo-auto/free, then Gemini 3.8 Flash. */
+  /** Kilo kilo-auto/free, then OVHcloud, then Gemini 3.8 Flash. */
   async function llmTextWithGeminiFirst(systemInstruction, prompt, opts){
-    if(getLLMSettings().provider === 'extractive') return { text: '', provider: '', triedKilo: false, triedGemini: false };
-    const ovh = await tryOvhFallback(systemInstruction, prompt, opts);
-    if(ovh.text) return Object.assign({ triedKilo: false, triedGemini: false }, ovh);
+    if(getLLMSettings().provider === 'extractive') return { text: '', provider: '', triedKilo: false, triedOvh: false, triedGemini: false };
     const kilo = await tryKiloFree(systemInstruction, prompt, opts);
-    if(kilo.text) return Object.assign({ triedKilo: true, triedGemini: false }, kilo);
+    if(kilo.text) return Object.assign({ triedKilo: true, triedOvh: false, triedGemini: false }, kilo);
+    const ovh = await tryOvhFallback(systemInstruction, prompt, opts);
+    if(ovh.text) return Object.assign({ triedKilo: true, triedOvh: true, triedGemini: false }, ovh);
     const gemini = await tryGeminiFallback(systemInstruction, prompt, opts);
-    if(gemini.text) return Object.assign({ triedKilo: true, triedGemini: true }, gemini);
-    return { text: '', provider: '', triedKilo: true, triedGemini: true };
+    if(gemini.text) return Object.assign({ triedKilo: true, triedOvh: true, triedGemini: true }, gemini);
+    return { text: '', provider: '', triedKilo: true, triedOvh: true, triedGemini: true };
   }
 
   async function tryGeminiFallback(systemInstruction, prompt, opts){
@@ -4108,7 +4108,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                 <select id="chat-set-provider">
 
-                  <option value="free" ${settings.provider!=='extractive'?'selected':''}>OVHcloud, then Kilo, then Gemini</option>
+                  <option value="free" ${settings.provider!=='extractive'?'selected':''}>Kilo, then OVHcloud, then Gemini</option>
 
                   <option value="extractive" ${settings.provider==='extractive'?'selected':''}>Deterministic Grounded RAG (Zero-Compute Offline)</option>
 
@@ -4122,7 +4122,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
                 <strong style="font-size:12.5px;font-weight:700;display:block;margin-bottom:8px;color:var(--brand)">Free models (no API key)</strong>
 
-                <p class="mini" style="margin:0;color:var(--muted);line-height:1.45">Answers and descriptive grades call <strong>OVHcloud Qwen3.6-27B</strong> first, then <strong>Kilo kilo-auto/free</strong>. <strong>Gemini 3.8 Flash</strong> runs only if both of those fail. Put the Gemini key in AI Settings. Do not put passwords or private data in answers.</p>
+                <p class="mini" style="margin:0;color:var(--muted);line-height:1.45">Answers and descriptive grades call <strong>Kilo kilo-auto/free</strong> first, then <strong>OVHcloud Qwen3.6-27B</strong>. <strong>Gemini 3.8 Flash</strong> runs only if both of those fail. Put the Gemini key in AI Settings. Do not put passwords or private data in answers.</p>
 
               </div>
 
@@ -6436,7 +6436,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'ES0-D4', focus: 'Scope boundary', prompt: 'Explain how the In Scope and Out of Scope sections establish clear project boundaries and help prevent scope expansion.', points: ['State what is in scope', 'State what is out of scope', 'Explain how that boundary limits later expansion'] },
         { id: 'ES0-D5', focus: 'Constraints and planning', prompt: 'Identify two important project constraints or risks and explain how they should influence planning and later verification.', points: ['Name two constraints or risks', 'Explain the effect on planning', 'Explain what should later be verified'] }
       ]
-    },
+    },
   };
 
   const STAGE1_BANK = {
@@ -6488,7 +6488,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'ES1-D4', focus: 'Use-case consistency', layer: 'project', prompt: 'Review one use case and explain whether its actor, goal and main flow are consistent with the functional requirements.', points: ['Name the actor, goal, and main flow', 'Match the flow to requirements', 'Say whether they agree, or explain the gap'] },
         { id: 'ES1-D5', focus: 'Acceptance check', layer: 'project', prompt: 'Select one acceptance criterion and explain how it verifies a corresponding requirement. Identify any missing condition needed for objective verification.', points: ['Name the criterion and the requirement', 'Explain what the criterion checks', 'Name a missing condition, or explain why the criterion is already adequate'] }
       ]
-    },
+    },
   };
 
   function getPersonaKnowledge(persona){
@@ -6988,10 +6988,10 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     let parsed = parseModelJsonArray(raw);
     const gradeOpts = { raw: true, maxOutputTokens: 3072 };
     const jsonInstruction = systemInstruction + ' Output the JSON array only.';
-    if(!Array.isArray(parsed) && !first.triedKilo && !/kilo/i.test(first.provider || '')){
-      const kilo = await tryKiloFree(jsonInstruction, userPrompt, gradeOpts);
-      if(kilo.text){
-        raw = kilo.text;
+    if(!Array.isArray(parsed) && !first.triedOvh && !/ovh/i.test(first.provider || '')){
+      const ovh = await tryOvhFallback(jsonInstruction, userPrompt, gradeOpts);
+      if(ovh.text){
+        raw = ovh.text;
         parsed = parseModelJsonArray(raw);
       }
     }

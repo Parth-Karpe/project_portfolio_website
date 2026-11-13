@@ -182,22 +182,22 @@ Choosing **Offline extractive RAG** in settings skips the models entirely.
 
 Every mentor call (chat, MCQ generation, descriptive grade) uses `llmTextWithGeminiFirst()`:
 
-1. **OVHcloud** anonymous chat, model `Qwen3.6-27B`.
-   - `POST https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions`
-   - No API key. The browser calls it directly (`Access-Control-Allow-Origin: *`).
-   - About 2 requests per minute per IP per model.
-   - The request asks for at least 4096 output tokens. Below that, this model spends the budget on a `reasoning` field and leaves `content` empty, which the app treats as no answer.
-2. **Kilo** `kilo-auto/free`, only if OVH returns no usable text.
+1. **Kilo** `kilo-auto/free`.
    - The browser calls `POST /api/chat` with `provider: "kilo"`.
    - The server calls `https://ai-gateway.kilo.ai/api/v1/chat/completions` with `Authorization: Bearer anonymous`.
    - Kilo does not allow a browser call (no CORS header), so the proxy is required.
    - About 200 requests per hour per server IP. Do not put passwords or private personal data in answers. Kilo may log prompts.
-3. **Gemini `gemini-3.8-flash`**, only if both OVH and Kilo return no text.
+2. **OVHcloud** anonymous chat, model `Qwen3.6-27B`, only if Kilo returns no usable text.
+   - `POST https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions`
+   - No API key. The browser calls it directly (`Access-Control-Allow-Origin: *`).
+   - About 2 requests per minute per IP per model.
+   - The request asks for at least 4096 output tokens. Below that, this model spends the budget on a `reasoning` field and leaves `content` empty, which the app treats as no answer.
+3. **Gemini `gemini-3.8-flash`**, only if both Kilo and OVH return no text.
    - If `pg_gemini_key` is set, the browser calls `generativelanguage.googleapis.com` directly.
    - Otherwise `/api/chat` with `provider: "gemini"` uses `GEMINI_API_KEY`.
    - Busy responses (503, 429, 500) retry up to four times on that same model. A 404 does not switch to Gemini 2.5.
 
-For a descriptive grade, if OVH replies with text that is not a grade JSON array, the app asks Kilo once for JSON. Gemini is not called merely because the JSON parse failed. Gemini runs only when there is still no text.
+For a descriptive grade, if Kilo replies with text that is not a grade JSON array, the app asks OVH once for JSON. Gemini is not called merely because the JSON parse failed. Gemini runs only when there is still no text.
 
 `/api/chat` also accepts `provider: "ollama"`, `"gemini"`, and `"auto"` for older clients. Auto tries Gemini, then Ollama, then returns `useFallback: true`. The mentor does not use auto mode. Prompts longer than 4000 characters are rejected with `useFallback`.
 
@@ -205,7 +205,7 @@ Settings that control this are stored only in the browser:
 
 | Key | Meaning |
 | --- | --- |
-| `pg_llm_provider` | `free` (OVH, then Kilo, then Gemini) or `extractive` (offline) |
+| `pg_llm_provider` | `free` (Kilo, then OVH, then Gemini) or `extractive` (offline) |
 | `pg_gemini_key` | Browser Gemini key, used only as the last fallback |
 | `pg_gemini_model` | Stored model id. The fallback call forces `gemini-3.8-flash` |
 | `pg_ollama_url`, `pg_ollama_model`, `pg_ollama_token` | Used by `/api/chat` Ollama paths, not by the current mentor chain |
@@ -266,4 +266,4 @@ The three scripted faculty-review cases in the older README (teams 03, 07, and 1
 
 `test-mentor.js` is a Node script of mentor assertions. It is not a browser test. There is no automated suite that drives the descriptive grade through OVH or Kilo.
 
-When you change mentor behavior, reload http://127.0.0.1:4174 and submit one descriptive answer. Confirm the first network call is OVH `chat/completions`, and that a Gemini `generateContent` call appears only after both OVH and Kilo returned nothing.
+When you change mentor behavior, reload http://127.0.0.1:4174 and submit one descriptive answer. Confirm the first network call is `/api/chat` with Kilo, and that a Gemini `generateContent` call appears only after both Kilo and OVH returned nothing.

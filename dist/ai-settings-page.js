@@ -29,7 +29,7 @@ function aiSettingsPage(){
         Close
       </button>`;
   return heading('AI & mentor settings', 'Mentor models. Saved in this browser only — not uploaded to ProjectGate servers.', closeBtn) +
-    `<div class="notice">Live answers and grades use <strong>OVHcloud Qwen3.6-27B</strong>, then <strong>Kilo kilo-auto/free</strong>. <strong>Gemini 3.8 Flash</strong> is the fallback when both of those fail. Offline extractive RAG stays available.</div>
+    `<div class="notice">Live answers and grades use <strong>Kilo kilo-auto/free</strong>, then <strong>OVHcloud Qwen3.6-27B</strong>. <strong>Gemini 3.8 Flash</strong> is the fallback when both of those fail. Offline extractive RAG stays available.</div>
     <div class="grid">
       <section class="card">
         <div class="card-head">
@@ -42,10 +42,10 @@ function aiSettingsPage(){
 
         <label for="pg-set-provider">Generation engine</label>
         <select id="pg-set-provider">
-          <option value="free" ${llm.provider !== 'extractive' ? 'selected' : ''}>OVHcloud, then Kilo, then Gemini</option>
+          <option value="free" ${llm.provider !== 'extractive' ? 'selected' : ''}>Kilo, then OVHcloud, then Gemini</option>
           <option value="extractive" ${llm.provider === 'extractive' ? 'selected' : ''}>Offline extractive RAG (no API key)</option>
         </select>
-        <p class="mini">OVH allows 2 anonymous requests per minute from this browser. If that reply is missing, Kilo <code>kilo-auto/free</code> runs through this app. Gemini 3.8 Flash runs only after both fail. Do not put passwords or private data in answers sent to Kilo.</p>
+        <p class="mini">Kilo <code>kilo-auto/free</code> runs first through this app. If that reply is missing, OVHcloud answers from this browser (2 anonymous requests per minute). Gemini 3.8 Flash runs only after both fail. Do not put passwords or private data in answers sent to Kilo.</p>
 
         <h3 style="margin:18px 0 10px;font-size:14px;color:var(--ink)">Google Gemini (fallback)</h3>
         <label for="pg-set-gemini-key">Gemini API key</label>
