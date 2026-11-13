@@ -1304,3 +1304,9 @@ html body #sec-usecase .test-suite-table .tag {
   justify-content: center !important;
   text-align: center !important;
 }
+
+html body .btn.auth-primary {
+  background: #dce6fb !important;
+  color: #0b2a5b !important;
+  border-color: #a5caff !important;
+}
