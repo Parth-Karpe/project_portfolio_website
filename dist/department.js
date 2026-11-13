@@ -2669,15 +2669,19 @@ function mentorDashboard(){
   const dimensions = [
     'Systems Thinking',
     'Foundational CS Knowledge',
-    'Engineering Standards'
+    'Faculty Expertise',
+    'Engineering Standards',
+    'Theme-Based Expertise'
   ];
   const panel = window.mentorDashboardPanel || 'persona';
   const team = typeof activeTeam === 'function' ? activeTeam() : null;
   const mentorName = window.mentorActiveDimension || '';
-  const cards = dimensions.map(name => `<article class="mentor-dimension-card"><h3>${esc(name)}</h3><div class="mentor-dimension-actions"><button type="button" class="mentor-quiz-btn" onclick="window.queueMentorMcq('${esc(name)}')">MCQ Quiz</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorDescriptive('${esc(name)}')">Descriptive Quiz</button></div></article>`).join('');
+  // Hide unfinished personas from the dashboard while keeping their quiz code available.
+  const hiddenDimensions = new Set(['Faculty Expertise', 'Engineering Standards']);
+  const cards = dimensions.filter(name => !hiddenDimensions.has(name)).map(name => `<article class="mentor-dimension-card"><h3>${esc(name)}</h3><div class="mentor-dimension-actions"><button type="button" class="mentor-quiz-btn" onclick="window.queueMentorMcq('${esc(name)}')">MCQ Quiz</button><button type="button" class="mentor-quiz-btn" onclick="window.startMentorDescriptive('${esc(name)}')">Descriptive Quiz</button></div></article>`).join('');
   const stageLabels = [['0','Stage 0 - Problem Definition and Scope'],['1','Stage 1 - Requirement Analysis'],['system-design','Stage 2 - System Design'],['2','Stage 3 - Implementation and Integration'],['3','Stage 4 - Testing and Validations']];
   const stageNavigation = stageLabels.map(([id,label]) => `<button type="button" class="mentor-stage-choice${id === String(window.mentorDashboardStage || '0') ? ' active' : ''}" style="font-size:16px!important;font-weight:700!important" aria-pressed="${id === String(window.mentorDashboardStage || '0')}" onclick="selectMentorStage('${id}')">${esc(label)}</button>`).join('');
-  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona</h2><span class="mentor-workspace-label">AI Mentor</span></div><div class="mentor-dimension-grid">${cards}</div></section>`;
+  const persona = `<section class="mentor-panel"><div class="mentor-panel-head"><h2>Mentor Persona – Three Dimensions</h2><span class="mentor-workspace-label">AI Mentor</span></div><div class="mentor-dimension-grid">${cards}</div></section>`;
   const workTitle = mentorName || 'Quiz';
   const work = `<section class="mentor-stage" id="mentor-stage"><div class="mentor-panel-head"><h2>${esc(workTitle)}</h2><span class="mentor-workspace-label">AI Mentor</span></div><div id="mentor-work-messages" class="mentor-work-messages"></div></section>`;
   const reviseStageLabel = window.mentorReviseStageLabel || (['0','1','system-design','2','3'].includes(String(window.mentorDashboardStage || '0')) ? ({ '0': 'Stage 0', '1': 'Stage 1', 'system-design': 'Stage 2', '2': 'Stage 3', '3': 'Stage 4' }[String(window.mentorDashboardStage || '0')] || 'Stage 0') : 'Stage 0');

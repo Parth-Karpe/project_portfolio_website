@@ -3888,7 +3888,7 @@ html body .mentor-dashboard .mentor-quiz-btn.is-soon {
 .mentor-dimension-card {
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 14px;
+  padding: 20px;
   background: var(--bg, var(--surface));
 }
 .mentor-dimension-card h3 {
