@@ -235,18 +235,35 @@ html body .faculty-next-stage {
   justify-content: center !important;
   text-align: center !important;
   white-space: nowrap !important;
-  background: var(--blue, #1d4ed8) !important;
-  color: #ffffff !important;
   border: 0 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
   bottom: 24px !important;
   z-index: 9998 !important;
   cursor: pointer !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease !important;
 }
 
+html body #portfolio-chat-container .portfolio-chat-fab,
+html body .portfolio-chat-fab {
+  background: linear-gradient(135deg, #e11d48 0%, #f43f5e 48%, #ec4899 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(225, 29, 72, 0.45) !important;
+}
+
+html body .faculty-top,
+html body .faculty-next-stage {
+  background: var(--blue, #1d4ed8) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22) !important;
+}
+
 html body #portfolio-chat-container .portfolio-chat-fab:hover,
-html body .portfolio-chat-fab:hover,
+html body .portfolio-chat-fab:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 22px rgba(225, 29, 72, 0.55) !important;
+  background: linear-gradient(135deg, #be123c 0%, #e11d48 50%, #db2777 100%) !important;
+  color: #ffffff !important;
+}
+
 html body .faculty-top:hover,
 html body .faculty-next-stage:hover {
   transform: translateY(-2px) !important;

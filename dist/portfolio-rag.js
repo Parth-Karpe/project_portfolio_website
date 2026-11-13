@@ -3780,9 +3780,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
             <div class="quiz-header-badge">VIVA PRACTICE QUIZ</div>
 
-            <div class="quiz-title">Gate 0 &amp; Gate 1 Defense Readiness</div>
-
-            <div class="quiz-meta">Team ${esc(kb.teamId)} • ${quiz.questions.length} Questions${mentorFooterLabel(quiz.generatedBy) ? ` • ${esc(mentorFooterLabel(quiz.generatedBy))}` : ''}</div>
+            ${quiz.personaStage && quiz.dimension ? `<div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div>` : ''}
 
           </div>
 
@@ -7192,7 +7190,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       if(quiz.completed){
         archiveActiveDescriptiveQuestion(quiz);
         const history = renderDescriptiveQuestionHistory(quiz);
-        return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Target reached: ${passed} / ${target} solid answers using your faculty question bank.</div></div><p class="mentor-panel-note"><strong>Practice complete.</strong> You earned at least ${target} passing answers for ${esc(mentorStageLabel(quiz.stage))}.</p>${history}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.startMentorDescriptive('${esc(quiz.dimension).replace(/'/g, "\\'")}', true)">Practice again</button></div></div>`;
+        return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)} · ${esc(mentorStageLabel(quiz.stage))}</div></div><p class="mentor-panel-note"><strong>Practice complete.</strong> You earned at least ${target} passing answers for ${esc(mentorStageLabel(quiz.stage))}.</p>${history}<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.startMentorDescriptive('${esc(quiz.dimension).replace(/'/g, "\\'")}', true)">Practice again</button></div></div>`;
       }
       ensureSequentialActiveQuestion(quiz);
       const question = quiz.activeQuestion || (quiz.questions && quiz.questions[0]);
@@ -7229,7 +7227,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       : '';
     const body = questions || note || '<p>This portfolio has no documented lines for a descriptive quiz yet.</p>';
     const footer = (quiz.questions || []).length ? '<div class="quiz-footer"><button type="button" class="btn quiz-btn-sm" onclick="window.gradeDescriptiveQuiz()">Check answers</button></div>' : '';
-    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div><div class="quiz-meta">Each answer earns rubric marks. Unsatisfactory answers get a numbered revision prompt.</div>${totalMarks}</div>${body}${footer}</div>`;
+    return `<div class="mentor-descriptive"><div class="quiz-header"><div class="quiz-header-badge">DESCRIPTIVE QUIZ</div><div class="quiz-title">${esc(quiz.dimension)}</div></div>${totalMarks}${body}${footer}</div>`;
 
   }
 
