@@ -5345,9 +5345,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   const MENTOR_LENSES = [
     { name: 'Systems Thinking', help: 'Explain how the need, the boundary, and the flow fit together.', match: ['stage0-problem', 'stage0-objectives', 'table-0-4', 'table-0-5', 'table-0-2', 'diag-asis', 'table-0-1'] },
     { name: 'Foundational CS Knowledge', help: 'Connect a course idea to this project.', match: ['table-0-1', 'table-0-3', 'engine-'] },
-    { name: 'Faculty Expertise', help: 'Prepare the defense a guide would ask, using only these sections.', match: ['stage0-objectives', 'fr-', 'nfr-', 'table-testsuite'] },
-    { name: 'Engineering Standards', help: 'Check the quality targets and how the project says they are verified.', match: ['nfr-', 'table-testsuite'] },
-    { name: 'Theme-Based Expertise', help: 'Explain why this project belongs to its theme.', match: ['team-meta', 'table-0-3', 'engine-', 'table-0-2', 'diag-asis'] }
+    { name: 'Engineering Standards', help: 'Check the quality targets and how the project says they are verified.', match: ['nfr-', 'table-testsuite'] }
   ];
 
   const STAGE_KEEP = {
@@ -5734,9 +5732,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return {
       'Systems Thinking': 'How does this subject shape the need and the flow?',
       'Foundational CS Knowledge': 'Which course idea does this line use?',
-      'Faculty Expertise': 'How would you defend this documented requirement?',
-      'Engineering Standards': 'How does this project say this quality target is verified?',
-      'Theme-Based Expertise': 'Why does this line show the project belongs to its theme?'
+      'Engineering Standards': 'How does this project say this quality target is verified?'
     }[name] || 'What does this documented line say about the project?';
   }
 
@@ -6165,25 +6161,19 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   const PERSONA_MCQ_STEM = {
     'Systems Thinking': 'Which documented statement shows how the need and the flow fit together',
     'Foundational CS Knowledge': 'Which documented statement should be connected to a foundation course',
-    'Faculty Expertise': 'Which documented statement would you defend to your project guide',
-    'Engineering Standards': 'Which documented statement gives the quality target or its verification',
-    'Theme-Based Expertise': 'Which documented statement shows why this project belongs to its theme'
+    'Engineering Standards': 'Which documented statement gives the quality target or its verification'
   };
 
   const PERSONA_DESCRIPTIVE_STEM = {
     'Systems Thinking': 'Explain how the need, the boundary, and the flow connect',
     'Foundational CS Knowledge': 'Explain which course concept this project uses here, and why it fits',
-    'Faculty Expertise': 'Defend this documented choice to your project guide',
-    'Engineering Standards': 'Explain how this project says this quality target is verified',
-    'Theme-Based Expertise': 'Explain why this section shows that the project belongs to its theme'
+    'Engineering Standards': 'Explain how this project says this quality target is verified'
   };
 
   const PERSONA_RUBRIC = {
     'Systems Thinking': 'Connect the need, the boundary, and the flow using this section.',
     'Foundational CS Knowledge': 'Name the course and the concept this section uses.',
-    'Faculty Expertise': 'Defend the requirement with its documented priority or target.',
-    'Engineering Standards': 'State the quality target and how the portfolio says it is verified.',
-    'Theme-Based Expertise': 'Explain why this section belongs to the project theme.'
+    'Engineering Standards': 'State the quality target and how the portfolio says it is verified.'
   };
 
   function assessmentKey(teamId, persona, stage, kind){
@@ -6257,8 +6247,6 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     'ST0-D3': ['stage0-objectives', 'table-0-3'],
     'ST0-D4': ['table-0-3', 'table-0-5'],
     'ST0-D5': ['stage0-objectives', 'table-0-3'],
-    'FM0-D1': ['stage0-problem'],
-    'FM0-D2': ['stage0-objectives'],
     'ES0-D1': ['stage0-objectives'],
     'ES0-D2': ['table-0-5']
   };
@@ -6399,202 +6387,6 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     return 'general';
   }
 
-  function themeProfiles(){
-    return {
-      storage: {
-        m1: ['Which mechanism is fundamental for finding stored records quickly?', ['A B+ tree or hash index', 'A screen color palette', 'A congestion window', 'A source-code formatter'], 0, 'Indexes such as B+ trees and hash indexes support retrieval.'],
-        m2: ['Which established approach is commonly used to make stored updates durable?', ['Compiling a query into a picture', 'Write-ahead logging before the changed page is treated as final', 'Ignoring a crash and hoping the file is complete', 'Sending each record as a video frame'], 1, 'Write-ahead logging records an update before it is treated as durable.'],
-        m3: ['Which statement describes a real trade-off between two storage approaches?', ['An LSM tree often favors fast writes, while a B+ tree often favors stable point reads', 'Both approaches avoid all disk input and output', 'A hash index always keeps records in alphabetical order', 'Caching and crash recovery are the same mechanism'], 0, 'LSM trees and B+ trees trade write cost against read cost.'],
-        d1: ['Explain two fundamental ideas used in storage and retrieval systems.', ['Explain indexing', 'Explain durability or recovery', 'Say why both matter when data must be stored and found']],
-        d2: ['Explain two established storage mechanisms and a typical use of each.', ['Name indexing and write-ahead logging', 'Give a typical use of each', 'Treat them as established techniques, not as a claim that this project implements both']],
-        d3: ['Compare a B+ tree index with an LSM-tree approach.', ['Describe both approaches', 'Give an advantage and a limitation of each', 'Say which situation suits each one', 'Do not claim that this project implements either one']],
-        s1: ['Which established mechanism is commonly used to satisfy a retrieval need in a storage system?', ['An index, such as a B+ tree or a hash index', 'A font used on the title page', 'A congestion window', 'A slide transition'], 0, 'Retrieval commonly uses an index.'],
-        s2: ['Which statement correctly distinguishes write-ahead logging from updating the data page alone?', ['The log records the update first so a crash can still be recovered', 'The two actions have no difference', 'Logging removes the need to store the record', 'Updating the page always avoids recovery'], 0, 'The log comes first so recovery is still possible after a crash.'],
-        s3: ['Which resource concern is especially important for a storage engine?', ['The input and output cost of reading and writing durable data', 'The color of the status icon', 'The number of slides in a presentation', 'A guarantee that disk access is free'], 0, 'Durable storage is shaped by input and output cost.'],
-        sd1: ['Explain two mechanisms used by storage and retrieval systems.', ['Explain an index', 'Explain a durability mechanism such as write-ahead logging', 'Give a typical use of each']],
-        sd2: ['Compare a B+ tree with an LSM-tree approach for storing and retrieving records.', ['Describe how each organizes data', 'Give an advantage and a limitation', 'Name a situation that suits each one']],
-        sd3: ['Explain an important resource or correctness challenge in storage systems.', ['Name the challenge, such as input-output cost or crash recovery', 'Explain why it appears in this kind of system', 'Describe the effect on retrieval or durability']],
-        link0: 'Organizing records so they can be stored and retrieved reliably',
-        limit0: 'Disk cost, durability, or recovery if the process stops',
-        link1: 'An index or other retrieval mechanism that can support a storage requirement',
-        limit1: 'The cost of durable writes, or the recovery needed after a crash'
-      },
-      analytics: {
-        m1: ['Which mechanism is fundamental for turning raw input into data that can be analysed?', ['Ingestion with validation and cleaning', 'A page-color choice', 'A lock used only for screen layout', 'A title-page font'], 0, 'Analytics starts by ingesting and cleaning data.'],
-        m2: ['Which established pair of approaches is commonly used for data processing?', ['Batch processing and stream processing', 'Page numbering and spell checking', 'Only manual copying of every record', 'Replacing analysis with a cover image'], 0, 'Batch and stream processing are the common established approaches.'],
-        m3: ['Which statement describes a real trade-off between batch and stream processing?', ['Batch processing handles a bounded set, while stream processing handles continuous input with tighter state limits', 'Both approaches require the full future test report first', 'Stream processing always stores every record forever with no bound', 'Batch processing cannot compute an aggregate'], 0, 'Batch and stream processing trade latency and completeness differently.'],
-        d1: ['Explain two fundamental ideas in data processing and analytics.', ['Explain ingestion or validation', 'Explain aggregation or cleaning', 'Say why both matter for analysis']],
-        d2: ['Explain batch processing and stream processing and a typical use of each.', ['Describe batch processing', 'Describe stream processing', 'Give a typical use of each without claiming both are implemented here']],
-        d3: ['Compare batch processing with stream processing.', ['Describe both approaches', 'Give an advantage and a limitation of each', 'Say which situation suits each one', 'Present them as alternatives']],
-        s1: ['Which mechanism is commonly used to prepare raw input for analysis?', ['Validation and cleaning during ingestion', 'A decorative border', 'A surname sort with no data check', 'Skipping every malformed record silently with no record of it'], 0, 'Ingestion checks and cleans data before analysis.'],
-        s2: ['Which statement correctly distinguishes batch processing from stream processing?', ['Batch processing handles a bounded collection, while stream processing handles continuous input', 'They are different names for the same unbounded step', 'Stream processing must wait for a project to end', 'Batch processing cannot be repeated'], 0, 'Batch works on a bounded collection. Stream processing accepts continuous input.'],
-        s3: ['Which concern is especially important for a data-processing pipeline?', ['Keeping throughput acceptable without holding the whole dataset in memory', 'The order of acknowledgements in a preface', 'A promise that cleaning has no cost', 'The font of an axis label'], 0, 'Pipelines are limited by memory and throughput.'],
-        sd1: ['Explain two mechanisms used in data processing and analytics systems.', ['Explain ingestion or validation', 'Explain aggregation or deduplication', 'Give a typical use of each']],
-        sd2: ['Compare batch processing with stream processing.', ['Describe the operation of each', 'Give an advantage and a limitation', 'Name a suitable use of each']],
-        sd3: ['Explain a performance or quality challenge common in analytics pipelines.', ['Name the challenge, such as data quality or memory use', 'Explain why a pipeline encounters it', 'Describe the effect on the result']],
-        link0: 'Ingesting, cleaning, or aggregating the data this project needs to analyse',
-        limit0: 'Memory use, throughput, or the reliability of the processing pipeline',
-        link1: 'A cleaning, deduplication, or aggregation step that can support an analysis requirement',
-        limit1: 'The memory or throughput limit of processing the required data'
-      },
-      tools: {
-        m1: ['Which mechanism is fundamental for a tool that must understand source text?', ['Lexical analysis followed by parsing', 'A storage font', 'A congestion window', 'A cover-page layout'], 0, 'Language tools start by tokenizing and parsing source text.'],
-        m2: ['Which established approach is commonly used to run or prepare a program?', ['A compiler or an interpreter', 'Renaming the file only', 'Printing the source with no analysis', 'Replacing the program with a screenshot'], 0, 'Compilers and interpreters are the established ways to process a program.'],
-        m3: ['Which statement describes a real trade-off between a compiler and an interpreter?', ['A compiler prepares an executable form, while an interpreter runs the program more directly', 'Both reject every valid program', 'An interpreter always produces a faster final binary', 'A compiler never reports an error'], 0, 'Compilation and interpretation trade preparation cost against how the program is run.'],
-        d1: ['Explain two fundamental ideas in system software and development tools.', ['Explain lexical or syntax analysis', 'Explain process execution or error reporting', 'Say why a tool needs both']],
-        d2: ['Explain two established tool mechanisms and a typical use of each.', ['Name parsing and build or execution', 'Give a typical use of each', 'Do not claim this project implements every tool mechanism']],
-        d3: ['Compare a compiler with an interpreter.', ['Describe both approaches', 'Give an advantage and a limitation of each', 'Say which situation suits each one', 'Present them as alternatives']],
-        s1: ['Which mechanism is commonly used to turn source text into a structure a tool can check?', ['Lexical analysis followed by parsing', 'A page border', 'A network nickname', 'A handwritten title'], 0, 'Tools check source by tokenizing it and parsing it.'],
-        s2: ['Which statement correctly distinguishes a compiler from an interpreter?', ['A compiler produces an executable form, while an interpreter runs the program more directly', 'They differ only by file name', 'An interpreter cannot execute any instruction', 'A compiler skips error reporting'], 0, 'A compiler prepares a runnable form. An interpreter executes more directly.'],
-        s3: ['Which concern is especially important for a development tool?', ['Reporting errors clearly and managing the resources the tool uses', 'The color of a toolbar icon', 'A promise that analysis uses no time', 'The number of authors'], 0, 'A tool must report errors and stay within its resource limits.'],
-        sd1: ['Explain two mechanisms used in system software or development tools.', ['Explain lexical or syntax analysis', 'Explain execution, a build step, or error reporting', 'Give a typical use of each']],
-        sd2: ['Compare a compiler with an interpreter.', ['Describe how each processes a program', 'Give an advantage and a limitation', 'Name a suitable use of each']],
-        sd3: ['Explain a correctness or resource challenge common in development tools.', ['Name the challenge, such as error reporting or resource use', 'Explain why a tool encounters it', 'Describe the effect on the person using the tool']],
-        link0: 'Analysing, building, or executing the software artifact this project is concerned with',
-        limit0: 'Error reporting, resource limits, or the complexity of the toolchain',
-        link1: 'Parsing, execution, or another tool mechanism that can support a tool requirement',
-        limit1: 'The cost of analysis, or the need to report errors without hiding them'
-      },
-      network: {
-        m1: ['Which mechanism is fundamental for two programs to exchange data across a network?', ['A protocol carried between the endpoints', 'A local font setting', 'A storage page color', 'A spell checker'], 0, 'Networked systems exchange data through a protocol.'],
-        m2: ['Which established approach is commonly used for networked communication?', ['Client-server exchange over sockets', 'Rewriting the source file only', 'Sorting a local array with no communication', 'Replacing packets with a cover image'], 0, 'Sockets and a client-server exchange are a common established approach.'],
-        m3: ['Which statement describes a real trade-off in networked communication?', ['Reliable delivery recovers lost data, but it adds delay', 'Reliability removes every delay', 'Best-effort delivery always resends lost packets', 'A protocol and a socket are opposites with no connection'], 0, 'Recovering lost data costs extra delay.'],
-        d1: ['Explain two fundamental ideas in networked systems.', ['Explain a protocol', 'Explain endpoints or packet exchange', 'Say why both are needed for communication']],
-        d2: ['Explain two established network mechanisms and a typical use of each.', ['Name a protocol exchange and reliable or best-effort delivery', 'Give a typical use of each', 'Do not claim this project implements every network mechanism']],
-        d3: ['Compare reliable delivery with best-effort delivery.', ['Describe both approaches', 'Give an advantage and a limitation of each', 'Say which situation suits each one', 'Present them as alternatives']],
-        s1: ['Which mechanism is commonly used to let two programs exchange data?', ['A protocol carried over a socket between the endpoints', 'A margin width', 'A local variable rename', 'A printed heading'], 0, 'Endpoints exchange data through a protocol over a socket.'],
-        s2: ['Which statement correctly distinguishes reliable delivery from best-effort delivery?', ['Reliable delivery recovers lost data, while best-effort delivery may drop it', 'They always drop the same packets', 'Best-effort delivery always waits for an acknowledgement', 'Reliable delivery forbids retransmission'], 0, 'Reliable delivery recovers loss. Best-effort delivery may not.'],
-        s3: ['Which concern is especially important for a networked system?', ['Latency, throughput, and loss between the endpoints', 'The binding of a paper report', 'A promise that distance adds no delay', 'The alphabetical order of host names only'], 0, 'Network behavior is shaped by delay, throughput, and loss.'],
-        sd1: ['Explain two mechanisms used in networked systems.', ['Explain a protocol or socket exchange', 'Explain reliability, monitoring, or loss recovery', 'Give a typical use of each']],
-        sd2: ['Compare reliable delivery with best-effort delivery.', ['Describe how each treats lost data', 'Give an advantage and a limitation', 'Name a suitable use of each']],
-        sd3: ['Explain a performance or fault challenge common in networked systems.', ['Name the challenge, such as latency or packet loss', 'Explain why communication encounters it', 'Describe the effect on the endpoints']],
-        link0: 'Communication between the endpoints this project needs to connect',
-        limit0: 'Latency, loss, or the failure of a remote peer',
-        link1: 'A protocol or socket exchange that can support a communication requirement',
-        limit1: 'The delay or loss that can affect that communication requirement'
-      },
-      algorithm: {
-        m1: ['Which mechanism is fundamental for choosing among many candidate solutions?', ['A search or optimization strategy', 'A page border', 'A socket timeout only', 'A cover image'], 0, 'Algorithmic systems explore candidates with a search or optimization strategy.'],
-        m2: ['Which established approaches are commonly used for optimization?', ['Exact search and heuristic search', 'Only renaming variables', 'Printing every candidate with no comparison', 'Replacing the objective with a heading'], 0, 'Exact methods and heuristics are the common established approaches.'],
-        m3: ['Which statement describes a real trade-off between an exact method and a heuristic?', ['An exact method seeks the best answer, while a heuristic may trade optimality for speed', 'A heuristic always proves optimality', 'An exact method is always faster on every input', 'Both methods ignore the objective'], 0, 'Exactness and speed are the trade-off.'],
-        d1: ['Explain two fundamental ideas in algorithmic and optimization systems.', ['Explain a search or optimization strategy', 'Explain complexity or optimality', 'Say why both matter when choosing a solution']],
-        d2: ['Explain two established algorithmic approaches and a typical use of each.', ['Name an exact method and a heuristic, or greedy choice and dynamic programming', 'Give a typical use of each', 'Do not claim this project implements every strategy']],
-        d3: ['Compare an exact optimization method with a heuristic.', ['Describe both approaches', 'Give an advantage and a limitation of each', 'Say which situation suits each one', 'Present them as alternatives']],
-        s1: ['Which mechanism is commonly used to explore candidate solutions?', ['A graph search or another systematic exploration of candidates', 'A header font', 'A network nickname', 'A blank page'], 0, 'Search explores the candidates systematically.'],
-        s2: ['Which statement correctly distinguishes an exact method from a heuristic?', ['An exact method seeks the best answer, while a heuristic may trade optimality for speed', 'They always return the same proof', 'A heuristic always proves the result is optimal', 'An exact method never inspects a candidate'], 0, 'Exact methods aim for the best answer. Heuristics may give that up for speed.'],
-        s3: ['Which concern is especially important for an optimization system?', ['The time cost of the search and whether the answer is optimal', 'The margin of a poster', 'A promise that every search is instant', 'The number of footnotes'], 0, 'Optimization is judged by time cost and optimality.'],
-        sd1: ['Explain two mechanisms used in algorithmic or optimization systems.', ['Explain a search strategy', 'Explain greedy choice, dynamic programming, or a heuristic', 'Give a typical use of each']],
-        sd2: ['Compare an exact method with a heuristic.', ['Describe how each explores candidates', 'Give an advantage and a limitation', 'Name a suitable use of each']],
-        sd3: ['Explain a complexity or optimality challenge common in optimization.', ['Name the challenge', 'Explain why a large search encounters it', 'Describe the effect on the answer or the running time']],
-        link0: 'The search or optimization problem this project is trying to solve',
-        limit0: 'The complexity of the search, or the gap between a fast answer and an optimal one',
-        link1: 'A search, greedy choice, or other strategy that can support an algorithmic requirement',
-        limit1: 'The running-time or optimality trade-off of satisfying that requirement'
-      },
-      concurrent: {
-        m1: ['Which mechanism is fundamental when several activities update shared data?', ['A lock or another synchronization mechanism', 'A page color', 'A cover image', 'A spelling dictionary'], 0, 'Shared updates need synchronization such as a lock.'],
-        m2: ['Which established approaches are commonly used for shared updates?', ['Lock-based exclusion and transactions', 'Only changing a document title', 'Removing every shared variable by printing it', 'Replacing consistency with a screenshot'], 0, 'Locks and transactions are established ways to control shared updates.'],
-        m3: ['Which statement describes a real trade-off between locks and transactions?', ['Locks serialize access but can deadlock, while transactions can group updates and roll them back', 'Both remove every delay', 'A transaction cannot roll back', 'A lock guarantees that deadlock is impossible'], 0, 'Locks and transactions trade blocking against rollback cost.'],
-        d1: ['Explain two fundamental ideas in concurrent and transactional systems.', ['Explain synchronization or shared updates', 'Explain atomicity, isolation, or recovery', 'Say why both matter when activities overlap']],
-        d2: ['Explain locks and transactions and a typical use of each.', ['Describe a lock', 'Describe a transaction', 'Give a typical use of each without claiming both are implemented here']],
-        d3: ['Compare lock-based exclusion with a transactional approach.', ['Describe both approaches', 'Give an advantage and a limitation of each', 'Say which situation suits each one', 'Present them as alternatives']],
-        s1: ['Which mechanism is commonly used to keep shared updates from colliding?', ['A lock or another synchronization mechanism around the shared update', 'A wider page margin', 'A title abbreviation', 'A background picture'], 0, 'Synchronization keeps concurrent updates from colliding.'],
-        s2: ['Which statement correctly distinguishes a lock from a transaction?', ['A lock serializes access to shared data, while a transaction can group updates and roll them back', 'They differ only by spelling', 'A transaction cannot include more than one update', 'A lock always rolls every update back'], 0, 'A lock controls access. A transaction can group updates and undo them.'],
-        s3: ['Which concern is especially important for a concurrent system?', ['Races, deadlocks, and consistency when updates overlap', 'The order of preface sentences', 'A promise that shared data cannot conflict', 'The color of a thread diagram'], 0, 'Overlapping updates raise races, deadlocks, and consistency questions.'],
-        sd1: ['Explain two mechanisms used in concurrent or transactional systems.', ['Explain a lock or another synchronization mechanism', 'Explain a transaction, isolation, or recovery', 'Give a typical use of each']],
-        sd2: ['Compare locks with transactions.', ['Describe how each controls overlapping updates', 'Give an advantage and a limitation', 'Name a suitable use of each']],
-        sd3: ['Explain a consistency or contention challenge common in concurrent systems.', ['Name the challenge, such as a race, deadlock, or contention', 'Explain why overlapping work encounters it', 'Describe the effect on the shared result']],
-        link0: 'Shared data or overlapping work in this project',
-        limit0: 'Races, deadlocks, or consistency if updates overlap',
-        link1: 'Synchronization or a transaction boundary that can support a concurrency requirement',
-        limit1: 'The contention or rollback cost of satisfying that requirement'
-      }
-    };
-  }
-
-  function themeMcq(id, focus, layer, pick){
-    const byTheme = {};
-    const profiles = themeProfiles();
-    Object.keys(profiles).forEach(key => {
-      const spec = pick(profiles[key]);
-      byTheme[key] = { prompt: spec[0], options: spec[1], correct: spec[2], explanation: spec[3] };
-    });
-    byTheme.general = byTheme.storage;
-    return { id, focus, layer, byTheme };
-  }
-
-  function themeLinkMcq(id, focus, prompt, field, explanation){
-    const byTheme = {};
-    const profiles = themeProfiles();
-    Object.keys(profiles).forEach(key => {
-      byTheme[key] = {
-        prompt,
-        options: [profiles[key][field], 'The order of names on the cover page', 'A challenge from an unrelated theme that this project does not take on', 'A finished test report from a later stage'],
-        correct: 0,
-        explanation
-      };
-    });
-    byTheme.general = byTheme.storage;
-    return { id, focus, layer: 'project', byTheme };
-  }
-
-  function themeDesc(id, focus, layer, pick){
-    const byTheme = {};
-    const profiles = themeProfiles();
-    Object.keys(profiles).forEach(key => {
-      const spec = pick(profiles[key]);
-      byTheme[key] = { prompt: spec[0], points: spec[1] };
-    });
-    byTheme.general = byTheme.storage;
-    return { id, focus, layer, byTheme };
-  }
-
-  function themeLinkDesc(id, focus, prompt, points){
-    const byTheme = {};
-    const profiles = themeProfiles();
-    Object.keys(profiles).forEach(key => { byTheme[key] = { prompt, points }; });
-    byTheme.general = byTheme.storage;
-    return { id, focus, layer: 'project', byTheme };
-  }
-
-  function themeStage0Persona(){
-    return {
-      mcq: [
-        themeMcq('TH0-M1', 'Theme fundamentals', 'theme', profile => profile.m1),
-        themeMcq('TH0-M2', 'Established approaches', 'theme', profile => profile.m2),
-        themeMcq('TH0-M3', 'Technical trade-offs', 'theme', profile => profile.m3),
-        themeLinkMcq('TH0-M4', 'Project connection', "Which theme-specific technical challenge is most directly related to the selected project's problem or objectives?", 'link0', 'The related challenge is the one this project and its theme are concerned with.'),
-        themeLinkMcq('TH0-M5', 'Project feasibility', 'Which theme-specific constraint or technical limitation is most important when considering the feasibility of the proposed project?', 'limit0', 'The important limitation is the one that can affect whether this project is feasible.')
-      ],
-      descriptive: [
-        themeDesc('TH0-D1', 'Theme fundamentals', 'theme', profile => profile.d1),
-        themeDesc('TH0-D2', 'Established mechanisms', 'theme', profile => profile.d2),
-        themeDesc('TH0-D3', 'Comparison', 'theme', profile => profile.d3),
-        themeLinkDesc('TH0-D4', 'Project connection', "Explain how an important technical challenge within the theme relates to the selected project's problem and objectives.", ['Name the theme challenge', 'Relate it to this project problem or objective', 'Keep established theme knowledge separate from what this project claims to implement']),
-        themeLinkDesc('TH0-D5', 'Scope and feasibility', 'Explain how theme-specific technical constraints or limitations influence the scope and feasibility of the selected project.', ['Name a theme constraint', 'Explain its effect on scope or feasibility', 'Tie the explanation to this project'])
-      ]
-    };
-  }
-
-  function themeStage1Persona(){
-    return {
-      mcq: [
-        themeMcq('TH1-M1', 'Domain mechanisms', 'theme', profile => profile.s1),
-        themeMcq('TH1-M2', 'Alternative approaches', 'theme', profile => profile.s2),
-        themeMcq('TH1-M3', 'Domain quality', 'theme', profile => profile.s3),
-        themeLinkMcq('TH1-M4', 'Project requirements', 'Which broader theme-specific mechanism or concept is most relevant to a selected functional requirement of this project?', 'link1', 'Use a theme mechanism that can support a requirement of this project, without claiming an undocumented implementation.'),
-        themeLinkMcq('TH1-M5', 'Technical constraints', 'Which theme-specific technical trade-off or limitation should be considered when satisfying a selected project requirement?', 'limit1', 'The trade-off should be one that can affect a requirement of this project.')
-      ],
-      descriptive: [
-        themeDesc('TH1-D1', 'Domain knowledge', 'theme', profile => profile.sd1),
-        themeDesc('TH1-D2', 'Comparison of approaches', 'theme', profile => profile.sd2),
-        themeDesc('TH1-D3', 'Domain quality', 'theme', profile => profile.sd3),
-        themeLinkDesc('TH1-D4', 'Project requirements', 'Select an important functional requirement from this project. Explain how relevant theme knowledge could help satisfy that requirement.', ['Name a requirement from this project', 'Name the relevant theme knowledge', 'Explain how it could help', 'Do not claim the project already implements that mechanism unless its requirements say so']),
-        themeLinkDesc('TH1-D5', 'Requirements and trade-offs', 'Explain how a broader theme-specific technical trade-off influences a selected functional or non-functional requirement of this project.', ['Name the trade-off', 'Name the project requirement', 'Explain the influence on that requirement'])
-      ]
-    };
-  }
-
   const STAGE0_BANK = {
     'Systems Thinking': {
       mcq: [
@@ -6628,22 +6420,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'CS0-D5', focus: 'Two courses together', prompt: 'Explain how concepts from two different foundational CS courses work together in the proposed workflow.', points: ['Name the two courses or concepts', 'Show where each appears in the workflow', 'Explain how they depend on each other'] }
       ]
     },
-    'Faculty Expertise': {
-      mcq: [
-        { id: 'FM0-M1', focus: 'Problem justification', prompt: 'Which explanation best justifies selecting the identified problem for this mini project?', options: ['The problem is real, limited enough for the team, and not already solved in the same way', 'The problem was chosen only because the title sounds technical', 'The problem needs a finished product before the idea is clear', 'The problem is worth doing because it has no constraints'], correct: 0, explanation: 'A mini-project problem should be real, feasible, and not already solved in the same way.' },
-        { id: 'FM0-M2', focus: 'Critical challenge', prompt: "Which technical challenge is most critical to achieving the project's objectives?", options: ['A task that is outside the stated scope', 'The challenge that blocks the main objectives if it is not solved', 'A wording change in the team name', 'Work that belongs only to a later stage'], correct: 1, explanation: 'The critical challenge is the one that blocks the main objectives.' },
-        { id: 'FM0-M3', focus: 'Priority feature', prompt: "Which proposed feature or activity should receive priority to demonstrate the project's core functionality?", options: ['An excluded extra that does not show the core idea', 'Cosmetic text that does not affect behavior', 'The smallest set of work that shows the core function', 'Every planned feature at the same time'], correct: 2, explanation: 'Priority goes to the work that demonstrates the core function.' },
-        { id: 'FM0-M4', focus: 'Scope justification', prompt: "Which justification best supports the project's stated scope and exclusions?", options: ['Exclusions are ignored once implementation starts', 'Scope should grow whenever a new idea appears', 'In-scope and out-of-scope items can be swapped freely', 'The boundary keeps the work feasible for the team and the time available'], correct: 3, explanation: 'Scope and exclusions keep the work feasible for the team and the time.' },
-        { id: 'FM0-M5', focus: 'Feasibility risk', prompt: 'Which constraint poses the most significant feasibility risk, and what is the most appropriate response?', options: ['A limit that can stop the project, handled by narrowing the work to what is essential', 'A limit that can be ignored because the title stays the same', 'A wish to add every excluded feature', 'A test result required before the problem is defined'], correct: 0, explanation: 'The serious risk is a limit that can stop the project, and the response is to keep the essential work.' }
-      ],
-      descriptive: [
-        { id: 'FM0-D1', focus: 'Why the problem matters', prompt: 'Why is the identified problem worth solving? Explain its practical significance and the limitations of existing approaches.', points: ['Explain the practical significance', 'Describe a limitation of existing approaches', 'Say why this project is still worth doing'] },
-        { id: 'FM0-D2', focus: 'Challenging objectives', prompt: 'Which two project objectives are likely to be technically challenging? Justify your selection.', points: ['Name two objectives', 'Explain why the first is challenging', 'Explain why the second is challenging'] },
-        { id: 'FM0-D3', focus: 'Approach justification', prompt: 'Why is the proposed technical approach appropriate for the identified problem? Explain its advantages and limitations.', points: ['State the approach', 'Give an advantage', 'Give a limitation', 'Explain why it still fits the problem'] },
-        { id: 'FM0-D4', focus: 'Scope decisions', prompt: "Justify the In Scope and Out of Scope decisions considering the project's objectives, team size and available time.", points: ['Connect an in-scope item to an objective', 'Explain one exclusion', 'Relate the boundary to team size or time'] },
-        { id: 'FM0-D5', focus: 'Priority under constraint', prompt: 'How would you prioritize the planned work if the team encountered a major technical or resource constraint?', points: ['Name the kind of constraint', 'State what would be kept', 'State what would be deferred and why'] }
-      ]
-    },
+
     'Engineering Standards': {
       mcq: [
         { id: 'ES0-M1', focus: 'Clear objective', prompt: 'Which statement best represents a clear and technically meaningful project objective?', options: ['A vague hope with no technical outcome', 'An objective that says what will be achieved and how it can be recognized', 'A restatement of the team members names', 'A feature the scope says will not be built'], correct: 1, explanation: 'A clear objective states the outcome and how it can be recognized.' },
@@ -6659,8 +6436,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'ES0-D4', focus: 'Scope boundary', prompt: 'Explain how the In Scope and Out of Scope sections establish clear project boundaries and help prevent scope expansion.', points: ['State what is in scope', 'State what is out of scope', 'Explain how that boundary limits later expansion'] },
         { id: 'ES0-D5', focus: 'Constraints and planning', prompt: 'Identify two important project constraints or risks and explain how they should influence planning and later verification.', points: ['Name two constraints or risks', 'Explain the effect on planning', 'Explain what should later be verified'] }
       ]
-    },
-    'Theme-Based Expertise': themeStage0Persona()
+    },
   };
 
   const STAGE1_BANK = {
@@ -6696,22 +6472,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'CS1-D5', focus: 'Two subjects together', layer: 'project', prompt: 'Explain how concepts from two foundational CS subjects may need to work together to satisfy a selected requirement or use case.', points: ['Name the requirement or use case', 'Name the two subjects or concepts', 'Explain how they must work together'] }
       ]
     },
-    'Faculty Expertise': {
-      mcq: [
-        { id: 'FM1-M1', focus: 'Essential requirement', layer: 'project', prompt: 'Which functional requirement is most essential for achieving a selected project objective?', options: ['A requirement that does not serve that objective', 'The requirement without which that objective cannot be met', 'A change to the team name', 'Work that the scope has excluded'], correct: 1, explanation: 'The essential requirement is the one the objective cannot do without.' },
-        { id: 'FM1-M2', focus: 'Why a requirement is necessary', layer: 'project', prompt: 'Which justification best explains why a selected requirement is necessary?', options: ['It is necessary because it directly supports an approved objective', 'It is necessary only because it sounds technical', 'It is necessary even though the scope excludes it', 'It is necessary because testing is already finished'], correct: 0, explanation: 'A requirement is necessary when it supports an approved objective.' },
-        { id: 'FM1-M3', focus: 'Priority under time pressure', layer: 'project', prompt: 'If implementation time becomes limited, which requirement should receive priority based on the approved objectives and documented priorities?', options: ['An excluded extra with no effect on the objectives', 'The requirement the approved objectives and priorities mark as essential', 'Every requirement at the same rank', 'A cosmetic wording change'], correct: 1, explanation: 'Priority follows the approved objectives and the documented priority.' },
-        { id: 'FM1-M4', focus: 'Greatest technical challenge', layer: 'project', prompt: 'Which requirement presents the greatest technical challenge under the stated project constraints?', options: ['The requirement that is hardest to satisfy within the stated constraints', 'A requirement that is already trivial and unconstrained', 'The project title', 'A diagram caption'], correct: 0, explanation: 'The greatest challenge is the requirement that is hardest under the stated constraints.' },
-        { id: 'FM1-M5', focus: 'Clarification before design', layer: 'project', prompt: 'Which missing, unclear or conflicting requirement would be most important for the team to clarify before beginning design?', options: ['An important assumption or requirement boundary that is still unclear', 'A sentence that is already precise and consistent', 'A feature the scope has clearly excluded', 'A test result from a later stage'], correct: 0, explanation: 'Clarify an important assumption or boundary before design. Do not invent a conflict that is not there.' }
-      ],
-      descriptive: [
-        { id: 'FM1-D1', focus: 'Essential requirements', layer: 'project', prompt: "Identify two important functional requirements and justify why they are essential to achieving the project's objectives.", points: ['Name two requirements', 'Link each one to an objective', 'Explain why the objective needs it'] },
-        { id: 'FM1-D2', focus: 'Challenging requirement', layer: 'project', prompt: 'Select one technically challenging requirement and explain the main difficulties the team may encounter in satisfying it.', points: ['Name the requirement', 'Explain the technical difficulty', 'Relate the difficulty to a stated constraint'] },
-        { id: 'FM1-D3', focus: 'Priority justification', layer: 'project', prompt: 'Justify the priority assigned to a selected functional requirement, considering its importance and dependencies.', points: ['Name the requirement and its priority', 'Explain its importance to an objective', 'Explain a dependency that affects that priority'] },
-        { id: 'FM1-D4', focus: 'Clarification', layer: 'project', prompt: 'Identify one requirement that is unclear, incomplete or potentially difficult to satisfy. Explain how the team should clarify it before design.', points: ['Name the requirement or assumption', 'Say what is unclear or difficult', 'Explain how the team should clarify it', 'If nothing is unclear, explain why the boundary is already adequate'] },
-        { id: 'FM1-D5', focus: 'Priority under constraint', layer: 'project', prompt: "If the team faces a major time or resource constraint, explain how you would prioritize the requirements while preserving the project's core objectives.", points: ['Name the constraint', 'State which requirements stay', 'State which can wait and why the core objectives remain'] }
-      ]
-    },
+
     'Engineering Standards': {
       mcq: [
         { id: 'ES1-M1', focus: 'Clear requirement', layer: 'project', prompt: 'Which functional requirement is written most clearly and unambiguously?', options: ['A sentence with two competing meanings', 'A requirement that states one actor action and one observable result', 'A requirement that only repeats the project title', 'A feature placed out of scope'], correct: 1, explanation: 'A clear requirement states one action and a result that can be checked.' },
@@ -6727,8 +6488,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'ES1-D4', focus: 'Use-case consistency', layer: 'project', prompt: 'Review one use case and explain whether its actor, goal and main flow are consistent with the functional requirements.', points: ['Name the actor, goal, and main flow', 'Match the flow to requirements', 'Say whether they agree, or explain the gap'] },
         { id: 'ES1-D5', focus: 'Acceptance check', layer: 'project', prompt: 'Select one acceptance criterion and explain how it verifies a corresponding requirement. Identify any missing condition needed for objective verification.', points: ['Name the criterion and the requirement', 'Explain what the criterion checks', 'Name a missing condition, or explain why the criterion is already adequate'] }
       ]
-    },
-    'Theme-Based Expertise': themeStage1Persona()
+    },
   };
 
   function getPersonaKnowledge(persona){
@@ -6865,9 +6625,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   function facultyOptionRequest(kb, persona, stage){
     const quiz = facultyMcq(kb, persona, stage).quiz;
     const questions = quiz.questions.map(question => `${question.templateId} | ${question.layer || 'project'} | ${question.prompt}`).join('\n');
-    const themeNote = persona === 'Theme-Based Expertise'
-      ? `Theme: ${kb.theme || ''}. For theme questions, options may use established ideas from that theme. For project questions, use this project's text. Do not claim a theme mechanism is implemented unless the project text says so.`
-      : 'Use this project text for the options. Do not invent a feature, identifier, target, or result that the text does not support.';
+    const themeNote = 'Use this project text for the options. Do not invent a feature, identifier, target, or result that the text does not support.';
     return {
       prompt: 'Generate the four options for each question.',
       systemInstruction: [

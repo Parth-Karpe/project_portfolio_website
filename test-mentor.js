@@ -486,24 +486,24 @@ test('A ranking the portfolio does not state is replaced with the closest-sectio
   assert(!guarded.answer.includes('Transaction management is the toughest'));
 });
 
-test('Systems Thinking and Faculty Expertise ask different questions on Team A-03', () => {
+test('Systems Thinking and Foundational CS ask different questions on Team A-03', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '0';
   const systems = buildDescriptiveQuiz(kb03, 'Systems Thinking');
-  const faculty = buildDescriptiveQuiz(kb03, 'Faculty Expertise');
+  const foundational = buildDescriptiveQuiz(kb03, 'Foundational CS Knowledge');
   assert.strictEqual(systems.questions.length, 1);
-  assert.strictEqual(faculty.questions.length, 1);
-  assert.notStrictEqual(systems.questions[0].source, faculty.questions[0].source);
-  assert.notStrictEqual(systems.questions[0].citation, faculty.questions[0].citation);
+  assert.strictEqual(foundational.questions.length, 1);
+  assert.notStrictEqual(systems.questions[0].source, foundational.questions[0].source);
+  assert.notStrictEqual(systems.questions[0].citation, foundational.questions[0].citation);
 
   const systemsIds = new Set(chunksForLens(kb03, 'Systems Thinking', '0').chunks.map(chunk => chunk.id));
-  const themeIds = new Set(chunksForLens(kb03, 'Theme-Based Expertise', '0').chunks.map(chunk => chunk.id));
+  const csIds = new Set(chunksForLens(kb03, 'Foundational CS Knowledge', '0').chunks.map(chunk => chunk.id));
   const systemsQuiz = generateVivaQuiz(kb03, 5, systemsIds);
-  const themeQuiz = generateVivaQuiz(kb03, 5, themeIds);
+  const csQuiz = generateVivaQuiz(kb03, 5, csIds);
   assert(systemsQuiz.questions.some(question => question.id === 'q1-scope'));
   assert(!systemsQuiz.questions.some(question => question.id === 'q2-engine'));
-  assert(themeQuiz.questions.some(question => question.id === 'q2-engine'));
-  assert(!themeQuiz.questions.some(question => question.id === 'q1-scope'));
+  assert(csQuiz.questions.some(question => question.id === 'q2-engine'));
+  assert(!csQuiz.questions.some(question => question.id === 'q1-scope'));
 });
 
 test('A fact outside the selected mentor is not answered from another section', () => {
@@ -519,7 +519,7 @@ test('A fact outside the selected mentor is not answered from another section', 
 test('Stage 3 says the portfolio does not document that stage yet', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '2';
-  global.window.mentorActiveDimension = 'Faculty Expertise';
+  global.window.mentorActiveDimension = 'Engineering Standards';
   const reply = answerWithinLens('What are the implementation modules?', kb03);
   assert(reply.text.includes('does not document'));
   assert(reply.text.includes('Stage 3'));
@@ -785,9 +785,7 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
   const openings = {
     'Systems Thinking': 'Which sequence correctly represents the major operations in the proposed system?',
     'Foundational CS Knowledge': 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?',
-    'Faculty Expertise': 'Which explanation best justifies selecting the identified problem for this mini project?',
-    'Engineering Standards': 'Which statement best represents a clear and technically meaningful project objective?',
-    'Theme-Based Expertise': 'Which mechanism is fundamental when several activities update shared data?'
+    'Engineering Standards': 'Which statement best represents a clear and technically meaningful project objective?'
   };
   const ids = [];
   Object.keys(openings).forEach(persona => {
@@ -796,9 +794,7 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
     assert.strictEqual(mcq.quiz.questions.length, 5, persona);
     assert.strictEqual(descriptive.questions.length, 5, persona);
     assert.strictEqual(mcq.quiz.questions[0].prompt, openings[persona]);
-    if(persona !== 'Theme-Based Expertise'){
-      assert.strictEqual(buildPersonaMcq(kb08, persona, '0').quiz.questions[0].prompt, openings[persona]);
-    }
+    assert.strictEqual(buildPersonaMcq(kb08, persona, '0').quiz.questions[0].prompt, openings[persona]);
     mcq.quiz.questions.forEach(question => {
       assert.strictEqual(question.options.length, 4);
       assert.strictEqual(question.options.filter(option => option.isCorrect).length, 1);
@@ -829,31 +825,19 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
       ids.push(question.templateId);
     });
   });
-  assert.strictEqual(ids.length, 100);
-  assert.strictEqual(new Set(ids).size, 100);
-  const theme03 = buildPersonaMcq(kb03, 'Theme-Based Expertise', '0').quiz.questions;
-  const theme08 = buildPersonaMcq(kb08, 'Theme-Based Expertise', '0').quiz.questions;
-  const theme12 = buildPersonaMcq(kb12, 'Theme-Based Expertise', '0').quiz.questions;
-  assert.notStrictEqual(theme03[0].prompt, theme08[0].prompt);
-  assert.notStrictEqual(theme08[0].prompt, theme12[0].prompt);
-  assert.strictEqual(theme03[0].layer, 'theme');
-  assert.strictEqual(theme03[1].layer, 'theme');
-  assert.strictEqual(theme03[2].layer, 'theme');
-  assert.strictEqual(theme03[3].layer, 'project');
-  assert.strictEqual(theme03[4].layer, 'project');
-  assert.strictEqual(theme03[3].prompt, theme12[3].prompt);
-  assert.strictEqual(theme12[0].prompt, 'Which mechanism is fundamental for two programs to exchange data across a network?');
-  const stage1Theme = buildPersonaMcq(kb03, 'Theme-Based Expertise', '1').quiz.questions;
-  assert.strictEqual(stage1Theme.filter(question => question.layer === 'theme').length, 3);
-  assert.strictEqual(stage1Theme.filter(question => question.layer === 'project').length, 2);
-  assert.notStrictEqual(stage1Theme[0].prompt, buildPersonaMcq(buildTeamKnowledgeBase('01'), 'Theme-Based Expertise', '1').quiz.questions[0].prompt);
+  assert.strictEqual(ids.length, 60);
+  assert.strictEqual(new Set(ids).size, 60);
   const dashboard = fs.readFileSync(path.join(__dirname, 'dist', 'department.js'), 'utf8');
   const mentor = dashboard.slice(dashboard.indexOf('function mentorDashboard'));
   assert(!mentor.includes('openAskMentor'));
   assert(!mentor.includes('>Ask</button>'));
   assert(!mentor.includes('Ask a Mentor'));
   assert(!mentor.includes('Project-Specific Knowledge'));
-  assert(mentor.includes('Five Dimensions'));
+  assert(!mentor.includes('Faculty Expertise'));
+  assert(!mentor.includes('Theme-Based Expertise'));
+  assert(mentor.includes('Systems Thinking'));
+  assert(mentor.includes('Foundational CS Knowledge'));
+  assert(mentor.includes('Engineering Standards'));
 });
 
 test('MCQ questions stay fixed while options are prepared for the open project', () => {
@@ -888,9 +872,7 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
   const personas = [
     'Systems Thinking',
     'Foundational CS Knowledge',
-    'Faculty Expertise',
-    'Engineering Standards',
-    'Theme-Based Expertise'
+    'Engineering Standards'
   ];
   personas.forEach(persona => {
     const stage1 = buildPersonaMcq(kb03, persona, '1');

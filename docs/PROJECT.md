@@ -104,15 +104,13 @@ The older design-journey form in `app.js` still has its own Stage 1 / Stage 2 fi
 
 The mentor lives in `dist/portfolio-rag.js`. It is opened from the portfolio and from the mentor dashboard.
 
-Five lenses (personas):
+Three personas:
 
 | Persona | What a question is about |
 | --- | --- |
 | Systems Thinking | Need, boundary, and flow |
 | Foundational CS Knowledge | A course idea applied to this project |
-| Faculty Expertise | A defense question from objectives, requirements, and tests |
 | Engineering Standards | Quality targets and how the portfolio says they are checked |
-| Theme-Based Expertise | Why the project belongs to its theme |
 
 Each persona, for Stage 0 and Stage 1, has five multiple-choice questions and five descriptive questions.
 
