@@ -885,7 +885,7 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
     assert(stage3.limitation.includes('does not document enough'));
     assert(stage3.limitation.includes('Stage 3'));
     assert.strictEqual(stage4.questions.length, 0);
-    assert(stage4.stageNote.includes('Stage 4'));
+    assert(stage4.stageNote.includes('Stage 0 and Stage 1'));
   });
   global.sessionStorage.setItem('pg_assess_probe', '1');
 });
