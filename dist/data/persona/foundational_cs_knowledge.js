@@ -1,6 +1,6 @@
 (function(root){
   const FOUNDATIONAL_CS_KNOWLEDGE = {
-    dimension: 'Foundational CS Knowledge',
+    dimension: 'Core CS Knowledge',
     tagline: 'Connect a course idea to this project.',
     description: 'Evaluates the application of core computer science curriculum subjects (Data Structures, Algorithms, Operating Systems, DBMS, Computer Networks, Compilers) to project design and implementation.',
     

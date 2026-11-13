@@ -1,6 +1,6 @@
 (function(root){
   const FOUNDATIONAL_CS_RULES = {
-    dimension: 'Foundational CS Knowledge',
+    dimension: 'Core CS Knowledge',
 
     // Core Rules for Question Framing
     questionFramingRules: {

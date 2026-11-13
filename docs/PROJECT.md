@@ -64,7 +64,7 @@ Deploy the same `dist/` folder on Vercel (`vercel.json` sets `outputDirectory` t
 - `data/persona/engineering_standards_knowledge.js`
 - `data/persona/engineering_standards_rules.js`
 
-Those script tags fail quietly. The mentor then uses the banks built inside `portfolio-rag.js` for Systems Thinking and Engineering Standards. Foundational CS uses `foundational_cs_rules.js` when that file loads.
+Persona modules: `foundational_cs_rules.js` (Core CS Knowledge), `theme_knowledge_rules.js` (Theme Knowledge). Inline banks in `portfolio-rag.js` apply when a rules module has no `stageTemplates` overlay.
 
 ## Who uses it
 
@@ -108,16 +108,16 @@ Three personas:
 
 | Persona | What a question is about |
 | --- | --- |
-| Systems Thinking | Need, boundary, and flow |
-| Foundational CS Knowledge | A course idea applied to this project |
-| Engineering Standards | Quality targets and how the portfolio says they are checked |
+| Systems Thinking | Workflows, dependencies, boundaries, and failure behavior |
+| Core CS Knowledge | Foundational CS concepts and algorithmic reasoning applied to the project |
+| Theme Knowledge | Domain-specific principles, technologies, and trade-offs for the specialization theme |
 
 Each persona, for Stage 0 and Stage 1, has five multiple-choice questions and five descriptive questions.
 
 ### Where the questions come from
 
 1. `STAGE0_BANK` and `STAGE1_BANK` in `portfolio-rag.js` are the default faculty banks.
-2. `facultyBank(stage)` replaces Systems Thinking, Foundational CS, and Engineering Standards when a matching `stageTemplates` object exists on the persona rules module.
+2. `facultyBank(stage)` overlays Core CS and Theme templates from rules modules when `stageTemplates` exists. Systems Thinking and Theme items may use `byTheme` profiles via `themeProfileKey(kb.theme)`.
 3. In this checkout, only `dist/data/persona/foundational_cs_rules.js` is present. Its Stage 0 descriptive ids are `CS0-D1` … `CS0-D5`. Stage 1 ids are `CS1-D1` … `CS1-D5`.
 4. `enrichDescriptiveQuestionFromPortfolio()` binds a template to this team's tables and engines. The student sees the template prompt. The model also receives portfolio hints and rubric points. The sentence "Ground your answer in …" is stripped and is not shown.
 

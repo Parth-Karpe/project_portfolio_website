@@ -4694,7 +4694,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
       if(activeMentorLens()){
 
-        if(activeMentorName() === 'Foundational CS Knowledge'){
+        if(isCoreCsPersona(activeMentorName())){
           if(route.intent === 'QUIZ_TRIGGER') await startFoundationalQuiz(kb);
           else await answerFoundationalTurn(kb, rawQuery, lastAssistant);
         } else if(route.intent === 'QUIZ_TRIGGER'){
@@ -5343,9 +5343,9 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
 
   const MENTOR_LENSES = [
-    { name: 'Systems Thinking', help: 'Explain how the need, the boundary, and the flow fit together.', match: ['stage0-problem', 'stage0-objectives', 'table-0-4', 'table-0-5', 'table-0-2', 'diag-asis', 'table-0-1'] },
-    { name: 'Foundational CS Knowledge', help: 'Connect a course idea to this project.', match: ['table-0-1', 'table-0-3', 'engine-'] },
-    { name: 'Engineering Standards', help: 'Check the quality targets and how the project says they are verified.', match: ['nfr-', 'table-testsuite'] }
+    { name: 'Systems Thinking', help: 'Explain workflows, dependencies, boundaries, and failure behavior.', match: ['stage0-problem', 'stage0-objectives', 'table-0-4', 'table-0-5', 'table-0-2', 'diag-asis', 'table-0-1'] },
+    { name: 'Core CS Knowledge', help: 'Apply foundational CS concepts and algorithmic reasoning to this project.', match: ['table-0-1', 'table-0-3', 'engine-'] },
+    { name: 'Theme Knowledge', help: 'Explain domain-specific principles, technologies, and technical trade-offs for this theme.', match: ['team-meta', 'table-0-3', 'engine-', 'table-0-2', 'table-0-4'] }
   ];
 
   const STAGE_KEEP = {
@@ -5531,7 +5531,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function mentorLensByName(name){
-    return MENTOR_LENSES.find(item => item.name === name) || null;
+    const canonical = normalizePersonaName(name);
+    return MENTOR_LENSES.find(item => item.name === canonical) || null;
   }
 
   function activeMentorName(){
@@ -5731,8 +5732,8 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   function personaAskStem(name){
     return {
       'Systems Thinking': 'How does this subject shape the need and the flow?',
-      'Foundational CS Knowledge': 'Which course idea does this line use?',
-      'Engineering Standards': 'How does this project say this quality target is verified?'
+      'Core CS Knowledge': 'Which course idea does this line use?',
+      'Theme Knowledge': 'How does this theme-specific technology or principle show up here?'
     }[name] || 'What does this documented line say about the project?';
   }
 
@@ -6016,7 +6017,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(!questions.length) return null;
     return {
       teamId: kb.teamId,
-      dimension: 'Foundational CS Knowledge',
+      dimension: 'Core CS Knowledge',
       seed: Date.now() % 100000,
       generatedBy: 'AI Mentor',
       questions,
@@ -6085,7 +6086,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   function personaOpeningQuestion(kb, dimension){
     const selection = chunksForLens(kb, dimension, mentorStageKey());
     if(!selection.lens) return { text: 'Choose one mentor, then ask about that part of the project.', chunks: [] };
-    if(selection.lens.name === 'Foundational CS Knowledge'){
+    if(isCoreCsPersona(selection.lens.name)){
       clearFoundationalState(kb && kb.teamId, mentorStageKey());
       const request = foundationalAskRequest(kb);
       if(!request) return { text: foundationalGapMessage(mentorStageKey()), chunks: [] };
@@ -6160,21 +6161,38 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   const PERSONA_MCQ_STEM = {
     'Systems Thinking': 'Which documented statement shows how the need and the flow fit together',
-    'Foundational CS Knowledge': 'Which documented statement should be connected to a foundation course',
-    'Engineering Standards': 'Which documented statement gives the quality target or its verification'
+    'Core CS Knowledge': 'Which documented statement should be connected to a foundation course',
+    'Theme Knowledge': 'Which documented statement reflects theme-specific technical knowledge'
   };
 
   const PERSONA_DESCRIPTIVE_STEM = {
     'Systems Thinking': 'Explain how the need, the boundary, and the flow connect',
-    'Foundational CS Knowledge': 'Explain which course concept this project uses here, and why it fits',
-    'Engineering Standards': 'Explain how this project says this quality target is verified'
+    'Core CS Knowledge': 'Explain which course concept this project uses here, and why it fits',
+    'Theme Knowledge': 'Explain a theme-specific technical choice or trade-off in this project'
   };
 
   const PERSONA_RUBRIC = {
     'Systems Thinking': 'Connect the need, the boundary, and the flow using this section.',
-    'Foundational CS Knowledge': 'Name the course and the concept this section uses.',
-    'Engineering Standards': 'State the quality target and how the portfolio says it is verified.'
+    'Core CS Knowledge': 'Name the course and the concept this section uses.',
+    'Theme Knowledge': 'Name the domain principle, technology, or trade-off and tie it to this project.'
   };
+
+  const ACTIVE_PERSONAS = ['Systems Thinking', 'Core CS Knowledge', 'Theme Knowledge'];
+  const PERSONA_LEGACY_ALIASES = {
+    'Core CS Knowledge': ['Foundational CS Knowledge'],
+    'Theme Knowledge': ['Engineering Standards', 'Theme-Based Expertise']
+  };
+
+  function normalizePersonaName(persona){
+    const name = String(persona || '').trim();
+    if(name === 'Foundational CS Knowledge') return 'Core CS Knowledge';
+    if(name === 'Engineering Standards' || name === 'Theme-Based Expertise') return 'Theme Knowledge';
+    return name;
+  }
+
+  function isCoreCsPersona(persona){
+    return normalizePersonaName(persona) === 'Core CS Knowledge';
+  }
 
   function assessmentKey(teamId, persona, stage, kind){
     const slug = String(persona || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -6218,15 +6236,20 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
 
   function loadAssessment(teamId, persona, stage, kind){
     if(typeof sessionStorage === 'undefined') return null;
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(assessmentKey(teamId, persona, stage, kind)) || 'null');
-      if(!saved) return null;
-      if(kind === 'descriptive' && saved.sequentialMode){
-        if(!Array.isArray(saved.questionHistory)) saved.questionHistory = [];
-        return saved;
-      }
-      if(saved && Array.isArray(saved.questions) && saved.questions.length === 5) return saved;
-    } catch(_) {}
+    const canonical = normalizePersonaName(persona);
+    const names = [canonical].concat(PERSONA_LEGACY_ALIASES[canonical] || []);
+    for(let i = 0; i < names.length; i++){
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(assessmentKey(teamId, names[i], stage, kind)) || 'null');
+        if(!saved) continue;
+        if(saved.dimension) saved.dimension = canonical;
+        if(kind === 'descriptive' && saved.sequentialMode){
+          if(!Array.isArray(saved.questionHistory)) saved.questionHistory = [];
+          return saved;
+        }
+        if(saved && Array.isArray(saved.questions) && saved.questions.length === 5) return saved;
+      } catch(_) {}
+    }
     return null;
   }
 
@@ -6450,7 +6473,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'ST0-D5', focus: 'Workflow and objectives', prompt: 'Explain how the proposed workflow collectively supports the stated project objectives.', points: ['Name the relevant objectives', 'Map workflow stages to those objectives', 'Explain why the set of stages is enough for those objectives'] }
       ]
     },
-    'Foundational CS Knowledge': {
+    'Core CS Knowledge': {
       mcq: [
         { id: 'CS0-M1', focus: 'Relevant course concept', prompt: 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?', options: ['A concept from a course the project does not use', 'The course concept that matches that challenge', 'A screen color or label choice', 'The project title by itself'], correct: 1, explanation: 'The useful concept is the one that addresses the challenge the project actually has.' },
         { id: 'CS0-M2', focus: 'Structure or algorithm', prompt: 'Which data structure or algorithm is most appropriate for a specific operation in the proposed workflow?', options: ['One that cannot represent the data that operation needs', 'One chosen for an unrelated problem', 'The structure or algorithm that fits that operation', 'A manual step the scope has excluded'], correct: 2, explanation: 'The right choice is the one that fits the operation, not an unrelated method.' },
@@ -6467,20 +6490,23 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       ]
     },
 
-    'Engineering Standards': {
+    'Theme Knowledge': {
       mcq: [
-        { id: 'ES0-M1', focus: 'Clear objective', prompt: 'Which statement best represents a clear and technically meaningful project objective?', options: ['A vague hope with no technical outcome', 'An objective that says what will be achieved and how it can be recognized', 'A restatement of the team members names', 'A feature the scope says will not be built'], correct: 1, explanation: 'A clear objective states the outcome and how it can be recognized.' },
-        { id: 'ES0-M2', focus: 'Measurable outcome', prompt: 'Which measurable outcome would provide the strongest evidence that a selected project objective has been achieved?', options: ['A number or observable result that matches that objective', 'The statement that the team worked hard', 'An objective copied from an unrelated project', 'A feature that was declared out of scope'], correct: 0, explanation: 'Evidence is an observable result that matches the objective.' },
-        { id: 'ES0-M3', focus: 'Problem and objective mismatch', prompt: 'Which inconsistency, if present, would indicate a mismatch between the problem statement and project objectives?', options: ['The objectives name the same need as the problem', 'The objectives can be checked against the problem', 'The objectives pursue a different problem from the one stated', 'The scope repeats a limit already named in the problem'], correct: 2, explanation: 'A mismatch means the objectives pursue a different problem from the one stated.' },
-        { id: 'ES0-M4', focus: 'Scope violation', prompt: 'Which proposed feature would violate the documented project scope?', options: ['A feature listed as in scope', 'A feature that directly serves a stated objective', 'A constraint already accepted in the feasibility notes', 'A feature the project has placed out of scope'], correct: 3, explanation: 'A feature placed out of scope would violate the scope.' },
-        { id: 'ES0-M5', focus: 'Feasibility consideration', prompt: "Which engineering consideration is most important when evaluating the project's feasibility and constraints?", options: ['Whether the plan fits the stated limits of time, skill, and resources', 'Whether the title uses more technical words', 'Whether later source code already exists', 'Whether every excluded idea is added back'], correct: 0, explanation: 'Feasibility asks whether the plan fits the stated limits.' }
+        { id: 'TK0-M1', focus: 'Theme principle', layer: 'theme', prompt: 'Which statement best reflects a technical principle central to this project\'s specialization theme?', options: ['A principle unrelated to the stated theme', 'A principle that matches the theme and the documented engines', 'A UI layout choice only', 'A team roster detail'], correct: 1, explanation: 'Theme knowledge ties domain principles to this project and its artifacts.' },
+        { id: 'TK0-M2', focus: 'Indexing tradeoff', layer: 'theme', prompt: 'Which indexing or storage approach best fits the documented workload?', options: ['Always use a hash index regardless of access pattern', 'Choose B+ tree indexing when range scans and ordered traversal matter', 'Avoid any persistent structure', 'Store everything only in presentation slides'], correct: 1, explanation: 'B+ trees suit ordered range access; hashes suit point lookups.', byTheme: {
+          storage: { prompt: 'Under what conditions would B+ tree indexing be preferable to hash-based indexing in this project?', options: ['When point lookups dominate and order does not matter', 'When range queries and ordered traversal are required', 'When no index is ever needed', 'When the theme is unrelated to data storage'], correct: 1, explanation: 'B+ trees support ordered range scans; hash indexes favor equality lookups.' },
+          general: { prompt: 'Which domain-specific storage or retrieval approach best matches this project theme and workload?', options: ['An approach from an unrelated specialization', 'The approach aligned with the theme and documented engines', 'A manual workaround the scope excludes', 'No persistent representation'], correct: 1, explanation: 'Theme-appropriate structures follow the specialization and portfolio engines.' }
+        } },
+        { id: 'TK0-M3', focus: 'Domain technology', layer: 'theme', prompt: 'Which theme-specific technology or mechanism in the portfolio best supports a core operation?', options: ['A mechanism listed for a different theme', 'The engine or component documented for that operation', 'A quality metric from testing only', 'An out-of-scope external product'], correct: 1, explanation: 'Pick the mechanism the portfolio attributes to the themed operation.' },
+        { id: 'TK0-M4', focus: 'Technical trade-off', layer: 'theme', prompt: 'Which trade-off is most important when choosing a theme-specific technique for this project?', options: ['Color of the final report', 'Performance versus complexity versus resource limits for the themed workload', 'Number of team members', 'Whether the title mentions AI'], correct: 1, explanation: 'Domain choices balance performance, complexity, and limits.' },
+        { id: 'TK0-M5', focus: 'Theme limitation', layer: 'theme', prompt: 'Which limitation of a theme-specific approach should the team plan for?', options: ['No limitation exists for any technique', 'A concrete limit named in scope, feasibility, or engine design', 'Only marketing constraints', 'Only citation formatting'], correct: 1, explanation: 'Domain techniques have limits the portfolio or feasibility should acknowledge.' }
       ],
       descriptive: [
-        { id: 'ES0-D1', focus: 'Objective clarity', prompt: 'Examine the project objectives. Identify one objective that needs greater clarity or measurability and suggest how it could be improved.', points: ['Quote or name one objective', 'Say what is unclear or not measurable', 'Suggest a clearer or measurable form'] },
-        { id: 'ES0-D2', focus: 'Objectives address the problem', prompt: 'Explain how the stated project objectives address the problem identified in the problem statement.', points: ['State the problem', 'Name the objectives that respond to it', 'Explain the link between them'] },
-        { id: 'ES0-D3', focus: 'Workflow covers objectives', prompt: 'Examine the conceptual workflow and explain whether its major operations adequately cover the stated project objectives.', points: ['Name the major operations', 'Match them to the objectives', 'Say whether any objective is left uncovered'] },
-        { id: 'ES0-D4', focus: 'Scope boundary', prompt: 'Explain how the In Scope and Out of Scope sections establish clear project boundaries and help prevent scope expansion.', points: ['State what is in scope', 'State what is out of scope', 'Explain how that boundary limits later expansion'] },
-        { id: 'ES0-D5', focus: 'Constraints and planning', prompt: 'Identify two important project constraints or risks and explain how they should influence planning and later verification.', points: ['Name two constraints or risks', 'Explain the effect on planning', 'Explain what should later be verified'] }
+        { id: 'TK0-D1', focus: 'Theme and architecture', layer: 'theme', prompt: 'Explain how the project\'s specialization theme shapes a major technical decision in the proposed architecture or engines.', points: ['Name the theme', 'Name the technical decision', 'Explain how the theme drove that decision'] },
+        { id: 'TK0-D2', focus: 'Domain tradeoff', layer: 'theme', prompt: 'Compare two theme-specific techniques that could address the same project challenge. State which fits better and why.', points: ['Name the challenge', 'Describe two theme-relevant techniques', 'Choose one and justify using portfolio evidence'] },
+        { id: 'TK0-D3', focus: 'Engine and theme', layer: 'theme', prompt: 'Explain how a documented engine or core component embodies knowledge from the specialization theme.', points: ['Name the engine or component', 'State the theme principle it implements', 'Explain the link using portfolio text'] },
+        { id: 'TK0-D4', focus: 'Alternative technique', layer: 'theme', prompt: 'Identify an alternative domain technique the team could have chosen. Explain why the documented approach is reasonable.', points: ['Name the alternative', 'Name the chosen approach', 'Give a theme-based reason for the choice'] },
+        { id: 'TK0-D5', focus: 'Technical risk', layer: 'theme', prompt: 'Identify a theme-specific technical risk or limitation and explain how the portfolio addresses or accepts it.', points: ['Name the risk or limitation', 'Say where the portfolio mentions it', 'Explain the mitigation or accepted trade-off'] }
       ]
     },
   };
@@ -6502,7 +6528,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
         { id: 'ST1-D5', focus: 'Non-functional influence', layer: 'project', prompt: 'Explain how a selected non-functional requirement influences the behavior or interaction of the proposed system functions.', points: ['Name the non-functional requirement', 'State its quality target', 'Explain how it changes function behavior or interaction'] }
       ]
     },
-    'Foundational CS Knowledge': {
+    'Core CS Knowledge': {
       mcq: [
         { id: 'CS1-M1', focus: 'Concept for a requirement', layer: 'project', prompt: 'Which foundational CS concept is most relevant to implementing a selected functional requirement?', options: ['A concept from a course this requirement does not need', 'The concept that matches what that requirement must do', 'A cover-page layout', 'A later test log'], correct: 1, explanation: 'The relevant concept is the one the requirement needs in order to be implemented.' },
         { id: 'CS1-M2', focus: 'Mechanism for a requirement', layer: 'project', prompt: 'Which data structure, algorithm or computing mechanism could best support a selected requirement?', options: ['One that cannot represent the data that requirement uses', 'One aimed at an unrelated problem', 'The mechanism that fits that requirement', 'A manual step the scope excludes'], correct: 2, explanation: 'Choose the mechanism that fits the requirement.' },
@@ -6519,37 +6545,39 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
       ]
     },
 
-    'Engineering Standards': {
+    'Theme Knowledge': {
       mcq: [
-        { id: 'ES1-M1', focus: 'Clear requirement', layer: 'project', prompt: 'Which functional requirement is written most clearly and unambiguously?', options: ['A sentence with two competing meanings', 'A requirement that states one actor action and one observable result', 'A requirement that only repeats the project title', 'A feature placed out of scope'], correct: 1, explanation: 'A clear requirement states one action and a result that can be checked.' },
-        { id: 'ES1-M2', focus: 'Measurable quality target', layer: 'project', prompt: 'Which non-functional requirement contains a measurable and verifiable quality target?', options: ['A target that names what will be measured and how it can be checked', 'A slogan with no quantity or condition', 'A restatement of the team name', 'An excluded feature'], correct: 0, explanation: 'A verifiable target says what is measured and how the check is made.' },
-        { id: 'ES1-M3', focus: 'Traceability', layer: 'project', prompt: 'Which requirement is correctly traceable to a selected Stage 0 objective or source need?', options: ['A requirement that serves a different problem', 'A requirement that directly answers that objective or source need', 'A requirement with no stated purpose', 'An objective copied from another team'], correct: 1, explanation: 'Traceability means the requirement answers the selected objective or source need.' },
-        { id: 'ES1-M4', focus: 'Use-case mismatch', layer: 'project', prompt: 'Which inconsistency, if present, would indicate a mismatch between a use case and the functional requirements?', options: ['The main flow uses functions the requirements specify', 'The actor and goal match a specified function', 'The use case depends on a function that no requirement specifies', 'The acceptance check repeats the requirement'], correct: 2, explanation: 'A mismatch exists when the use case needs a function that no requirement specifies.' },
-        { id: 'ES1-M5', focus: 'Acceptance criterion', layer: 'project', prompt: 'Which acceptance criterion most directly verifies a selected functional or non-functional requirement?', options: ['A check that observes the result that requirement promises', 'A check of an unrelated screen label', 'A note that the team worked hard', 'A feature the scope excludes'], correct: 0, explanation: 'The direct criterion checks the result the requirement promises.' }
+        { id: 'TK1-M1', focus: 'Theme and requirement', layer: 'theme', prompt: 'Which functional requirement is most clearly grounded in the project\'s specialization theme?', options: ['A requirement unrelated to the theme engines', 'A requirement whose outcome uses theme-specific technology', 'A duplicate of the team name', 'A scope exclusion'], correct: 1, explanation: 'Theme-grounded requirements use domain mechanisms from the portfolio.' },
+        { id: 'TK1-M2', focus: 'Domain mechanism', layer: 'theme', prompt: 'Which documented mechanism best implements a theme-specific capability for a selected requirement?', options: ['A mechanism from another specialization', 'The engine or module the portfolio assigns to that capability', 'Only a test-case label', 'An unrelated GUI color'], correct: 1, explanation: 'Match the requirement to the themed engine described in the portfolio.' },
+        { id: 'TK1-M3', focus: 'Alternative domain approach', layer: 'theme', prompt: 'Which alternative theme-specific approach could satisfy the same requirement with different trade-offs?', options: ['An approach that cannot handle the data the requirement needs', 'A plausible alternative technique named in theme knowledge', 'Only changing the project title', 'Ignoring the requirement'], correct: 1, explanation: 'Alternatives are other valid domain techniques with different costs.' },
+        { id: 'TK1-M4', focus: 'Use case and theme', layer: 'theme', prompt: 'Which use-case step most depends on theme-specific technical knowledge?', options: ['A step with no domain mechanism', 'A step that invokes a themed engine or protocol', 'A step that only lists team members', 'A step outside documented scope'], correct: 1, explanation: 'Theme knowledge shows up where domain engines execute the flow.' },
+        { id: 'TK1-M5', focus: 'Verification of domain behavior', layer: 'theme', prompt: 'Which acceptance check best verifies theme-specific behavior promised by a requirement?', options: ['A check that exercises the domain outcome the requirement describes', 'A spell-check of the report', 'A check unrelated to engines or data', 'A feature declared out of scope'], correct: 0, explanation: 'Verify the observable domain outcome, not document formatting.' }
       ],
       descriptive: [
-        { id: 'ES1-D1', focus: 'Requirement quality', layer: 'project', prompt: 'Review a selected functional requirement for clarity, completeness and testability. Suggest an improvement if necessary.', points: ['Name the requirement', 'Judge clarity, completeness, and testability', 'Suggest an improvement, or explain why it is already adequate'] },
-        { id: 'ES1-D2', focus: 'Measurable target', layer: 'project', prompt: 'Select one non-functional requirement and explain whether its quality target is measurable and verifiable.', points: ['Name the requirement and its target', 'Say what would be measured', 'Say how the check would be made, or what is missing'] },
-        { id: 'ES1-D3', focus: 'Trace to Stage 0', layer: 'project', prompt: 'Explain how two selected functional requirements can be traced to the approved Stage 0 objectives or source needs.', points: ['Name two requirements', 'Name the objective or source need for each', 'Explain the trace'] },
-        { id: 'ES1-D4', focus: 'Use-case consistency', layer: 'project', prompt: 'Review one use case and explain whether its actor, goal and main flow are consistent with the functional requirements.', points: ['Name the actor, goal, and main flow', 'Match the flow to requirements', 'Say whether they agree, or explain the gap'] },
-        { id: 'ES1-D5', focus: 'Acceptance check', layer: 'project', prompt: 'Select one acceptance criterion and explain how it verifies a corresponding requirement. Identify any missing condition needed for objective verification.', points: ['Name the criterion and the requirement', 'Explain what the criterion checks', 'Name a missing condition, or explain why the criterion is already adequate'] }
+        { id: 'TK1-D1', focus: 'Requirement and theme tech', layer: 'theme', prompt: 'Select one functional requirement and explain which theme-specific technology or principle satisfies it.', points: ['Name the requirement', 'Name the theme technology or principle', 'Explain how it satisfies the requirement'] },
+        { id: 'TK1-D2', focus: 'Compare domain options', layer: 'theme', prompt: 'Compare two theme-specific ways to implement a selected requirement. Discuss trade-offs.', points: ['Name the requirement', 'Describe two domain approaches', 'Compare advantages and limitations'] },
+        { id: 'TK1-D3', focus: 'Use case domain flow', layer: 'theme', prompt: 'Explain how a selected use case depends on theme-specific components or protocols in the portfolio.', points: ['Name the use case', 'Identify themed components', 'Explain their role in the main flow'] },
+        { id: 'TK1-D4', focus: 'Non-functional domain constraint', layer: 'theme', prompt: 'Explain how a non-functional requirement reflects a theme-specific performance or reliability constraint.', points: ['Name the non-functional requirement', 'State the domain constraint', 'Explain why the theme imposes it'] },
+        { id: 'TK1-D5', focus: 'Future theme extension', layer: 'theme', prompt: 'Identify one theme-relevant extension the portfolio could support later, and what domain knowledge it would require.', points: ['Name the extension', 'State the theme concept needed', 'Explain feasibility within scope'] }
       ]
     },
   };
 
   function getPersonaKnowledge(persona){
     const g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : {});
-    if(persona === 'Systems Thinking') return (typeof SYSTEMS_THINKING_KNOWLEDGE !== 'undefined' ? SYSTEMS_THINKING_KNOWLEDGE : g.SYSTEMS_THINKING_KNOWLEDGE) || null;
-    if(persona === 'Foundational CS Knowledge') return (typeof FOUNDATIONAL_CS_KNOWLEDGE !== 'undefined' ? FOUNDATIONAL_CS_KNOWLEDGE : g.FOUNDATIONAL_CS_KNOWLEDGE) || null;
-    if(persona === 'Engineering Standards') return (typeof ENGINEERING_STANDARDS_KNOWLEDGE !== 'undefined' ? ENGINEERING_STANDARDS_KNOWLEDGE : g.ENGINEERING_STANDARDS_KNOWLEDGE) || null;
+    const name = normalizePersonaName(persona);
+    if(name === 'Systems Thinking') return (typeof SYSTEMS_THINKING_KNOWLEDGE !== 'undefined' ? SYSTEMS_THINKING_KNOWLEDGE : g.SYSTEMS_THINKING_KNOWLEDGE) || null;
+    if(name === 'Core CS Knowledge') return (typeof FOUNDATIONAL_CS_KNOWLEDGE !== 'undefined' ? FOUNDATIONAL_CS_KNOWLEDGE : g.FOUNDATIONAL_CS_KNOWLEDGE) || null;
+    if(name === 'Theme Knowledge') return (typeof THEME_KNOWLEDGE !== 'undefined' ? THEME_KNOWLEDGE : g.THEME_KNOWLEDGE) || null;
     return null;
   }
 
   function getPersonaRules(persona){
     const g = typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : {});
-    if(persona === 'Systems Thinking') return (typeof SYSTEMS_THINKING_RULES !== 'undefined' ? SYSTEMS_THINKING_RULES : g.SYSTEMS_THINKING_RULES) || null;
-    if(persona === 'Foundational CS Knowledge') return (typeof FOUNDATIONAL_CS_RULES !== 'undefined' ? FOUNDATIONAL_CS_RULES : g.FOUNDATIONAL_CS_RULES) || null;
-    if(persona === 'Engineering Standards') return (typeof ENGINEERING_STANDARDS_RULES !== 'undefined' ? ENGINEERING_STANDARDS_RULES : g.ENGINEERING_STANDARDS_RULES) || null;
+    const name = normalizePersonaName(persona);
+    if(name === 'Systems Thinking') return (typeof SYSTEMS_THINKING_RULES !== 'undefined' ? SYSTEMS_THINKING_RULES : g.SYSTEMS_THINKING_RULES) || null;
+    if(name === 'Core CS Knowledge') return (typeof FOUNDATIONAL_CS_RULES !== 'undefined' ? FOUNDATIONAL_CS_RULES : g.FOUNDATIONAL_CS_RULES) || null;
+    if(name === 'Theme Knowledge') return (typeof THEME_KNOWLEDGE_RULES !== 'undefined' ? THEME_KNOWLEDGE_RULES : g.THEME_KNOWLEDGE_RULES) || null;
     return null;
   }
 
@@ -6561,7 +6589,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
     if(!base) return null;
 
     const bank = Object.assign({}, base);
-    const targetPersonas = ['Systems Thinking', 'Foundational CS Knowledge', 'Engineering Standards'];
+    const targetPersonas = ACTIVE_PERSONAS.slice();
     targetPersonas.forEach(persona => {
       const rules = getPersonaRules(persona);
       if(rules && rules.stageTemplates && rules.stageTemplates[s]){
@@ -6587,6 +6615,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function facultyMcq(kb, persona, stage){
+    persona = normalizePersonaName(persona);
     const letters = ['A', 'B', 'C', 'D'];
     const questions = facultyBank(stage)[persona].mcq.map((raw, index) => {
       const item = resolveQuizItem(raw, kb);
@@ -6625,6 +6654,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function facultyDescriptive(kb, persona, stage){
+    persona = normalizePersonaName(persona);
     const questions = facultyBank(stage)[persona].descriptive.map(raw => {
       const item = resolveQuizItem(raw, kb);
       return enrichDescriptiveQuestionFromPortfolio({
@@ -6744,6 +6774,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function buildPersonaMcq(kb, persona, stageId){
+    persona = normalizePersonaName(persona);
     const stage = stageId || mentorStageKey();
     if(facultyBank(stage) && facultyBank(stage)[persona]) return facultyMcq(kb, persona, stage);
     const pack = personaStageQuestions(kb, persona, stageId);
@@ -6805,6 +6836,7 @@ ${retrievedChunks.map(c => `Source ${c.citation} (${c.label}):\n${c.text}`).join
   }
 
   function buildPersonaDescriptive(kb, persona, stageId){
+    persona = normalizePersonaName(persona);
     const stage = stageId || mentorStageKey();
     if(facultyBank(stage) && facultyBank(stage)[persona]) return facultyDescriptive(kb, persona, stage);
     const bank = facultyBank(stage);

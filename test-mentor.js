@@ -490,14 +490,14 @@ test('Systems Thinking and Foundational CS ask different questions on Team A-03'
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '0';
   const systems = buildDescriptiveQuiz(kb03, 'Systems Thinking');
-  const foundational = buildDescriptiveQuiz(kb03, 'Foundational CS Knowledge');
+  const foundational = buildDescriptiveQuiz(kb03, 'Core CS Knowledge');
   assert.strictEqual(systems.questions.length, 1);
   assert.strictEqual(foundational.questions.length, 1);
   assert.notStrictEqual(systems.questions[0].source, foundational.questions[0].source);
   assert.notStrictEqual(systems.questions[0].citation, foundational.questions[0].citation);
 
   const systemsIds = new Set(chunksForLens(kb03, 'Systems Thinking', '0').chunks.map(chunk => chunk.id));
-  const csIds = new Set(chunksForLens(kb03, 'Foundational CS Knowledge', '0').chunks.map(chunk => chunk.id));
+  const csIds = new Set(chunksForLens(kb03, 'Core CS Knowledge', '0').chunks.map(chunk => chunk.id));
   const systemsQuiz = generateVivaQuiz(kb03, 5, systemsIds);
   const csQuiz = generateVivaQuiz(kb03, 5, csIds);
   assert(systemsQuiz.questions.some(question => question.id === 'q1-scope'));
@@ -519,7 +519,7 @@ test('A fact outside the selected mentor is not answered from another section', 
 test('Stage 3 says the portfolio does not document that stage yet', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '2';
-  global.window.mentorActiveDimension = 'Engineering Standards';
+  global.window.mentorActiveDimension = 'Theme Knowledge';
   const reply = answerWithinLens('What are the implementation modules?', kb03);
   assert(reply.text.includes('does not document'));
   assert(reply.text.includes('Stage 3'));
@@ -531,7 +531,7 @@ test('Stage 3 says the portfolio does not document that stage yet', () => {
 test('A context viewpoint question cites the SDD template, not a project section', () => {
   const kb03 = buildTeamKnowledgeBase('03');
   global.window.mentorDashboardStage = '0';
-  global.window.mentorActiveDimension = 'Engineering Standards';
+  global.window.mentorActiveDimension = 'Theme Knowledge';
   const reply = answerWithinLens('what is the context viewpoint?', kb03);
   assert(reply.text.includes('does not cover'));
   assert(reply.text.includes('[SDD 2.2.1 Context]'));
@@ -599,9 +599,10 @@ test('Ask a Mentor follows up from the same team section', () => {
   assert(problemChunk.text.includes(problemFollow.replace('[Stage 0: Problem Statement]', '').replace('How does this subject shape the need and the flow?', '').trim().slice(0, 48)));
   assert(!/\[SDD/.test(problemFollow));
 
-  global.window.mentorActiveDimension = 'Engineering Standards';
+  global.window.mentorActiveDimension = 'Theme Knowledge';
   const missing = answerWithinLens('what is the context viewpoint?', kb03);
   const missingFollow = missing.text.split('Follow-up:')[1] || '';
+  assert(!/context viewpoint/i.test(missing.text) || !missing.text.includes('[SDD 2.2.1 Context]'));
   assert(!missingFollow.includes('[SDD'));
 });
 
@@ -610,7 +611,7 @@ test('Ask opens with a different team-doc question for each persona', () => {
   global.window.mentorDashboardStage = '0';
   global.window.activePortfolioStage = '0';
   const systems = personaOpeningQuestion(kb03, 'Systems Thinking');
-  const courses = personaOpeningQuestion(kb03, 'Foundational CS Knowledge');
+  const courses = personaOpeningQuestion(kb03, 'Core CS Knowledge');
   assert(systems.text.includes('How does Data Structures shape the need and the flow?'));
   assert(systems.text.includes('[Table 0.1]'));
   assert(/data structure/i.test(systems.text));
@@ -632,7 +633,7 @@ test('Ask opens with a different team-doc question for each persona', () => {
   const shared = 'Database Management Systems (Core): Booking records, transactions and data consistency';
   const sharedKb = { teamId: 'fixture-shared', chunks: [{ id: 'table-0-1', citation: '[Table 0.1]', text: shared }] };
   const sharedSystems = personaOpeningQuestion(sharedKb, 'Systems Thinking');
-  const sharedCourses = personaOpeningQuestion(sharedKb, 'Foundational CS Knowledge');
+  const sharedCourses = personaOpeningQuestion(sharedKb, 'Core CS Knowledge');
   assert(sharedSystems.text.includes(shared));
   assert(sharedCourses.request.systemInstruction.includes(shared));
   assert(sharedCourses.request.systemInstruction.includes('does not document Computer Networks'));
@@ -670,10 +671,11 @@ test('Ask opens with a different team-doc question for each persona', () => {
   global.window.mentorDashboardStage = '0';
 
   global.window.mentorDashboardStage = '0';
-  const standards = personaOpeningQuestion(kb03, 'Engineering Standards');
-  assert(standards.text.includes('does not cover'));
-  assert(!standards.text.includes('[SDD'));
-  assert(!standards.text.includes('Follow-up:'));
+  const themeOpen = personaOpeningQuestion(kb03, 'Theme Knowledge');
+  assert(themeOpen.text.includes('theme-specific technology or principle'));
+  assert(/\[[^\]]+\]/.test(themeOpen.text));
+  assert(!themeOpen.text.includes('[SDD'));
+  assert(!themeOpen.text.includes('Follow-up:'));
 });
 
 test('Foundational CS asks every course plus Computer Networks by stage section', () => {
@@ -752,7 +754,7 @@ test('Foundational CS asks every course plus Computer Networks by stage section'
   assert.strictEqual(foundationalAskRequest(kb03), null);
   assert.strictEqual(foundationalQuizRequest(kb03), null);
   assert.strictEqual(foundationalFollowRequest(kb03, 'question', 'answer'), null);
-  const stage3 = personaOpeningQuestion(kb03, 'Foundational CS Knowledge');
+  const stage3 = personaOpeningQuestion(kb03, 'Core CS Knowledge');
   assert(stage3.text.includes('does not document'));
   assert(stage3.text.includes('Stage 3'));
   assert(!stage3.request);
@@ -784,8 +786,8 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
   const kb12 = buildTeamKnowledgeBase('12');
   const openings = {
     'Systems Thinking': 'Which sequence correctly represents the major operations in the proposed system?',
-    'Foundational CS Knowledge': 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?',
-    'Engineering Standards': 'Which statement best represents a clear and technically meaningful project objective?'
+    'Core CS Knowledge': 'Which foundational CS concept is most relevant to addressing a selected technical challenge in the project?',
+    'Theme Knowledge': 'Which statement best reflects a technical principle central to this project\'s specialization theme?'
   };
   const ids = [];
   Object.keys(openings).forEach(persona => {
@@ -835,9 +837,11 @@ test('Stage 0 uses the hardcoded faculty questions and Ask is not on the cards',
   assert(!mentor.includes('Project-Specific Knowledge'));
   assert(!mentor.includes('Faculty Expertise'));
   assert(!mentor.includes('Theme-Based Expertise'));
+  assert(!mentor.includes('Engineering Standards'));
+  assert(!mentor.includes('Foundational CS Knowledge'));
   assert(mentor.includes('Systems Thinking'));
-  assert(mentor.includes('Foundational CS Knowledge'));
-  assert(mentor.includes('Engineering Standards'));
+  assert(mentor.includes('Core CS Knowledge'));
+  assert(mentor.includes('Theme Knowledge'));
 });
 
 test('MCQ questions stay fixed while options are prepared for the open project', () => {
@@ -871,8 +875,8 @@ test('Each persona gets 5 grounded MCQs and 5 descriptive questions for a docume
   const kb03 = buildTeamKnowledgeBase('03');
   const personas = [
     'Systems Thinking',
-    'Foundational CS Knowledge',
-    'Engineering Standards'
+    'Core CS Knowledge',
+    'Theme Knowledge'
   ];
   personas.forEach(persona => {
     const stage1 = buildPersonaMcq(kb03, persona, '1');

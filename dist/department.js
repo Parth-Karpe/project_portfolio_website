@@ -2668,8 +2668,8 @@ window.backToPortfolioFromMentor = backToPortfolioFromMentor;
 function mentorDashboard(){
   const dimensions = [
     'Systems Thinking',
-    'Foundational CS Knowledge',
-    'Engineering Standards'
+    'Core CS Knowledge',
+    'Theme Knowledge'
   ];
   const panel = window.mentorDashboardPanel || 'persona';
   const team = typeof activeTeam === 'function' ? activeTeam() : null;
