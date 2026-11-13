@@ -19,9 +19,9 @@ upgradeState();save();if(typeof restoreAuthSession==='function')restoreAuthSessi
 const rolePages={Admin:['Overview','Admin Panel','Team Portfolio','Mentor Dashboard','Department','Settings'],HOD:['Department','Team Portfolio','Mentor Dashboard','Settings'],Faculty:['Overview','Team Portfolio','Mentor Dashboard','Evidence Library','AI Mentor','Department','Settings'],Student:['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Settings'],'Team Lead':['Team Portfolio','Overview','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Settings']};
 const iconFor={'Overview':ICONS.Overview,'Admin Panel':ICONS['Admin Panel'],'Team Portfolio':ICONS['Team Portfolio'],'Design Journey':ICONS['Design Journey'],'Evidence Library':ICONS['Evidence Library'],'AI Mentor':ICONS['AI Mentor'],'Faculty Review':ICONS['Faculty Review'],'Discussion':ICONS.Discussion,'Department':ICONS.Department,'Faculty Admin':ICONS['Faculty Admin'],'Settings':ICONS.Settings,'Mentor Dashboard':ICONS['AI Mentor']};
 function workspaceAppTabs(){
-  if(page === 'Settings') return '';
+  if(page === 'Settings' || state.role === 'Faculty') return '';
   const role = state.role;
-  const tabs = (rolePages[role] || []).filter(p => p !== 'Settings' && ['Overview','Team Portfolio','Design Journey','Mentor Dashboard','Evidence Library','AI Mentor','Department','Admin Panel'].includes(p));
+  const tabs = (rolePages[role] || []).filter(p => ['Overview','Design Journey','Evidence Library','AI Mentor','Admin Panel'].includes(p));
   if(tabs.length < 2) return '';
   return `<nav class="workspace-app-tabs" aria-label="Workspace sections">${tabs.map(p => `<button type="button" class="workspace-app-tab ${page===p?'active':''}" onclick="go('${p.replace(/'/g,"\\'")}')"><span class="workspace-app-tab-icon">${iconFor[p]||''}</span><span>${esc(p)}</span></button>`).join('')}</nav>`;
 }
@@ -445,10 +445,7 @@ function sharedPageHeader(){
       ${page === 'Settings' ? `<button type="button" class="btn secondary" onclick="window.closeSettingsPage()" title="Back to workspace" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         <span>Close</span>
-      </button>` : `<button type="button" class="btn secondary" onclick="go('Settings')" title="AI settings" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
-        ${ICONS.Settings}
-        <span>Settings</span>
-      </button>`}
+      </button>` : ''}
       <button type="button" class="btn secondary" onclick="window.signOutUser()" title="Sign out" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; font-size:12px; font-weight:700; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span>Sign Out</span>
